@@ -1,0 +1,7 @@
+https://man7.org/linux/man-pages/man3/getaddrinfo.3.html -> for dns lookup 
+https://man7.org/linux/man-pages/man3/sockaddr.3type.html
+https://www.linuxhowtos.org/C_C++/socket.htm
+https://stackoverflow.com/questions/11684008/how-do-you-cast-sockaddr-structure-to-a-sockaddr-in-c-networking-sockets-ubu
+https://linux.die.net/man/3/inet_ntoa
+
+
