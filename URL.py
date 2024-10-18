@@ -31,5 +31,8 @@ class URL:
         statusline = response.readline()
         version, status, explanation = statusline.split(" ", 2)
 
+
+        #to test different encodings, can use https://en.wikipedia.org/wiki/Tiger_I for gzip encoding (make sure to enable it in request headers)
+
 if __name__ == "__main__":
     url = URL("http://google.com")
