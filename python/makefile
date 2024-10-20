@@ -11,4 +11,4 @@ sample:
 	python3 ./src/URL.py https://google.com
 
 clean:
-	rm -rf __pycache__
+	find -type d -name __pycache__ -a -prune -exec rm -rf {} \;
