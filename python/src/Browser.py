@@ -5,6 +5,7 @@ import ssl
 #Given a url performs a DNS lookup
 #Only accepts http protocol urls.
 class URL:
+    SUPPORTED_SCHEMES ["http","https","data","file","view-source"]
     
     def __init__(self, url):
         self.scheme, url = url.split("://", 1)
@@ -23,7 +24,15 @@ class URL:
         if ":" in self.host:
             self.host, port = self.host.split(":", 1)
             self.port = int(port)
-   
+
+        self.requestHeaders = []
+    
+    #given a string url, extracts the http scheme. Throw error if invalid scheme
+    #https://developer.mozilla.org/en-US/docs/Web/URI/Schemes
+    #'The scheme of a URI is the first part of the URI, before the : character.'
+    def extractScheme(self, url):
+        self.scheme = url.split(":",1)[0]
+        if ! scheme in 
 
 
     def request(self):
