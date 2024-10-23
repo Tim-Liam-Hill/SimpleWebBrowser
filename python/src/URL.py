@@ -19,17 +19,19 @@ class URL:
         self.cache = None
         ##---------------------
 
+        #TODO: url to lowercase 
+
         self.scheme, url = self.extractScheme(url)
-        
-        if self.scheme == "http":
-            self.port = 80
-        elif self.scheme == "https":
-            self.port = 443
 
         if "/" not in url:
             url = url + "/"
         self.host, url = url.split("/", 1)
         self.path = "/" + url
+        
+        if self.scheme == "http":
+            self.port = 80
+        elif self.scheme == "https":
+            self.port = 443
         
         if ":" in self.host:
             self.host, port = self.host.split(":", 1)

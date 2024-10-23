@@ -12,7 +12,7 @@ class TestURL(unittest.TestCase):
         url = URL("http://google.com")
         self.assertEqual(url.extractScheme("http://google.com"),("http","google.com"))
         
-
+#TODO: test URI validation 
 
 if __name__=='__main__':
     unittest.main()
