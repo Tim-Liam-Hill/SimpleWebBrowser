@@ -100,6 +100,16 @@ The <mediatype> is an Internet media type specification (with
    defaults to text/plain;charset=US-ASCII.  As a shorthand,
    "text/plain" can be omitted but the charset parameter supplied.
 
+TODO LATER: https://developer.mozilla.org/en-US/docs/Web/URI/Schemes/data 
+
+"If the data is textual, you can embed the text (using the appropriate entities or escapes based on the enclosing document's type). Otherwise, you can specify base64 to embed base64-encoded binary data. You can find more info on MIME types here and here."
+
+I am not done with all these exercizes yet but I want to read on a little to get a better idea of what will be required later (especially regarding the Data URLs part).
+
+# Chapter 2
+
+NBNBNB: sudo apt-get install python3-tk  was needed to install tkinter (not provided by pip)
+
 # QUESTIONS
 
 1. The difference between URI, URN and URL (refer to RFCs)

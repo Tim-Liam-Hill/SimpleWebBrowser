@@ -3,6 +3,7 @@ import sys
 import ssl
 import re
 from urllib.parse import unquote
+import base64
 
 DATA_REGEX = '^data:(.*)(;base64)?,(.*)$'
 FILE_REGEX = '^file://((\/[\da-zA-Z\s\-_\.]+)+)|([A-Za-z0-9]:(\\\\[a-za-zA-Z\d\s\-_\.]+)+)$'
@@ -95,7 +96,12 @@ class URL:
         return content 
         
     
-
+    #https://http.dev/data-url
+    #might need to hold off on implementing this until we know what later rendering is gonna look like
+    #since all I can do right now is print characters to a screen
+    #TODO: one thing I can do is return the html based on the content
+    #eg: if it is an image or video, return img tag with the necessary nonsense set
+    #that makes the most sense to me right now. 
     def dataRequest(self):
         #so we have 2 main cases:
         #base64 or not base64
@@ -165,24 +171,26 @@ class URL:
         return content
 
 
-def show(body, viewSource):
+def lex(body, viewSource):
 
     if viewSource:
-        print(body)
-        return
+        return body
 
     in_tag = False
+    text = ""
     for c in body:
         if c == "<":
             in_tag = True
         elif c == ">":
             in_tag = False
         elif not in_tag:
-            print(c, end="")
+            text += c
+            
+    return text
         
 def load(url):
     body = url.request()
-    show(body, url.viewSource)
+    print(lex(body, url.viewSource))
 
 if __name__ == "__main__":
     url = URL(sys.argv[1])
