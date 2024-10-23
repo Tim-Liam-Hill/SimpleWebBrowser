@@ -1,6 +1,12 @@
 import socket
 import sys
 import ssl
+import re
+import validators
+
+DATA_REGEX = '^data:(.*)(;base64)?,(.*)$'
+FILE_REGEX = '^file://((\/[\da-zA-Z\s\-_\.]+)+)|([A-Za-z0-9]:(\\\\[a-za-zA-Z\d\s\-_\.]+)+)$'
+URL_REGEX = '^([A-Za-z0-9]+\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+(\.([a-zA-Z]){2,6})?([a-zA-Z0-9\.\&\/\?\:@\-_=#])*$'
 
 class URL:
     """Given a url, extracts scheme and returns data based on the protocol
@@ -19,7 +25,10 @@ class URL:
         self.cache = None
         ##---------------------
 
-        #TODO: url to lowercase 
+        #url = url.lower() I don't think I can do this due to base64 strings and such. 
+        if not self.validateURL(url):
+            raise ValueError("Input URL is not of a valid format")
+        
 
         self.scheme, url = self.extractScheme(url)
 
@@ -40,25 +49,42 @@ class URL:
         
         #TODO: setup caching 
     
+    #Validates whether or not the input url is valid.
+    def validateURL(self, url):
+        print(url)
+        if re.search(URL_REGEX, url):
+            return True
+        #data
+        if re.search(DATA_REGEX, url):
+            return True 
+        if re.search(FILE_REGEX,url):
+            return True
+
+        return False 
+    
     #given a string url, extracts the http scheme. Throw error if invalid scheme. Returns scheme and 
     #url without scheme
     #https://developer.mozilla.org/en-US/docs/Web/URI/Schemes
     #'The scheme of a URI is the first part of the URI, before the : character.'
     def extractScheme(self, url):
+        err = "Input url %s does not contain a supported scheme\n"%(url)
+        err += "Accepted schemes are: \n\thttp\n\thttps\n\tfile\n\tdata\n\tview-source\n"
+
         scheme = url.split(":",1)[0]
-        if scheme in ["http","https", "file"]:
+        if scheme.lower() in ["http","https", "file"]:
             url = url.split("://",1)[1]
-            return scheme, url 
-        elif scheme in ["data"]:
+            return scheme.lower(), url 
+        elif scheme.lower() in ["data"]:
             url = url.split(":",1)[1]
-            return scheme, url 
-        elif scheme == "view-source":
-            self.viewSource = true 
+            return scheme.lower(), url 
+        elif scheme.lower() == "view-source":
+            if self.viewSource: #stops multiple view-source:view-source
+                raise ValueError(err)
+            self.viewSource = True 
             junk, url = scheme = url.split(":",1)
-            scheme, url = url = url.split("://",1)
+            return self.extractScheme(url)
         else: 
-            err = "Input url %s does not contain a supported scheme\n"%(url)
-            err += "Accepted schemes are: \n-http\n-https\n-file\n-data\n-view-source\n"
+
             raise ValueError(err)
     
     # DO THE SAME FOR EXTRACT PORT!!!!! 

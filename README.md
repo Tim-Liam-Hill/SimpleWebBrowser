@@ -82,3 +82,52 @@ So in my mind, the URI only cares about identifying things. The subcategory of U
 - Oh, it is <URI-NAME> Fine Wine!
 - But I don't know where to find it
 - If the <URL-NAME> is Steenberg Farm Fine Wine Subtype 13 then I know what it is and exactly where to find it!
+
+" Although many URI schemes are named after protocols, this does not imply that use of these URIs will result in access to the resource via the named protocol."
+
+That is very interesting. 
+
+Turns out I can use a regular expression after all. Huh
+
+As the "first-match-wins" algorithm is identical to the "greedy"
+   disambiguation method used by POSIX regular expressions, it is
+   natural and commonplace to use a regular expression for parsing the
+   potential five components of a URI reference.
+
+   The following line is the regular expression for breaking-down a
+   well-formed URI reference into its components.
+
+      ^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\?([^#]*))?(#(.*))?
+
+Isn't the above a bit too lenient? It doesn't really test all that much and 
+isn't good for our porpoises. So let's try something else:
+
+http://www.faqs.org/rfcs/rfc3987.html
+
+
+F*** it, let's setup my own validation just for this project (that could be swapped out later if needed).
+
+For data:
+[RFC2397](https://datatracker.ietf.org/doc/html/rfc2397)
+
+data:[<mediatype>][;base64],<data>: ^data:(.*)(;base64)?,(.*)$
+not doing any specific check for media type because reading [rfc6838](https://datatracker.ietf.org/doc/html/rfc6838) is one too many rfcs for today
+
+viewsource: incorporated into http, https and file 
+
+http and https: 
+
+could always end up using (python validators library)[https://pypi.org/project/validators/]. Let's actually
+do that. 
+
+for files, this is gonna kinda suck so let's try and be a bit more strict (because there are a lot of edge cases that basically make a specific regex kinda silly)
+
+viewsource gonna reuse the url validator 
+
+for files, supporting linux and windows. REEEE ^file://(\/[\da-zA-Z\s\-_]+)+$ (linux) ^file://[a-zA-Z]:(\\[a-zA-Z\d\s\-_]+)+$ (windows)
+
+eyyy we got ourselves a problem. That problem is:
+- using the in built validators url validation is it fails self.assertTrue(url.validateURL('http://localhost:3000/'))
+- so we need something else I guess. Blegh.
+
+I'll copy some regex for now
