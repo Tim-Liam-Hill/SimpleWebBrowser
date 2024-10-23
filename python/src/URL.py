@@ -2,7 +2,7 @@ import socket
 import sys
 import ssl
 import re
-import validators
+from urllib.parse import unquote
 
 DATA_REGEX = '^data:(.*)(;base64)?,(.*)$'
 FILE_REGEX = '^file://((\/[\da-zA-Z\s\-_\.]+)+)|([A-Za-z0-9]:(\\\\[a-za-zA-Z\d\s\-_\.]+)+)$'
@@ -13,8 +13,9 @@ class URL:
     NEED TO MAKE SURE THAT VIEWSOURCE IS SET/CHECKED SOMEHOW
     There will be a different class responsible for parsing the html into a syntax
     tree I suppose, so that will be the thing that needs to take notice."""
+    DEFAULT_PAGE = 'https://timhill.co.za'
     
-    def __init__(self, url):
+    def __init__(self, url = DEFAULT_PAGE):
         #All class variables
         self.viewSource = False 
         self.scheme = ""
@@ -25,33 +26,18 @@ class URL:
         self.cache = None
         ##---------------------
 
-        #url = url.lower() I don't think I can do this due to base64 strings and such. 
         if not self.validateURL(url):
-            raise ValueError("Input URL is not of a valid format")
-        
+            raise ValueError("Input URL is not of a valid format")        
 
         self.scheme, url = self.extractScheme(url)
+        self.path = url 
 
-        if "/" not in url:
-            url = url + "/"
-        self.host, url = url.split("/", 1)
-        self.path = "/" + url
-        
-        if self.scheme == "http":
-            self.port = 80
-        elif self.scheme == "https":
-            self.port = 443
-        
-        if ":" in self.host:
-            self.host, port = self.host.split(":", 1)
-            self.port = int(port)
-
-        
-        #TODO: setup caching 
+        #if we really wanted to make this extensible, we would have a strategy pattern or something similar
+        #to make it easier to support new schemes. I don't feel like overengineering this though:
+        #I know exactly what I am supporting and the list is short
     
     #Validates whether or not the input url is valid.
     def validateURL(self, url):
-        print(url)
         if re.search(URL_REGEX, url):
             return True
         #data
@@ -78,21 +64,69 @@ class URL:
             url = url.split(":",1)[1]
             return scheme.lower(), url 
         elif scheme.lower() == "view-source":
-            if self.viewSource: #stops multiple view-source:view-source
+            if self.viewSource: #stops multiple view-source:view-source from being valid
                 raise ValueError(err)
             self.viewSource = True 
             junk, url = scheme = url.split(":",1)
             return self.extractScheme(url)
         else: 
-
             raise ValueError(err)
-    
-    # DO THE SAME FOR EXTRACT PORT!!!!! 
 
 
 
     #Makes an HTTP/HTTPS connection to the host and fetches data
     def request(self):
+        match self.scheme:
+            case "file":
+                return self.fileRequest()
+            case "http":
+                return self.httpRequest()
+            case "https":
+                return self.httpRequest()
+            case "data":
+                return self.dataRequest()
+    
+    #Doesn't handle the OSError, that can be handled by lower down (or maybe we will figure it out
+    #eventually
+    def fileRequest(self):
+        content = ""
+        with open(self.path, "r") as f:
+            content = f.read()
+        return content 
+        
+    
+
+    def dataRequest(self):
+        #so we have 2 main cases:
+        #base64 or not base64
+        #we also need to support a bunch of different charsets don't we. REEEEEEEEE
+        #https://datatracker.ietf.org/doc/html/rfc2045 may help
+        print(self.path)
+        preamble, data = self.path.split(",",1)
+        
+        #default to plain text mediatype with URL encoded string 
+        if preamble == "":
+            return unquote(data)
+
+        return ""
+
+    def httpRequest(self):
+
+        #TODO: setup caching 
+        if "/" not in self.path:
+            self.path = self.path + "/"
+        self.host, self.path = self.path.split("/", 1)
+        self.path = "/" + self.path
+        
+        if self.scheme == "http":
+            self.port = 80
+        elif self.scheme == "https":
+            self.port = 443
+        
+        if ":" in self.host:
+            self.host, port = self.host.split(":", 1)
+            self.port = int(port)
+
         s = socket.socket(
             family=socket.AF_INET,
             type=socket.SOCK_STREAM,
@@ -131,7 +165,12 @@ class URL:
         return content
 
 
-def show(body):
+def show(body, viewSource):
+
+    if viewSource:
+        print(body)
+        return
+
     in_tag = False
     for c in body:
         if c == "<":
@@ -143,8 +182,9 @@ def show(body):
         
 def load(url):
     body = url.request()
-    show(body)
+    show(body, url.viewSource)
 
 if __name__ == "__main__":
-    URL(sys.argv[1])
+    url = URL(sys.argv[1])
+    load(url)
     

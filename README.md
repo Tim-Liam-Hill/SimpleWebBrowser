@@ -45,47 +45,6 @@ STEPS:
 
 "The interpretation of a URI depends only on the characters used and not on how those characters are represented in a network protocol."
 
-# QUESTIONS
-
-1. The difference between URI, URN and URL (refer to RFCs)
-
-Per [RFC 3305](http://www.faqs.org/rfcs/rfc3305.html), a URL is a 'useful but informal concept'. A URL is a URI with scheme http (or I imagine, https as well since that is likely what people would include).
-
-[URI](http://www.faqs.org/rfcs/rfc3986.html) - a compact sequence of characters that identifies an abstract or physical resource
-[URN](http://www.faqs.org/rfcs/rfc3305.html) - a URI that specifies the name of a resource specifically 
-[URL](http://www.faqs.org/rfcs/rfc3305.html) - a URI that specifies the location of a resource specifically <- old definition, the def above (http) is now seemingly the contemporary view. 
-
-According to [RFC 3986](http://www.faqs.org/rfcs/rfc3986.html):
-
-"A URI can be further classified as a locator, a name, or both.  The
-term "Uniform Resource Locator" (URL) refers to the subset of URIs
-that, in addition to identifying a resource, provide a means of
-locating the resource by describing its primary access mechanism
-(e.g., its network "location").  The term "Uniform Resource Name"
-(URN) has been used historically to refer to both URIs under the
-"urn" scheme [RFC2141], which are required to remain globally unique
-and persistent even when the resource ceases to exist or becomes
-unavailable, and to any other URI with the properties of a name."
-
-Further from this RFC:
-
-" A common misunderstanding of URIs is that they are only used to refer
-   to accessible resources.  The URI itself only provides
-   identification; access to the resource is neither guaranteed nor
-   implied by the presence of a URI.  Instead, any operation associated
-   with a URI reference is defined by the protocol element, data format
-   attribute, or natural language text in which it appears."
-
-So in my mind, the URI only cares about identifying things. The subcategory of URL is more conscenred with the actual location as well (ie: ensuring that the identifier can actually be used to locate the resource). I guess an analogy could be:
-
-- What is this strange substance you are talking about?
-- Oh, it is <URI-NAME> Fine Wine!
-- But I don't know where to find it
-- If the <URL-NAME> is Steenberg Farm Fine Wine Subtype 13 then I know what it is and exactly where to find it!
-
-" Although many URI schemes are named after protocols, this does not imply that use of these URIs will result in access to the resource via the named protocol."
-
-That is very interesting. 
 
 Turns out I can use a regular expression after all. Huh
 
@@ -131,3 +90,54 @@ eyyy we got ourselves a problem. That problem is:
 - so we need something else I guess. Blegh.
 
 I'll copy some regex for now
+
+The <mediatype> is an Internet media type specification (with
+   optional parameters.) The appearance of ";base64" means that the data
+   is encoded as base64. Without ";base64", the data (as a sequence of
+   octets) is represented using ASCII encoding for octets inside the
+   range of safe URL characters and using the standard %xx hex encoding
+   of URLs for octets outside that range.  If <mediatype> is omitted, it
+   defaults to text/plain;charset=US-ASCII.  As a shorthand,
+   "text/plain" can be omitted but the charset parameter supplied.
+
+# QUESTIONS
+
+1. The difference between URI, URN and URL (refer to RFCs)
+
+Per [RFC 3305](http://www.faqs.org/rfcs/rfc3305.html), a URL is a 'useful but informal concept'. A URL is a URI with scheme http (or I imagine, https as well since that is likely what people would include).
+
+[URI](http://www.faqs.org/rfcs/rfc3986.html) - a compact sequence of characters that identifies an abstract or physical resource
+[URN](http://www.faqs.org/rfcs/rfc3305.html) - a URI that specifies the name of a resource specifically 
+[URL](http://www.faqs.org/rfcs/rfc3305.html) - a URI that specifies the location of a resource specifically <- old definition, the def above (http) is now seemingly the contemporary view. 
+
+According to [RFC 3986](http://www.faqs.org/rfcs/rfc3986.html):
+
+"A URI can be further classified as a locator, a name, or both.  The
+term "Uniform Resource Locator" (URL) refers to the subset of URIs
+that, in addition to identifying a resource, provide a means of
+locating the resource by describing its primary access mechanism
+(e.g., its network "location").  The term "Uniform Resource Name"
+(URN) has been used historically to refer to both URIs under the
+"urn" scheme [RFC2141], which are required to remain globally unique
+and persistent even when the resource ceases to exist or becomes
+unavailable, and to any other URI with the properties of a name."
+
+Further from this RFC:
+
+" A common misunderstanding of URIs is that they are only used to refer
+   to accessible resources.  The URI itself only provides
+   identification; access to the resource is neither guaranteed nor
+   implied by the presence of a URI.  Instead, any operation associated
+   with a URI reference is defined by the protocol element, data format
+   attribute, or natural language text in which it appears."
+
+So in my mind, the URI only cares about identifying things. The subcategory of URL is more conscenred with the actual location as well (ie: ensuring that the identifier can actually be used to locate the resource). I guess an analogy could be:
+
+- What is this strange substance you are talking about?
+- Oh, it is <URI-NAME> Fine Wine!
+- But I don't know where to find it
+- If the <URL-NAME> is Steenberg Farm Fine Wine Subtype 13 then I know what it is and exactly where to find it!
+
+" Although many URI schemes are named after protocols, this does not imply that use of these URIs will result in access to the resource via the named protocol."
+
+That is very interesting. 
