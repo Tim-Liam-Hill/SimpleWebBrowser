@@ -4,6 +4,7 @@ import ssl
 import re
 from urllib.parse import unquote
 import base64
+import gzip
 import logging
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,8 @@ class URL:
         self.path = ""
         self.requestHeaders = [
             ["Connection", "Keep-alive"],
-            ["User-Agent","Meow-Meow-Browser24"]
+            ["User-Agent","Meow-Meow-Browser24"],
+            ["Accept-Encoding","gzip"]
         ]
         self.cache = None
         self.connections = {}
@@ -89,6 +91,7 @@ class URL:
         if not self.validateURL(url):
             raise ValueError("Input URL is not of a valid format")        
 
+        self.viewSource = False #so we don't accidentally keep from previous request
         self.scheme, url = self.extractScheme(url)
         self.path = url 
 
@@ -163,24 +166,27 @@ class URL:
         #to test different encodings, can use https://en.wikipedia.org/wiki/Tiger_I for gzip encoding (make sure to enable it in request headers)
 
 
-        response = s.makefile("r", encoding="utf8", newline="\r\n") #We should actually be extracting the encoding from the response instead of hardcoding
+        response = s.makefile("rb", encoding="utf8", newline="\r\n") #We should actually be extracting the encoding from the response instead of hardcoding
         #TODO: in the above, extract encoding before using makefile to make sure we actually get the content decoded correctly
-        statusline = response.readline()
-        version, status, explanation = statusline.split(" ", 2)
+        statusline = response.readline().decode("utf-8")
+        version, status, explanation = str(statusline).split(" ", 2)
         
         response_headers = {}
         while True:
-            line = response.readline()
+            line = response.readline().decode("utf-8")
             if line == "\r\n": break
             header, value = line.split(":", 1)
             response_headers[header.casefold()] = value.strip()
 
-        assert "transfer-encoding" not in response_headers #Remove/change once we send header for accepted encodings
-        assert "content-encoding" not in response_headers #Or is it this one, I am not too sure. Either way, do it son
-
-        if "content-length" in response_headers:
-            content = response.read(int(response_headers["content-length"]))
+        logger.info(response_headers)
+        if "transfer-encoding" in response_headers:
+            content = self.handleTransferEncoding(response_headers, response)
+        elif "content-length" in response_headers:
+                content = response.read(int(response_headers["content-length"]))
         else: content = response.read()
+
+        if "content-encoding" in response_headers:
+            content = self.decodeBody(content, response_headers["content-encoding"])
 
         return content
     
@@ -222,6 +228,38 @@ class URL:
             logger.exception("unexpected exception when checking if a socket is closed")
             return False
         return False
+    
+    #generic decode function, takes in body (bytes to decode) and method of encoding
+    #TODO: expand to handle more than just compression
+    def decodeBody(self, body, method):
+        #https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Transfer-Encoding
+        #for now only dealing with gzip compression but deflate could be implemented (compress not really needed)
+        match method:
+            case 'gzip':
+                return gzip.decompress(body).decode('utf-8') #TODO: this won't only be utf-8
+            case default:
+                err = "Unknown content-encoding in response header: " + method
+                raise ValueError(err)
+
+    def handleTransferEncoding(self, headers, response):
+        body = b''
+        if "chunked" in headers['transfer-encoding']: #pretty much the only thing worth checking
+            logger.info("Reading in chunked body")
+            while True:
+                line = response.readline()
+                count = int(line.decode("utf-8"), 16) #this tripped me up, the value is in HEXADECIMAL!!!
+                if count == 0:
+                    break
+                
+                next = response.read(count)
+                if "gzip" in headers['transfer-encoding']:
+                   body += self.decodeBody(next, "gzip")
+                else: body += next
+                empty = response.readline() #consume empty newline boi
+            
+        else: raise ValueError("Unknown transfer-encoding")
+
+        return body
 
 
 def lex(body, viewSource):
@@ -247,14 +285,10 @@ def load(url):
         body = u.request()
     else: body = u.request(url)
     print(lex(body, u.viewSource))
-    if url == "":
-        body = u.request()
-    else: body = u.request(url)
-    print(lex(body, u.viewSource))
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    if len(sys.argv) < 1:
+    if len(sys.argv) < 2:
         load("")
     else: load(sys.argv[1])
     
