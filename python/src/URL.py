@@ -15,23 +15,22 @@ class URL:
     There will be a different class responsible for parsing the html into a syntax
     tree I suppose, so that will be the thing that needs to take notice."""
     DEFAULT_PAGE = 'https://timhill.co.za'
+    HTTP_VERSION = 'HTTP/1.1'
     
-    def __init__(self, url = DEFAULT_PAGE):
+    def __init__(self):
         #All class variables
         self.viewSource = False 
         self.scheme = ""
         self.port = 0
         self.host = ""
         self.path = ""
-        self.requestHeaders = []
+        self.requestHeaders = [
+            ["Connection", "Close"],
+            ["User-Agent","Meow-Meow-Browser24"]
+        ]
         self.cache = None
+        self.connections = {}
         ##---------------------
-
-        if not self.validateURL(url):
-            raise ValueError("Input URL is not of a valid format")        
-
-        self.scheme, url = self.extractScheme(url)
-        self.path = url 
 
         #if we really wanted to make this extensible, we would have a strategy pattern or something similar
         #to make it easier to support new schemes. I don't feel like overengineering this though:
@@ -75,8 +74,16 @@ class URL:
 
 
 
-    #Makes an HTTP/HTTPS connection to the host and fetches data
-    def request(self):
+    #Makes a request based on the input URL. Make this the entry function and move shit from
+    #constructor. Implement destructor
+    def request(self, url = DEFAULT_PAGE):
+
+        if not self.validateURL(url):
+            raise ValueError("Input URL is not of a valid format")        
+
+        self.scheme, url = self.extractScheme(url)
+        self.path = url 
+
         match self.scheme:
             case "file":
                 return self.fileRequest()
@@ -189,10 +196,10 @@ def lex(body, viewSource):
     return text
         
 def load(url):
-    body = url.request()
-    print(lex(body, url.viewSource))
+    u = URL()
+    body = u.request(url)
+    print(lex(body, u.viewSource))
 
 if __name__ == "__main__":
-    url = URL(sys.argv[1])
-    load(url)
+    load(sys.argv[1])
     
