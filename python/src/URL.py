@@ -4,6 +4,8 @@ import ssl
 import re
 from urllib.parse import unquote
 import base64
+import logging
+logger = logging.getLogger(__name__)
 
 DATA_REGEX = '^data:(.*)(;base64)?,(.*)$'
 FILE_REGEX = '^file://((\/[\da-zA-Z\s\-_\.]+)+)|([A-Za-z0-9]:(\\\\[a-za-zA-Z\d\s\-_\.]+)+)$'
@@ -17,6 +19,7 @@ class URL:
     DEFAULT_PAGE = 'https://timhill.co.za'
     HTTP_VERSION = 'HTTP/1.1'
     
+    #To make more extensible, we can take in options here EG: options related to headers n shit. 
     def __init__(self):
         #All class variables
         self.viewSource = False 
@@ -25,7 +28,7 @@ class URL:
         self.host = ""
         self.path = ""
         self.requestHeaders = [
-            ["Connection", "Close"],
+            ["Connection", "Keep-alive"],
             ["User-Agent","Meow-Meow-Browser24"]
         ]
         self.cache = None
@@ -35,6 +38,11 @@ class URL:
         #if we really wanted to make this extensible, we would have a strategy pattern or something similar
         #to make it easier to support new schemes. I don't feel like overengineering this though:
         #I know exactly what I am supporting and the list is short
+    
+    def __del__(self):
+        #clean up active connections my son. 
+        for key, val in self.connections.items():
+            val.close()
     
     #Validates whether or not the input url is valid.
     def validateURL(self, url):
@@ -123,9 +131,11 @@ class URL:
 
         return ""
 
+    #eventually need to handle post requests. But that is a problem for later.
     def httpRequest(self):
 
         #TODO: setup caching 
+        
         if "/" not in self.path:
             self.path = self.path + "/"
         self.host, self.path = self.path.split("/", 1)
@@ -139,20 +149,15 @@ class URL:
         if ":" in self.host:
             self.host, port = self.host.split(":", 1)
             self.port = int(port)
+        
+        s = self.getSocket()
 
-        s = socket.socket(
-            family=socket.AF_INET,
-            type=socket.SOCK_STREAM,
-            proto=socket.IPPROTO_TCP,
-        )
-        s.connect((self.host, self.port))
-        if self.scheme == "https":
-            ctx = ssl.create_default_context() #default good enough for most use cases
-            s = ctx.wrap_socket(s, server_hostname=self.host)
-
-        request = "GET {} HTTP/1.0\r\n".format(self.path)
+        request = "GET {} {}\r\n".format(self.path, URL.HTTP_VERSION)
         request += "Host: {}\r\n".format(self.host)
+        for headerPair in self.requestHeaders:
+            request += headerPair[0] + ": " + headerPair[1] + "\r\n"
         request += "\r\n"
+        logger.info(request)
         s.send(request.encode("utf8")) #hardcoding utf 8 here technically isn't an issue
         #TODO: send headers related to encodings so we can get gzipped/either compressions and handle them
         #to test different encodings, can use https://en.wikipedia.org/wiki/Tiger_I for gzip encoding (make sure to enable it in request headers)
@@ -173,9 +178,50 @@ class URL:
         assert "transfer-encoding" not in response_headers #Remove/change once we send header for accepted encodings
         assert "content-encoding" not in response_headers #Or is it this one, I am not too sure. Either way, do it son
 
-        content = response.read()
-        s.close()
+        if "content-length" in response_headers:
+            content = response.read(int(response_headers["content-length"]))
+        else: content = response.read()
+
         return content
+    
+    def getSocket(self) -> socket.socket:
+        key = "{}://{}".format(self.scheme, self.host)
+        logger.info("Getting socket for {}".format(key))
+        if key in self.connections:
+            if not self.isSocketClosed(self.connections[key]):
+                logging.info("Socket exists and is open, reusing")
+                return self.connections[key]
+            else: logger.info("Socket exists but is closed, recreating")
+        else: logger.info("No socket exists for host yet, creating")
+   
+        s = socket.socket(
+            family=socket.AF_INET,
+            type=socket.SOCK_STREAM,
+            proto=socket.IPPROTO_TCP,
+        )
+        s.connect((self.host, self.port))
+        if self.scheme == "https":
+            ctx = ssl.create_default_context() #default good enough for most use cases
+            s = ctx.wrap_socket(s, server_hostname=self.host)
+        
+        self.connections[key] = s 
+        return s
+
+    #https://stackoverflow.com/questions/48024720/python-how-to-check-if-socket-is-still-connected
+    def isSocketClosed(self, sock: socket.socket) -> bool:
+        try:
+            # this will try to read bytes without blocking and also without removing them from buffer (peek only)
+            data = sock.recv(16, socket.MSG_DONTWAIT | socket.MSG_PEEK)
+            if len(data) == 0:
+                return True
+        except BlockingIOError:
+            return False  # socket is open and reading from it would block
+        except ConnectionResetError:
+            return True  # socket was closed for some other reason
+        except Exception as e:
+            logger.exception("unexpected exception when checking if a socket is closed")
+            return False
+        return False
 
 
 def lex(body, viewSource):
@@ -197,9 +243,18 @@ def lex(body, viewSource):
         
 def load(url):
     u = URL()
-    body = u.request(url)
+    if url == "":
+        body = u.request()
+    else: body = u.request(url)
+    print(lex(body, u.viewSource))
+    if url == "":
+        body = u.request()
+    else: body = u.request(url)
     print(lex(body, u.viewSource))
 
 if __name__ == "__main__":
-    load(sys.argv[1])
+    logging.basicConfig(level=logging.INFO)
+    if len(sys.argv) < 1:
+        load("")
+    else: load(sys.argv[1])
     
