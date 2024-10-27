@@ -3,8 +3,8 @@ import sys
 import ssl
 import re
 from urllib.parse import unquote
-import base64
 import gzip
+from http import HTTPStatus
 import logging
 logger = logging.getLogger(__name__)
 
@@ -19,6 +19,7 @@ class URL:
     tree I suppose, so that will be the thing that needs to take notice."""
     DEFAULT_PAGE = 'https://timhill.co.za'
     HTTP_VERSION = 'HTTP/1.1'
+    MAX_REDIRECTS = 7
     
     #To make more extensible, we can take in options here EG: options related to headers n shit. 
     def __init__(self):
@@ -26,6 +27,7 @@ class URL:
         self.viewSource = False 
         self.scheme = ""
         self.port = 0
+        self.redirectCount = 0
         self.host = ""
         self.path = ""
         self.requestHeaders = [
@@ -86,12 +88,13 @@ class URL:
 
     #Makes a request based on the input URL. Make this the entry function and move shit from
     #constructor. Implement destructor
-    def request(self, url = DEFAULT_PAGE):
+    def request(self, url = DEFAULT_PAGE, reset = True):
 
         if not self.validateURL(url):
             raise ValueError("Input URL is not of a valid format")        
 
-        self.viewSource = False #so we don't accidentally keep from previous request
+        if reset:
+            self.resetBetweenRequest()
         self.scheme, url = self.extractScheme(url)
         self.path = url 
 
@@ -105,6 +108,10 @@ class URL:
             case "data":
                 return self.dataRequest()
     
+    def resetBetweenRequest(self):
+        self.viewSource = False 
+        self.redirectCount = 0
+
     #Doesn't handle the OSError, that can be handled by lower down (or maybe we will figure it out
     #eventually
     def fileRequest(self):
@@ -177,8 +184,25 @@ class URL:
             if line == "\r\n": break
             header, value = line.split(":", 1)
             response_headers[header.casefold()] = value.strip()
-
+        logger.info("STATUS: ", status)
         logger.info(response_headers)
+
+        if str(HTTPStatus.MOVED_PERMANENTLY.value) in status:
+            if self.redirectCount == URL.MAX_REDIRECTS:
+                return "<html><body>Maximum redirect limit reached</body></html>"
+            newLoc = response_headers["location"]
+            logger.info("Redirecting to {}".format(newLoc))
+            self.redirectCount += 1
+
+            try: #need to check if absolute or relative path provided
+                self.extractScheme(newLoc)
+                return self.request(response_headers["location"], False)
+            except ValueError:
+                return self.request("{}://{}{}".format(self.scheme,self.host,newLoc), False)
+
+            
+            
+
         if "transfer-encoding" in response_headers:
             content = self.handleTransferEncoding(response_headers, response)
         elif "content-length" in response_headers:
@@ -187,6 +211,7 @@ class URL:
 
         if "content-encoding" in response_headers:
             content = self.decodeBody(content, response_headers["content-encoding"])
+        else: content = content.decode("utf-8")
 
         return content
     
