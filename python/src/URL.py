@@ -5,8 +5,41 @@ import re
 from urllib.parse import unquote
 import gzip
 from http import HTTPStatus
+import time
 import logging
 logger = logging.getLogger(__name__)
+
+class URLCache:
+
+    LIMIT = 1
+    def __init__(self):
+        self.order = []
+        self.mapping = {}
+    
+    def put(self, key, val, maxAge):
+        logger.info("Caching response for host %s for %d seconds", key, maxAge)
+        if(len(self.order) == URLCache.LIMIT):
+            logger.info("Cache full, evicting LRU %s", self.order[URLCache.LIMIT-1])
+            del self.mapping[self.order[URLCache.LIMIT-1]]
+            self.order.pop()
+        expiry = time.time() + maxAge
+        self.order.insert(0, key)
+        self.mapping[key] = {"expiry": expiry, "content": val}
+    
+    def get(self, key):
+        
+        if key in self.mapping:
+            currTime = time.time()
+            if currTime >= self.mapping[key]["expiry"]:
+                logger.info("%s has value in cache but has expired", key)
+                del self.mapping[key]
+                self.order.remove(key)
+            else: return self.mapping[key]["content"]
+
+        #check if time elapsed
+        logger.info("Cache miss for %s", key)
+        raise ValueError("Cache Miss")
+    
 
 DATA_REGEX = '^data:(.*)(;base64)?,(.*)$'
 FILE_REGEX = '^file://((\/[\da-zA-Z\s\-_\.]+)+)|([A-Za-z0-9]:(\\\\[a-za-zA-Z\d\s\-_\.]+)+)$'
@@ -37,6 +70,7 @@ class URL:
         ]
         self.cache = None
         self.connections = {}
+        self.cache = URLCache()
         ##---------------------
 
         #if we really wanted to make this extensible, we would have a strategy pattern or something similar
@@ -83,7 +117,6 @@ class URL:
             return self.extractScheme(url)
         else: 
             raise ValueError(err)
-
 
 
     #Makes a request based on the input URL. Make this the entry function and move shit from
@@ -144,12 +177,17 @@ class URL:
     #eventually need to handle post requests. But that is a problem for later.
     def httpRequest(self):
 
-        #TODO: setup caching 
-        
         if "/" not in self.path:
             self.path = self.path + "/"
         self.host, self.path = self.path.split("/", 1)
         self.path = "/" + self.path
+
+        try:
+            content = self.cache.get(self.scheme + "://" + self.host + self.path)
+            logger.info("Returning content from cache")
+            return content
+        except ValueError:
+            pass
         
         if self.scheme == "http":
             self.port = 80
@@ -162,7 +200,7 @@ class URL:
         
         s = self.getSocket()
 
-        request = "GET {} {}\r\n".format(self.path, URL.HTTP_VERSION)
+        request = "GET {} {}\r\n".format(self.path, URL.HTTP_VERSION) #may need to change eventually if we do POST requests. 
         request += "Host: {}\r\n".format(self.host)
         for headerPair in self.requestHeaders:
             request += headerPair[0] + ": " + headerPair[1] + "\r\n"
@@ -184,25 +222,13 @@ class URL:
             if line == "\r\n": break
             header, value = line.split(":", 1)
             response_headers[header.casefold()] = value.strip()
-        logger.info("STATUS: ", status)
-        logger.info(response_headers)
+            
+        logger.info("STATUS: %s",status)
+        logger.debug(response_headers)
 
         if str(HTTPStatus.MOVED_PERMANENTLY.value) in status:
-            if self.redirectCount == URL.MAX_REDIRECTS:
-                return "<html><body>Maximum redirect limit reached</body></html>"
-            newLoc = response_headers["location"]
-            logger.info("Redirecting to {}".format(newLoc))
-            self.redirectCount += 1
-
-            try: #need to check if absolute or relative path provided
-                self.extractScheme(newLoc)
-                return self.request(response_headers["location"], False)
-            except ValueError:
-                return self.request("{}://{}{}".format(self.scheme,self.host,newLoc), False)
-
+            return self.handleRedirect(response_headers)
             
-            
-
         if "transfer-encoding" in response_headers:
             content = self.handleTransferEncoding(response_headers, response)
         elif "content-length" in response_headers:
@@ -213,7 +239,36 @@ class URL:
             content = self.decodeBody(content, response_headers["content-encoding"])
         else: content = content.decode("utf-8")
 
+        if 'cache-control' in response_headers:
+            self.cacheResponse(content, response_headers)
+
         return content
+    
+    def cacheResponse(self, content, response_headers):
+            directives = response_headers['cache-control'].split(", ")
+            #https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control technically we can cache if no-cache 
+            #is set but that complicates things so let's just make things simple. 
+            noCache = [s for s in directives if 'no-cache' in s or 'no-store' in s]
+            logger.debug(directives)
+            arr = [s for s in directives if "max-age" in s]
+            if len(arr) != 0 and len(noCache) == 0:
+                maxAge = int(arr[0].split("=")[1])
+                self.cache.put(self.scheme + "://" + self.host + self.path, content, maxAge) #may need to change eventually if we do POST requests
+            #elif 'Expires' #TODO: use 'Expires' header if maxAge is missing
+
+    
+    def handleRedirect(self, response_headers):
+        if self.redirectCount == URL.MAX_REDIRECTS:
+            return "<html><body>Maximum redirect limit reached</body></html>"
+        newLoc = response_headers["location"]
+        logger.info("Redirecting to {}".format(newLoc))
+        self.redirectCount += 1
+
+        try: #need to check if absolute or relative path provided
+            self.extractScheme(newLoc)
+            return self.request(response_headers["location"], False)
+        except ValueError:
+            return self.request("{}://{}{}".format(self.scheme,self.host,newLoc), False)
     
     def getSocket(self) -> socket.socket:
         key = "{}://{}".format(self.scheme, self.host)
@@ -309,7 +364,11 @@ def load(url):
     if url == "":
         body = u.request()
     else: body = u.request(url)
-    print(lex(body, u.viewSource))
+    body = u.request('https://www.google.com')
+    if url == "":
+        body = u.request()
+    else: body = u.request(url)
+    #print(lex(body, u.viewSource))
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
