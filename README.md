@@ -106,6 +106,26 @@ TODO LATER: https://developer.mozilla.org/en-US/docs/Web/URI/Schemes/data
 
 I am not done with all these exercizes yet but I want to read on a little to get a better idea of what will be required later (especially regarding the Data URLs part).
 
+IDEA!!!!
+Make an HTTP Response class/object for use in the cache. We can use this likely 
+(store things like headers n such). Is this overkill for this project? At this stage yes but for later maybe not
+
+Good urls to test exercize 1:
+- https://timhill.co.za
+- https://pornhub.com (transfer-encoding chunked)
+- https://wikipedia.org (content-encoding gzip)
+- https://httpwg.org/specs/rfc9111.html#field.expires (this page contains the Expires header to test caching)
+
+I am having some problems with transfer-encoding chunked. I can get the length of the first chunk, but when 
+I read in that length next, I don't get the full chunk. REEEEEEE!!!!
+
+https://raindev.io/blog/http-content-and-transfer-encoding/
+
+"Both headers could be used together, in such a case the body is first compressed with the algorithm specified by Content-Encoding and then split into chunks." 
+I think I now see my initial mistake.
+
+For caching, [this](https://httpwg.org/specs/rfc9111.html#calculating.freshness.lifetime) is rather useful.
+
 # Chapter 2
 
 NBNBNB: sudo apt-get install python3-tk  was needed to install tkinter (not provided by pip)
