@@ -9,19 +9,20 @@ class TestURL(unittest.TestCase):
         #- one for each scheme at least
         #- include ports
         #- are we making this case sensitive??? 
-        url = URL("http://google.com")
+        url = URL()
         self.assertEqual(url.extractScheme("http://google.com"),("http","google.com"))
         with self.assertRaises(ValueError):
             url.extractScheme("view-source:view-source:http://google.com")
 
     
     def test_validateURL(self):
-        url = URL("http://google.com")
+        url = URL()
         #some URLS
         self.assertTrue(url.validateURL('http://google.com'))
         self.assertTrue(url.validateURL('https://google.eu/a/asd'))
         self.assertTrue(url.validateURL('https://meow.google.eu/a/asd?mrmeow=meow'))
         self.assertTrue(url.validateURL('http://localhost:3000/'))
+        self.assertTrue(url.validateURL('https://browser.engineering/examples/xiyouji.html'))
         
         #view-source
         self.assertTrue(url.validateURL('view-source:http://localhost:3000/'))
