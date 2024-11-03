@@ -4,7 +4,7 @@ import sys
 import logging
 logger = logging.getLogger(__name__)
 
-WIDTH, HEIGHT = 800, 600
+INIT_WIDTH, INIT_HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
 NEWLINE_STEP_FACTOR = 1.2
 SCROLL_STEP = 100
@@ -15,14 +15,17 @@ class Browser:
         self.window = tkinter.Tk()
         self.canvas = tkinter.Canvas(
             self.window, 
-            width=WIDTH,
-            height=HEIGHT
+            width=INIT_WIDTH,
+            height=INIT_HEIGHT
         )
-        self.canvas.pack()
+        self.canvas.pack(fill="both", expand=1)
         self.urlHandler = URL()
         self.display_list = []
         self.scroll = 0
-        self.doc_height = HEIGHT #keeps track of the height of the document
+        self.window_height = INIT_HEIGHT
+        self.window_width = INIT_WIDTH
+        self.doc_height = self.window_height #keeps track of the height of the document
+        self.content = ""
 
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
@@ -30,26 +33,27 @@ class Browser:
         self.window.bind("<MouseWheel>", self.mouseWheelScroll)
         self.window.bind("<Button-4>", self.linuxWheelScroll)
         self.window.bind("<Button-5>", self.linuxWheelScroll)
+        self.window.bind("<Configure>", self.resize)
         #--------------------------------------
 
     def load(self, url):
-        body = self.urlHandler.request(url)
-        text = lex(body, self.urlHandler.viewSource)
-        self.display_list, self.doc_height = layout(text)
+        self.content = self.urlHandler.request(url)
+        text = lex(self.content, self.urlHandler.viewSource)
+        self.display_list, self.doc_height = layout(text, self.window_width)
         logger.info(self.doc_height)
         self.draw()
 
     def draw(self):
         self.canvas.delete("all")
         for x, y, c in self.display_list:
-            if y > self.scroll + HEIGHT: continue
+            if y > self.scroll + self.window_height: continue
             if y + VSTEP < self.scroll: continue
             self.canvas.create_text(x, y- self.scroll, text=c)
 
     #TODO: make sure we don't go beyond content
     def scrolldown(self, e):
         logger.debug("Scrolling down")
-        self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - HEIGHT)
+        self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - self.window_height)
         self.draw()
     
     def scrollup(self, e):
@@ -67,9 +71,20 @@ class Browser:
             self.scrolldown(e)
         elif e.num == 4: #scroll up
             self.scrollup(e)
+
+    #TODO: keep percentage of scrolldown consistent so the user still sees same content
+    def resize(self, e):
+        logger.info("Resize event")
+        self.window_height = e.height
+        self.window_width = e.width
+        self.scroll = 0
+        text = lex(self.content, self.urlHandler.viewSource)
+        self.display_list, self.doc_height = layout(text, self.window_width)
+        self.draw()
+
         
 
-def layout(text):
+def layout(text, width):
     display_list = []    
     cursor_x, cursor_y = HSTEP, VSTEP
    
@@ -80,7 +95,7 @@ def layout(text):
             continue
         display_list.append((cursor_x, cursor_y, c))
         cursor_x += HSTEP
-        if cursor_x >= WIDTH - HSTEP:
+        if cursor_x >= width - HSTEP:
             cursor_y += VSTEP
             cursor_x = HSTEP
 
