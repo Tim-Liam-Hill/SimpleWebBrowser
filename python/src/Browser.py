@@ -1,6 +1,7 @@
 import tkinter
 from URL import URL, lex
 import sys
+import math
 import logging
 logger = logging.getLogger(__name__)
 
@@ -72,12 +73,11 @@ class Browser:
         elif e.num == 4: #scroll up
             self.scrollup(e)
 
-    #TODO: keep percentage of scrolldown consistent so the user still sees same content
     def resize(self, e):
         logger.info("Resize event")
         self.window_height = e.height
         self.window_width = e.width
-        self.scroll = 0
+        self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - self.window_height)
         text = lex(self.content, self.urlHandler.viewSource)
         self.display_list, self.doc_height = layout(text, self.window_width)
         self.draw()
