@@ -9,6 +9,11 @@ INIT_WIDTH, INIT_HEIGHT = 800, 600
 HSTEP, VSTEP = 13, 18
 NEWLINE_STEP_FACTOR = 1.2
 SCROLL_STEP = 100
+SCROLLBAR_WIDTH = 24
+INNER_SCROLLBAR_WIDTH = 18
+INNER_SCROLLBAR_HEIGHT = 40
+SCROLLBAR_COLOR = 'deep sky blue'
+INNER_SCROLLBAR_COLOR = 'sky blue'
 
 class Browser:
     def __init__(self):
@@ -23,9 +28,9 @@ class Browser:
         self.urlHandler = URL()
         self.display_list = []
         self.scroll = 0
-        self.window_height = INIT_HEIGHT
+        self.window_height = INIT_HEIGHT #height of rendered window
         self.window_width = INIT_WIDTH
-        self.doc_height = self.window_height #keeps track of the height of the document
+        self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
         self.content = ""
 
         #event handlers
@@ -40,16 +45,28 @@ class Browser:
     def load(self, url):
         self.content = self.urlHandler.request(url)
         text = lex(self.content, self.urlHandler.viewSource)
-        self.display_list, self.doc_height = layout(text, self.window_width)
-        logger.info(self.doc_height)
+        self.display_list, self.doc_height = layout(text, self.window_width - SCROLLBAR_WIDTH)
         self.draw()
 
     def draw(self):
         self.canvas.delete("all")
+        
         for x, y, c in self.display_list:
             if y > self.scroll + self.window_height: continue
             if y + VSTEP < self.scroll: continue
             self.canvas.create_text(x, y- self.scroll, text=c)
+
+        #scrollbar
+        if self.doc_height > self.window_height:
+            self.canvas.create_rectangle(self.window_width - SCROLLBAR_WIDTH,  0, self.window_width, self.window_height, fill=SCROLLBAR_COLOR)
+            #start y can go to maximum of self.window_height - INNER_SCROLL_HEIGHT
+            start_y = min((self.scroll/(self.doc_height - self.window_height-INNER_SCROLLBAR_HEIGHT)) * self.window_height, self.window_height)
+            logger.info("window height: %d", self.window_height)
+            logger.info("doc height: %d", self.doc_height)
+            logger.info("scroll: %d", self.scroll)
+            logger.info("start_y: %d", start_y)
+            self.canvas.create_rectangle(self.window_width -  INNER_SCROLLBAR_WIDTH - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH)/2,  start_y, self.window_width - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH), start_y + INNER_SCROLLBAR_HEIGHT, fill=INNER_SCROLLBAR_COLOR)
+
 
     #TODO: make sure we don't go beyond content
     def scrolldown(self, e):
@@ -64,7 +81,6 @@ class Browser:
     
     def mouseWheelScroll(self, e):
         #TODO: implement for Windows and Mac since they have differences
-        print(e)
         logger.info(e)
     
     def linuxWheelScroll(self, e):
@@ -74,7 +90,7 @@ class Browser:
             self.scrollup(e)
 
     def resize(self, e):
-        logger.info("Resize event")
+        logger.info("Configure Event")
         self.window_height = e.height
         self.window_width = e.width
         self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - self.window_height)
