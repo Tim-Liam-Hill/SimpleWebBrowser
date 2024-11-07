@@ -1,4 +1,5 @@
 import tkinter
+import tkinter.font
 from URL import URL, lex
 import sys
 import math
@@ -14,6 +15,7 @@ INNER_SCROLLBAR_WIDTH = 18
 INNER_SCROLLBAR_HEIGHT = 40
 SCROLLBAR_COLOR = 'deep sky blue'
 INNER_SCROLLBAR_COLOR = 'sky blue'
+LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
 
 class Browser:
     def __init__(self):
@@ -49,22 +51,27 @@ class Browser:
         self.draw()
 
     def draw(self):
+        # font1 = tkinter.font.Font(family="Times", size=16)
+        # font2 = tkinter.font.Font(family="Times", size=16, slant='italic')
+        # x, y = 200, 225
+        # self.canvas.create_text(x, y, text="Hello, ", font=font1, anchor='nw')
+        # x += font1.measure("Hello, ")
+        # self.canvas.create_text(x, y, text="overlapping!", font=font2, anchor='nw')
+
         self.canvas.delete("all")
         
         for x, y, c in self.display_list:
             if y > self.scroll + self.window_height: continue
             if y + VSTEP < self.scroll: continue
-            self.canvas.create_text(x, y- self.scroll, text=c)
+            self.canvas.create_text(x, y- self.scroll, text=c, anchor='nw')
 
         #scrollbar
         if self.doc_height > self.window_height:
             self.canvas.create_rectangle(self.window_width - SCROLLBAR_WIDTH,  0, self.window_width, self.window_height, fill=SCROLLBAR_COLOR)
             #start y can go to maximum of self.window_height - INNER_SCROLL_HEIGHT
-            start_y = min((self.scroll/(self.doc_height - self.window_height-INNER_SCROLLBAR_HEIGHT)) * self.window_height, self.window_height)
-            logger.info("window height: %d", self.window_height)
-            logger.info("doc height: %d", self.doc_height)
-            logger.info("scroll: %d", self.scroll)
-            logger.info("start_y: %d", start_y)
+            proportionScrolled = (self.scroll )/(self.doc_height- self.window_height)
+            
+            start_y = min( proportionScrolled * (self.window_height-INNER_SCROLLBAR_HEIGHT), self.window_height-INNER_SCROLLBAR_HEIGHT)
             self.canvas.create_rectangle(self.window_width -  INNER_SCROLLBAR_WIDTH - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH)/2,  start_y, self.window_width - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH), start_y + INNER_SCROLLBAR_HEIGHT, fill=INNER_SCROLLBAR_COLOR)
 
 
@@ -93,31 +100,41 @@ class Browser:
         logger.info("Configure Event")
         self.window_height = e.height
         self.window_width = e.width
-        self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - self.window_height)
+        self.scroll = min(self.scroll, self.doc_height - self.window_height)
         text = lex(self.content, self.urlHandler.viewSource)
         self.display_list, self.doc_height = layout(text, self.window_width)
         self.draw()
 
-        
-
 def layout(text, width):
+    font = tkinter.font.Font() #TODO: support passed in fonts (somehow, once we move away from tkinter)
     display_list = []    
     cursor_x, cursor_y = HSTEP, VSTEP
-   
-    for c in text:
-        if c == '\n':
-            cursor_y += NEWLINE_STEP_FACTOR * VSTEP
+    #TODO: pre formatted code (after html parser I guess?)
+    for word in text.split(): #TODO: if a word is longer than the full window length we will have a weird empty line
+        width = font.measure(word)
+        if cursor_x + width >= width - HSTEP:
+            cursor_y += font.metrics("linespace") * 1.25
             cursor_x = HSTEP
-            continue
-        display_list.append((cursor_x, cursor_y, c))
-        cursor_x += HSTEP
-        if cursor_x >= width - HSTEP:
-            cursor_y += VSTEP
-            cursor_x = HSTEP
+        display_list.append((cursor_x, cursor_y, word))
+        cursor_x += width + font.measure(" ")
+
+
+    # for c in text:
+    #     if c == '\n':
+    #         cursor_y += NEWLINE_STEP_FACTOR * VSTEP
+    #         cursor_x = HSTEP
+    #         continue
+    #     display_list.append((cursor_x, cursor_y, c))
+    #     cursor_x += HSTEP
+    #     if cursor_x >= width - HSTEP:
+    #         cursor_y += VSTEP
+    #         cursor_x = HSTEP
 
     return display_list, cursor_y
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    Browser().load(sys.argv[1])
+    b = Browser()
+    b.load(sys.argv[1])
     tkinter.mainloop()
+    
