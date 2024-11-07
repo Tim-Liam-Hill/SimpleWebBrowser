@@ -58,6 +58,10 @@ class Browser:
         # x += font1.measure("Hello, ")
         # self.canvas.create_text(x, y, text="overlapping!", font=font2, anchor='nw')
 
+        logger.info("Scroll %d: ", self.scroll)
+        logger.info("Window Height %d: ", self.window_height)
+        logger.info("Document Height: %d", self.doc_height)
+
         self.canvas.delete("all")
         
         for x, y, c in self.display_list:
@@ -78,7 +82,9 @@ class Browser:
     #TODO: make sure we don't go beyond content
     def scrolldown(self, e):
         logger.debug("Scrolling down")
-        self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - self.window_height)
+        if self.doc_height > self.window_height:
+            self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - self.window_height)
+        else: self.scroll = 0
         self.draw()
     
     def scrollup(self, e):
@@ -100,7 +106,9 @@ class Browser:
         logger.info("Configure Event")
         self.window_height = e.height
         self.window_width = e.width
-        self.scroll = min(self.scroll, self.doc_height - self.window_height)
+        if self.doc_height > self.window_height:
+            self.scroll = min(self.scroll, self.doc_height - self.window_height)
+        else: self.scroll = 0
         text = lex(self.content, self.urlHandler.viewSource)
         self.display_list, self.doc_height = layout(text, self.window_width)
         self.draw()
@@ -111,12 +119,12 @@ def layout(text, width):
     cursor_x, cursor_y = HSTEP, VSTEP
     #TODO: pre formatted code (after html parser I guess?)
     for word in text.split(): #TODO: if a word is longer than the full window length we will have a weird empty line
-        width = font.measure(word)
-        if cursor_x + width >= width - HSTEP:
+        w = font.measure(word)
+        if cursor_x + w >= width - HSTEP:
             cursor_y += font.metrics("linespace") * 1.25
             cursor_x = HSTEP
         display_list.append((cursor_x, cursor_y, word))
-        cursor_x += width + font.measure(" ")
+        cursor_x += w + font.measure(" ")
 
 
     # for c in text:
