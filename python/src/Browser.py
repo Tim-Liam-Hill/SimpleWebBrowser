@@ -15,8 +15,6 @@ INNER_SCROLLBAR_WIDTH = 18
 INNER_SCROLLBAR_HEIGHT = 40
 SCROLLBAR_COLOR = 'deep sky blue'
 INNER_SCROLLBAR_COLOR = 'sky blue'
-LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
-
 
 class Browser:
     def __init__(self):
@@ -120,7 +118,7 @@ if __name__ == "__main__":
     b = Browser()
 
     if(len(sys.argv) != 2):
-        b.load("file:///home/tim/Documents/Projects/SimpleBrowser/SimpleWebBrowser/python/src/static-html/what-is-a-font.html")
+        b.load("file:///home/tim/Documents/Projects/SimpleBrowser/SimpleWebBrowser/python/src/static-html/chpt3-test.html")
     else: b.load(sys.argv[1])
     tkinter.mainloop()
     

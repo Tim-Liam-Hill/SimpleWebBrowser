@@ -369,11 +369,11 @@ class Tag:
             
 #     return text
 
+#TODO: add support for &lt; and &gt;
 def lex(body, viewSource):
 
     if viewSource:
             return [Text(body)] #TODO: test that viewsource still works. 
-
 
     out = []
     buffer = ""
