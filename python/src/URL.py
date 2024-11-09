@@ -6,6 +6,7 @@ from urllib.parse import unquote
 import gzip
 from http import HTTPStatus
 import time
+from dataclasses import dataclass
 import logging
 logger = logging.getLogger(__name__)
 
@@ -341,23 +342,56 @@ class URL:
 
         return body
 
+@dataclass
+class Text:
+    def __init__(self, text):
+        self.text = text
+
+@dataclass
+class Tag:
+    def __init__(self, tag):
+        self.tag = tag
+
+# def lex(body, viewSource):
+
+#     if viewSource:
+#         return body
+
+#     in_tag = False
+#     text = ""
+#     for c in body:
+#         if c == "<":
+#             in_tag = True
+#         elif c == ">":
+#             in_tag = False
+#         elif not in_tag:
+#             text += c
+            
+#     return text
 
 def lex(body, viewSource):
 
     if viewSource:
-        return body
+            return [Text(body)] #TODO: test that viewsource still works. 
 
+
+    out = []
+    buffer = ""
     in_tag = False
-    text = ""
     for c in body:
         if c == "<":
             in_tag = True
+            if buffer: out.append(Text(buffer))
+            buffer = ""
         elif c == ">":
             in_tag = False
-        elif not in_tag:
-            text += c
-            
-    return text
+            out.append(Tag(buffer))
+            buffer = ""
+        else:
+            buffer += c
+    if not in_tag and buffer:
+        out.append(Text(buffer))
+    return out
         
 def load(url):
     u = URL()

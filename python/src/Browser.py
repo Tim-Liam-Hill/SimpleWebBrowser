@@ -1,13 +1,13 @@
 import tkinter
 import tkinter.font
-from URL import URL, lex
+from Layout import Layout, HSTEP, VSTEP
+from URL import URL, Text, lex
 import sys
 import math
 import logging
 logger = logging.getLogger(__name__)
 
 INIT_WIDTH, INIT_HEIGHT = 800, 600
-HSTEP, VSTEP = 13, 18
 NEWLINE_STEP_FACTOR = 1.2
 SCROLL_STEP = 100
 SCROLLBAR_WIDTH = 24
@@ -16,6 +16,7 @@ INNER_SCROLLBAR_HEIGHT = 40
 SCROLLBAR_COLOR = 'deep sky blue'
 INNER_SCROLLBAR_COLOR = 'sky blue'
 LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
+
 
 class Browser:
     def __init__(self):
@@ -34,6 +35,7 @@ class Browser:
         self.window_width = INIT_WIDTH
         self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
         self.content = ""
+        self.tokens = []
 
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
@@ -46,32 +48,27 @@ class Browser:
 
     def load(self, url):
         self.content = self.urlHandler.request(url)
-        text = lex(self.content, self.urlHandler.viewSource)
-        self.display_list, self.doc_height = layout(text, self.window_width - SCROLLBAR_WIDTH)
+        self.tokens = lex(self.content, self.urlHandler.viewSource)
+        layout = Layout(self.tokens, self.widthForContent())
+        self.display_list = layout.display_list
+        self.doc_height = layout.cursor_y
         self.draw()
 
-    def draw(self):
-        # font1 = tkinter.font.Font(family="Times", size=16)
-        # font2 = tkinter.font.Font(family="Times", size=16, slant='italic')
-        # x, y = 200, 225
-        # self.canvas.create_text(x, y, text="Hello, ", font=font1, anchor='nw')
-        # x += font1.measure("Hello, ")
-        # self.canvas.create_text(x, y, text="overlapping!", font=font2, anchor='nw')
+    def widthForContent(self):
+        return self.window_width - SCROLLBAR_WIDTH
 
-        logger.info("Scroll %d: ", self.scroll)
-        logger.info("Window Height %d: ", self.window_height)
-        logger.info("Document Height: %d", self.doc_height)
+    def draw(self):
 
         self.canvas.delete("all")
         
-        for x, y, c in self.display_list:
+        for x, y, word, font in self.display_list:
             if y > self.scroll + self.window_height: continue
             if y + VSTEP < self.scroll: continue
-            self.canvas.create_text(x, y- self.scroll, text=c, anchor='nw')
+            self.canvas.create_text(x, y- self.scroll, text=word, font=font, anchor='nw')
 
         #scrollbar
         if self.doc_height > self.window_height:
-            self.canvas.create_rectangle(self.window_width - SCROLLBAR_WIDTH,  0, self.window_width, self.window_height, fill=SCROLLBAR_COLOR)
+            self.canvas.create_rectangle(self.widthForContent(),  0, self.window_width, self.window_height, fill=SCROLLBAR_COLOR)
             #start y can go to maximum of self.window_height - INNER_SCROLL_HEIGHT
             proportionScrolled = (self.scroll )/(self.doc_height- self.window_height)
             
@@ -109,40 +106,21 @@ class Browser:
         if self.doc_height > self.window_height:
             self.scroll = min(self.scroll, self.doc_height - self.window_height)
         else: self.scroll = 0
-        text = lex(self.content, self.urlHandler.viewSource)
-        self.display_list, self.doc_height = layout(text, self.window_width)
+        #Don't re-lex tokens, there is no change in the dom if we resize!!!! (at least, not at this stage, maybe with advanced CSS there would be)
+        layout = Layout(self.tokens, self.widthForContent())
+        self.display_list = layout.display_list
+        self.doc_height = layout.cursor_y
         self.draw()
 
-def layout(text, width):
-    font = tkinter.font.Font() #TODO: support passed in fonts (somehow, once we move away from tkinter)
-    display_list = []    
-    cursor_x, cursor_y = HSTEP, VSTEP
-    #TODO: pre formatted code (after html parser I guess?)
-    for word in text.split(): #TODO: if a word is longer than the full window length we will have a weird empty line
-        w = font.measure(word)
-        if cursor_x + w >= width - HSTEP:
-            cursor_y += font.metrics("linespace") * 1.25
-            cursor_x = HSTEP
-        display_list.append((cursor_x, cursor_y, word))
-        cursor_x += w + font.measure(" ")
 
 
-    # for c in text:
-    #     if c == '\n':
-    #         cursor_y += NEWLINE_STEP_FACTOR * VSTEP
-    #         cursor_x = HSTEP
-    #         continue
-    #     display_list.append((cursor_x, cursor_y, c))
-    #     cursor_x += HSTEP
-    #     if cursor_x >= width - HSTEP:
-    #         cursor_y += VSTEP
-    #         cursor_x = HSTEP
-
-    return display_list, cursor_y
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     b = Browser()
-    b.load(sys.argv[1])
+
+    if(len(sys.argv) != 2):
+        b.load("file:///home/tim/Documents/Projects/SimpleBrowser/SimpleWebBrowser/python/src/static-html/what-is-a-font.html")
+    else: b.load(sys.argv[1])
     tkinter.mainloop()
     
