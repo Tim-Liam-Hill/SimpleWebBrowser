@@ -1,10 +1,32 @@
 # SimpleWebBrowser
 A simple web browser built with the help of https://browser.engineering/index.html
 
+# GOAL 
+
+Developing a full web-browser capable of handling most modern websites is far beyond my abilities (at present, we will see again 20 years from now). The goal is instead to create a browser as given by the textbook I am following. Once I have that I will aim to have a browser that can browser using [FrogFind](http://frogfind.com/about.php) as its default search engine. 
+With respect to CSS, I will be happy if I can support centered text, background colors and maybe just maybe some flex things (but we will see). 
+
+There is a high chance that I restart this project from scratch at some point since: 
+
+1. The finished example browser [here](https://github.com/browserengineering/book/tree/main/src) doesn't seem as fleshed out as I initially thought it might be, so to better support more features I may need better design patterns
+2. Python is whack and lame, C++ is where it is it
+3. I am a masochist
+
+Some websites to support: 
+* https://motherfuckingwebsite.com/
+* https://dudeism.com/ordination-form/
+* https://serenityos.org/happy/1st/
+* https://endchan.org/ (or rather, some less degenerate imageboard websites)
+* https://physicscourses.colorado.edu/phys3220/3220_fa97/3220_fa97.html
+
 # TODOS
-* Setup a testing framework 
+* Setup a testing framework (done)
+* Moar tests (difficult to do for some classes)
 * setup documentation of classes/methods 
-* Once done, re-write in C++ with better design patterns. 
+* Once done, re-write in C++ with better design patterns. (lol, probably won't)
+* Horizontal scrolling
+* scrolling for different platforms
+* on browser resize, don't reset scroll amount but instead make it proportional to original scroll
 
 # Exercises 1
 
@@ -129,6 +151,23 @@ For caching, [this](https://httpwg.org/specs/rfc9111.html#calculating.freshness.
 # Chapter 2
 
 NBNBNB: sudo apt-get install python3-tk  was needed to install tkinter (not provided by pip)
+
+#  Chapter3 Exercises 
+
+How to do superscript?? I want to avoid including an extra variable in the lines array but I am not sure I can do this without that. Basically I need an offset from the baseline to handle superscript and subscript numbers. 
+
+Honestly, there is almost certainly a design pattern here that would make things easier (maybe state or strategy??). Each tag has its own small changes it makes and it is difficult to classify those all under the same umbrella (that is to say, there are a lot of different variables at play but many tags only deal with a small subset of them). In any case, I may as well just get this done even if it isn't exactly perfect: learn from it and rework it later if I must. 
+
+I guess what we can do is separate tags based on when they take affect:
+
+* Some take affect only during font creation
+* Some take affect only during word extraction/saving
+* Some only take affect during laying out the word on the line
+Maybe some actually take affect during more than one of these but I am yet to see such a tag.
+
+IDEA: everytime we encounter an opening tag, add it to a set of the currently tracked tags. Any 
+time we encounter a closing tag, remove the appropriate tag. Then, whenever an operation would need to take into account a specific tag, make that operation a function that takes in the tags. Bam, 
+science
 
 # QUESTIONS
 
