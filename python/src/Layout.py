@@ -1,12 +1,19 @@
+import sys
 import tkinter
 import tkinter.font
-from URL import Text
+from URL import URL, Text, lex
+import logging
+logger = logging.getLogger(__name__)
 
 DEFAULT_FONT_SIZE = 16 #TODO: dedicated text class 
 HSTEP, VSTEP = 13, 18
 DEFAULT_LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
-
+DEFAULT_FONT_FAMILY = ''
 FONTS = {}
+SELF_CLOSING_TAGS = [
+    "area", "base", "br", "col", "embed", "hr", "img", "input",
+    "link", "meta", "param", "source", "track", "wbr",
+]
 
 #TODO: support more fonts 
 def get_font(size, weight, style):
@@ -29,6 +36,7 @@ class Layout:
         self.weight = "normal"
         self.style = "roman"
         self.leading = DEFAULT_LEADING
+        self.activeTags = []
         
         #TODO: pre formatted code (after html parser I guess?)
         #font = tkinter.font.Font() #TODO: support passed in fonts (somehow, once we move away from tkinter)
@@ -37,10 +45,18 @@ class Layout:
         self.flush()
 
     def token(self,tok, width):
+    
         if isinstance(tok, Text):
             for word in tok.text.split():
                 self.word(word, width)
-        else: self.handleTag(tok.tag)
+        else: 
+            if tok.tag in SELF_CLOSING_TAGS:
+                pass 
+            elif tok.tag[0] == '/':
+                self.activeTags.remove(tok.tag[1:])
+            elif not tok.tag in  self.activeTags:
+                self.activeTags.append(tok.tag)
+            #self.handleTag(tok.tag)
 
     def word(self, word, width):
         font = get_font(self.fontSize, self.weight, self.style)
@@ -48,15 +64,19 @@ class Layout:
         w = font.measure(word)
         if self.cursor_x + w >= width - HSTEP:
             self.flush()
-        self.line.append((self.cursor_x, word, font))
+        self.line.append((self.cursor_x, word, font, list(self.activeTags)))
         self.cursor_x += w + font.measure(" ")
 
     def flush(self):
+        logging.info('Flushing current line')
         if not self.line: return 
-        metrics = [font.metrics() for x, word, font in self.line]
+        metrics = [font.metrics() for x, word, font, tags in self.line]
         max_ascent = max([metric["ascent"] for metric in metrics])
         baseline = self.cursor_y +  self.leading * max_ascent
-        for x, word, font in self.line:
+        for x, word, font, tags in self.line:
+            logging.info("Word: %s", word)
+            logging.debug("Tags: %s", tags)
+            logging.debug("")
             y = baseline - font.metrics("ascent")
             self.display_list.append((x, y, word, font))
         max_descent = max([metric["descent"] for metric in metrics])
@@ -88,4 +108,10 @@ class Layout:
             self.flush()
             self.cursor_y += VSTEP
 
-        
+if __name__ == "__main__": 
+    logging.basicConfig(level=logging.DEBUG)
+    window = tkinter.Tk()
+    url = URL()
+    content = url.request(sys.argv[1])
+    tokens = lex(content, url.viewSource)
+    layout = Layout(tokens, 800)
