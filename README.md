@@ -19,6 +19,10 @@ Some websites to support:
 * https://endchan.org/ (or rather, some less degenerate imageboard websites)
 * https://physicscourses.colorado.edu/phys3220/3220_fa97/3220_fa97.html
 
+# Thoughts
+
+Currently, I am about done with chapter 3 and thinking ahead to CSS and JS implementations. What may be a good idea is to extend my current text 'tags' array concept to css classes. I'll also make sure I have a better lexer for my html
+
 # TODOS
 * Setup a testing framework (done)
 * Moar tests (difficult to do for some classes)
@@ -27,6 +31,7 @@ Some websites to support:
 * Horizontal scrolling
 * scrolling for different platforms
 * on browser resize, don't reset scroll amount but instead make it proportional to original scroll
+* heading tags!!!!! REEEEEEEEEEE (just all the tags in general)
 
 # Exercises 1
 

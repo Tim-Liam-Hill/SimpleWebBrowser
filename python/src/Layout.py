@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_FONT_SIZE = 16 #TODO: dedicated text class 
 HSTEP, VSTEP = 13, 18
 DEFAULT_LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
-DEFAULT_FONT_FAMILY = "Segoe UI"
+DEFAULT_FONT_FAMILY = "Times"
 FONTS = {}
 SELF_CLOSING_TAGS = [
     "area", "base", "br", "col", "embed", "hr", "img", "input",
@@ -38,8 +38,10 @@ class Layout:
         self.style = "roman"
         self.leading = DEFAULT_LEADING
         self.superscript = False
+        self.small_caps = False
         self.family = DEFAULT_FONT_FAMILY
         self.activeTags = []
+        logger.info(tkinter.font.families())
         
         #TODO: pre formatted code (after html parser I guess?)
         #font = tkinter.font.Font() #TODO: support passed in fonts (somehow, once we move away from tkinter)
@@ -63,6 +65,9 @@ class Layout:
 
         font = get_font(self.fontSize, self.weight, self.style, self.family)
 
+        if self.small_caps:
+            word = word.upper()
+
         w = font.measure(word)
         if self.cursor_x + w >= width - HSTEP:
             self.flush()
@@ -70,7 +75,6 @@ class Layout:
         self.cursor_x += w + font.measure(" ")
 
     def flush(self):
-        logging.info('Flushing current line')
         if not self.line: return 
         metrics = [font.metrics() for x, word, font, isSuperscript in self.line]
         max_ascent = max([metric["ascent"] for metric in metrics])
@@ -103,11 +107,19 @@ class Layout:
         elif tag == "sup":
             self.fontSize /=2
             self.superscript = True 
-            #self.family = "Helvetica"
         elif tag == "/sup":
             self.fontSize *=2
             self.superscript = False
-            #self.family = "Segoe UI"
+        elif tag == "abbr":
+            self.small_caps = True 
+            self.family = "Courier"
+            self.fontSize *= 0.75
+            self.weight = "bold"
+        elif tag == "/abbr":
+            self.small_caps = False
+            self.family = DEFAULT_FONT_FAMILY
+            self.fontSize /= 0.75
+            self.weight = "normal"
         elif tag == "br":
             self.flush()
             self.cursor_y += VSTEP
