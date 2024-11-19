@@ -2,8 +2,8 @@ import tkinter
 import tkinter.font
 from Layout import Layout, HSTEP, VSTEP
 from URL import URL, Text, lex
+from HTMLParser import HTMLParser
 import sys
-import math
 import logging
 logger = logging.getLogger(__name__)
 
@@ -32,7 +32,6 @@ class Browser:
         self.window_height = INIT_HEIGHT #height of rendered window
         self.window_width = INIT_WIDTH
         self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
-        self.content = ""
         self.tokens = []
 
         #event handlers
@@ -45,9 +44,10 @@ class Browser:
         #--------------------------------------
 
     def load(self, url):
-        self.content = self.urlHandler.request(url)
-        self.tokens = lex(self.content, self.urlHandler.viewSource)
-        layout = Layout(self.tokens, self.widthForContent())
+        content = self.urlHandler.request(url)
+        #TODO: need a case for view-source!!!!!
+        self.root_node = HTMLParser(content).parse(self.urlHandler.viewSource)
+        layout = Layout(self.root_node, self.widthForContent())
         self.display_list = layout.display_list
         self.doc_height = layout.cursor_y
         self.draw()
@@ -105,7 +105,7 @@ class Browser:
             self.scroll = min(self.scroll, self.doc_height - self.window_height)
         else: self.scroll = 0
         #Don't re-lex tokens, there is no change in the dom if we resize!!!! (at least, not at this stage, maybe with advanced CSS there would be)
-        layout = Layout(self.tokens, self.widthForContent())
+        layout = Layout(self.root_node, self.widthForContent())
         self.display_list = layout.display_list
         self.doc_height = layout.cursor_y
         self.draw()

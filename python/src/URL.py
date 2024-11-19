@@ -352,24 +352,6 @@ class Tag:
     def __init__(self, tag):
         self.tag = tag
 
-# def lex(body, viewSource):
-
-#     if viewSource:
-#         return body
-
-#     in_tag = False
-#     text = ""
-#     for c in body:
-#         if c == "<":
-#             in_tag = True
-#         elif c == ">":
-#             in_tag = False
-#         elif not in_tag:
-#             text += c
-            
-#     return text
-
-#TODO: add support for &lt; and &gt;
 def lex(body, viewSource):
 
     if viewSource:

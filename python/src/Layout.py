@@ -2,6 +2,7 @@ import sys
 import tkinter
 import tkinter.font
 from URL import URL, Text, lex
+from HTMLParser import Text, Element
 import math
 import logging
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ def get_font(size, weight, style, family):
 
 #TODO: test cases. Lol
 class Layout:
-    def __init__(self, tokens, width):
+    def __init__(self, root_node, width): #TODO: annotate what width is here (I think its the effective width layout has to work with)
         self.display_list = []
         self.line = []
         self.cursor_x = HSTEP
@@ -41,27 +42,25 @@ class Layout:
         self.small_caps = False
         self.family = DEFAULT_FONT_FAMILY
         self.activeTags = []
-        logger.info(tkinter.font.families())
+        self.width = width
         
         #TODO: pre formatted code (after html parser I guess?)
         #font = tkinter.font.Font() #TODO: support passed in fonts (somehow, once we move away from tkinter)
-        for tok in tokens:
-            self.token(tok, width)
+        self.recurse(root_node)
         self.flush()
-
-    def token(self,tok, width):
     
-        if isinstance(tok, Text):
-            for word in tok.text.split():
-                self.word(word, width)
-        else: 
-            #TODO: this will need a big rework once dom is implemented. 
-            #I want to have some sort of decorator pattern where we 
-            #Setup defaults and then have decorators that edit the defaults
-            #as we go down. 
-            self.handleTag(tok.tag)
+    def recurse(self, node): 
+        logging.debug(node)
+        if isinstance(node, Text):
+            for word in node.text.split():
+                self.word(word)
+        else:
+            self.handleOpenTag(node.tag)
+            for child in node.children:
+                self.recurse(child)
+            self.handleCloseTag(node.tag)
 
-    def word(self, word, width):
+    def word(self, word):
 
         font = get_font(self.fontSize, self.weight, self.style, self.family)
 
@@ -69,7 +68,7 @@ class Layout:
             word = word.upper()
 
         w = font.measure(word)
-        if self.cursor_x + w >= width - HSTEP:
+        if self.cursor_x + w >= self.width - HSTEP:
             self.flush()
         self.line.append((self.cursor_x, word, font, self.superscript))
         self.cursor_x += w + font.measure(" ")
@@ -87,43 +86,45 @@ class Layout:
         self.cursor_x = HSTEP
         self.line = []
 
-    def handleTag(self,tag):
+    def handleOpenTag(self, tag):
         if tag == "i":
             self.style = "italic"
-        elif tag == "/i":
-            self.style = "roman"
         elif tag == "b":
             self.weight = "bold"
-        elif tag == "/b":
-            self.weight = "normal"
         elif tag == "small":
             self.fontSize -= 2
-        elif tag == "/small":
-            self.fontSize += 2
         elif tag == "big":
             self.fontSize += 4
-        elif tag == "/big":
-            self.fontSize -=4
         elif tag == "sup":
             self.fontSize /=2
-            self.superscript = True 
-        elif tag == "/sup":
-            self.fontSize *=2
-            self.superscript = False
+            self.superscript = True
         elif tag == "abbr":
             self.small_caps = True 
             self.family = "Courier"
             self.fontSize *= 0.75
             self.weight = "bold"
-        elif tag == "/abbr":
+        elif tag == "br":
+            self.flush()
+            self.cursor_y += VSTEP
+
+    def handleCloseTag(self, tag):
+        if tag == "i":
+            self.style = "roman"
+        elif tag == "b":
+            self.weight = "normal"
+        elif tag == "small":
+            self.fontSize += 2
+        elif tag == "big":
+            self.fontSize -=4
+        elif tag == "sup":
+            self.fontSize *=2
+            self.superscript = False
+        elif tag == "abbr":
             self.small_caps = False
             self.family = DEFAULT_FONT_FAMILY
             self.fontSize /= 0.75
             self.weight = "normal"
-        elif tag == "br":
-            self.flush()
-            self.cursor_y += VSTEP
-        elif tag == "/p":
+        elif tag == "p":
             self.flush()
             self.cursor_y += VSTEP
 

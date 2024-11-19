@@ -3,7 +3,8 @@ A simple web browser built with the help of https://browser.engineering/index.ht
 
 # GOAL 
 
-Developing a full web-browser capable of handling most modern websites is far beyond my abilities (at present, we will see again 20 years from now). The goal is instead to create a browser as given by the textbook I am following. Once I have that I will aim to have a browser that can browser using [FrogFind](http://frogfind.com/about.php) as its default search engine. 
+Developing a full web-browser capable of handling most modern websites is far beyond my abilities (at present, we will see again 20 years from now). The goal is instead to create a browser as given by the textbook I am following. Once I have that I will aim to have a browser that can browser using [FrogFind](http://frogfind.com/about.php) as its default search engine
+- UPDATE: as of recently (18/11/2024) Frogfoot no longer seems accessible. Thankfully, [Wiby](https://wiby.me/) is also a good option (but will require more features implemented on my end it seems). 
 With respect to CSS, I will be happy if I can support centered text, background colors and maybe just maybe some flex things (but we will see). 
 
 There is a high chance that I restart this project from scratch at some point since: 
@@ -18,6 +19,7 @@ Some websites to support:
 * https://serenityos.org/happy/1st/
 * https://endchan.org/ (or rather, some less degenerate imageboard websites)
 * https://physicscourses.colorado.edu/phys3220/3220_fa97/3220_fa97.html
+* https://nothings.org/
 
 # Thoughts
 
@@ -173,6 +175,18 @@ Maybe some actually take affect during more than one of these but I am yet to se
 IDEA: everytime we encounter an opening tag, add it to a set of the currently tracked tags. Any 
 time we encounter a closing tag, remove the appropriate tag. Then, whenever an operation would need to take into account a specific tag, make that operation a function that takes in the tags. Bam, 
 science
+
+# Chapter4 
+
+I want to do the HTML parsing a bit more accurately than what the textbook gives. As such, I am referring to the [HTML spec](https://html.spec.whatwg.org/multipage/parsing.html) for more info.
+
+It will be a 2 pass algorithm (as usual):
+* Lex into tokens 
+* Parse into a tree 
+
+I have taken a gander a bit later into the book and it seems that we won't be executing Javascript when it is encounter. So for now, I won't be [executing scripts that modify the page while it is being parsed](https://html.spec.whatwg.org/multipage/parsing.html#scripts-that-modify-the-page-as-it-is-being-parsed). What I might do is put scripts into a list and once everything is done, come back and run the bois. So a 2 parse algo?? 
+
+Honestly, I think using the books approach with a bit more elaboration is good enough. What we can do is just extract tag attributes using a more specific DFA once we get to that part. 
 
 # QUESTIONS
 
