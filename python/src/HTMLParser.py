@@ -50,11 +50,10 @@ ACTION_ERROR = "emit_error"
 CATCH_ALL_SYMBOL = "*"
 DFA_STATES = {
     "text" : {
-        "&":{NEXT_STATE_KEY: "amp", ACTION_KEY: ACTION_NOTHING},
         "<":{NEXT_STATE_KEY:"open_tag", ACTION_KEY: ACTION_ADD_TEXT},
         ">":{NEXT_STATE_KEY:"", ACTION_KEY:"emit_error", ERROR_KEY:"Encountered a closing brace with no matching opening brace"}, #TODO: mayhaps don't throw an error?
         CATCH_ALL_SYMBOL: {NEXT_STATE_KEY: "text", ACTION_KEY: "add"}
-    }
+    },
 }
 
 #TODO: mayhaps do this as a separate project at somepoint? 
@@ -74,8 +73,8 @@ class HTMLParser:
 
     #could be more elegant
     #TODO: support <pre> here with another switch case (maybe even code)
-    #TODO: support other ampersand type bois like: &quot, &copy &ndash &amp
-    #I should really just be writing DFAs for this. Handling script and style will be annoying otherwise. 
+
+    #I should really just be writing DFAs for this,but its a lot more work than what I think I need right now
     def parse(self, viewSource = False):
 
         if viewSource:
@@ -85,14 +84,23 @@ class HTMLParser:
         in_tag = False
         i = 0
         while i < len(self.body):
-            if self.body[i] == "<":
+            if self.body[i] == "<": 
                 in_tag = True
                 if text: self.add_text(text)
                 text = ""
             elif self.body[i] == ">":
                 in_tag = False
                 self.add_tag(text)
-                text = ""
+                #we can be sneaky here
+                #before we clear text, check what the start of the tag  is
+                #if it is script/style, then we jump to a different function 
+                #to extract their body, then just return i when done
+                #TODO: any other tags here to support? 
+                tag = text.split(" ")[0]
+                if tag in ["script", "style"]:
+                    i, text = self.parseScriptStyle(i + 1, tag) #returns the index of the last char processed (so we don't double iterate)
+                else: text = ""
+                
             else:
                 text += self.body[i]
             i+=1
@@ -100,6 +108,21 @@ class HTMLParser:
         if not in_tag and text:
             self.add_text(text)
         return self.finish()
+
+    def parseScriptStyle(self, i, tag):
+        logger.debug("Lexing a " + tag + " tag")
+        logger.debug("end condition")
+        logger.debug(tag)
+        text = ""
+        #TODO: test this: script at end of document. 
+        while i < len(self.body):
+            if i < len(self.body) - len(tag) - 3 and self.body[i:i+2+len(tag)] == "</" + tag :
+                return i -1, text
+            text += self.body[i]
+            i += 1
+        
+        return i, text
+
 
     def add_text(self, text):
         if text.isspace(): return
@@ -151,7 +174,7 @@ class HTMLParser:
     #between quotes (eg: imagine you have class="dark flex background-grey". Splitting this by spaces
     #would be incorrect)
     def get_attributes(self,text):
-        logging.debug(text)
+        
         parts = text.split()
         tag = parts[0].casefold()
         attributes = {}

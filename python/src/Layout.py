@@ -54,7 +54,7 @@ class Layout:
         if isinstance(node, Text):
             for word in node.text.split():
                 self.word(word)
-        else:
+        elif node.tag not in ["script","style"]: #TODO: make this a global var somewhere
             self.handleOpenTag(node.tag)
             for child in node.children:
                 self.recurse(child)
