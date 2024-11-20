@@ -1,3 +1,7 @@
+# TODOs 
+
+* TODO: create new Tag for Script elements and handle them differently. Use similar handling for pre and code tags 
+
 # SimpleWebBrowser
 A simple web browser built with the help of https://browser.engineering/index.html
 

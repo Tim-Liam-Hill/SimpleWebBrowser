@@ -8,6 +8,8 @@ SELF_CLOSING_TAGS = [
     "link", "meta", "param", "source", "track", "wbr",
 ]
 
+
+
 @dataclass 
 class Text:
     def __init__(self, text, parent):
@@ -35,6 +37,25 @@ class Element:
     def __str__(self):
         return "<" + self.tag + ">"
 
+#DFA related things
+NEXT_STATE_KEY = "next_state"
+ACTION_KEY = "action" 
+ERROR_KEY ="error"
+ADD_TEXT = "add_text"
+ADD_CHAR = "add_char"
+ACTION_NOTHING = ""
+ACTION_ADD_TEXT = "add_text"
+ACTION_ADD_TAG = "add_tag"
+ACTION_ERROR = "emit_error"
+CATCH_ALL_SYMBOL = "*"
+DFA_STATES = {
+    "text" : {
+        "&":{NEXT_STATE_KEY: "amp", ACTION_KEY: ACTION_NOTHING},
+        "<":{NEXT_STATE_KEY:"open_tag", ACTION_KEY: ACTION_ADD_TEXT},
+        ">":{NEXT_STATE_KEY:"", ACTION_KEY:"emit_error", ERROR_KEY:"Encountered a closing brace with no matching opening brace"}, #TODO: mayhaps don't throw an error?
+        CATCH_ALL_SYMBOL: {NEXT_STATE_KEY: "text", ACTION_KEY: "add"}
+    }
+}
 
 #TODO: mayhaps do this as a separate project at somepoint? 
 #TODO: There is definitely a better/more elegant way to implement a lexer
@@ -44,8 +65,17 @@ class HTMLParser:
         self.tokens = []
         self.unfinished = []
 
+    #slightly enhanced version compared to the one in the book. Better handles style and script tags.
+    def parse2(self,viewSource = False):
+        if viewSource: #TODO: format the text with newlines and such. Maybe just use a subclass of HTMLParser
+            return Text(self.body, None) #TODO: check if we need anything else for this, like a div parent
+
+        text = ""
+
     #could be more elegant
     #TODO: support <pre> here with another switch case (maybe even code)
+    #TODO: support other ampersand type bois like: &quot, &copy &ndash &amp
+    #I should really just be writing DFAs for this. Handling script and style will be annoying otherwise. 
     def parse(self, viewSource = False):
 
         if viewSource:
@@ -63,14 +93,6 @@ class HTMLParser:
                 in_tag = False
                 self.add_tag(text)
                 text = ""
-            elif i < len(self.body) -3 and self.body[i:i+3] == "&lt":
-                text += "<"
-                i+= 3
-                continue
-            elif i < len(self.body) -3 and self.body[i:i+3] == "&gt":
-                text = ">"
-                i+= 3
-                continue
             else:
                 text += self.body[i]
             i+=1
@@ -81,6 +103,18 @@ class HTMLParser:
 
     def add_text(self, text):
         if text.isspace(): return
+        AMP_REMAPS = {
+            "&quot;": "\"", 
+            "&copy;":"©", 
+            "&ndash;":"-", 
+            "&amp;":"@",
+            "&lt;":"<",
+            "&gt;":">"
+        }
+        
+        for key, value in AMP_REMAPS.items(): #there is a more efficient way of doing this but its fine
+            text = text.replace(key, value)
+
         parent = self.unfinished[-1]
         node = Text(text, parent)
         parent.children.append(node)
