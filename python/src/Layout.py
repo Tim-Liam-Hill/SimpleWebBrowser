@@ -50,7 +50,7 @@ class Layout:
         self.flush()
     
     def recurse(self, node): 
-        logging.debug(node)
+        
         if isinstance(node, Text):
             for word in node.text.split():
                 self.word(word)

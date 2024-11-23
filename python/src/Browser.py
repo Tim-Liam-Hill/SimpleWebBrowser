@@ -98,7 +98,7 @@ class Browser:
             self.scrollup(e)
 
     def resize(self, e):
-        logger.info("Configure Event")
+        logger.debug("Configure Event")
         self.window_height = e.height
         self.window_width = e.width
         if self.doc_height > self.window_height:
@@ -114,7 +114,7 @@ class Browser:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     b = Browser()
 
     if(len(sys.argv) != 2):
