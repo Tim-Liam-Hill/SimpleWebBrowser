@@ -8,7 +8,63 @@ SELF_CLOSING_TAGS = [
     "link", "meta", "param", "source", "track", "wbr",
 ]
 
+#if a state has an 'accept' flag, we don't consume current char and instead
+#push the type of element determined by the accept flag, then transition as normal
+#if state has a 'trailing_tag' flag, the following happens when accept:
+#- there is a trailing </script or </style (or whatever tag name) tag appended to the data that should be 
+#- broken into a closing tag
+#- only ever trailing_tag flag if accept state set to data (but not always present if this is the case)
+#NOTE: technically a tag such as <scri' > will be accepted (and the quote won't be interpreted as creating a string)
+#this could be catered for but I highly doubt we need this at present. Can add it if I really want
+#we would just need to have another subsection for tags, script and style that ensures that the very first word following <
+#consists only of ascii chars (which we require either adding a huge amount of chars to the DFA or changing its core functionality)
+DFA = {
+    "start": "data",
+    "default_transition_key": "**", #needs to be 2 chars to ensure it doesn't overlap with chars in language
+    "states": {
+        "data": {"<":{"accept":"data", "next":"pre_tag"}, "**":{"next": "data"}},
+        "pre_tag":{">":{"accept":"tag", "next":"data"}, "s":{"next":"scriptstyle1"}, "**":{"next":"in_tag"}},
+        "in_tag": {">":{"accept":"tag", "next":"data"},"'":{"next":"quote1"}, "\"": {"next":"quote2"}, "**":{"next":"in_tag"}},
+        "quote1":{"'":{"next":"in_tag"},"**":{"next":"quote1"}},
+        "quote2":{"\"":{"next":"in_tag"}, "**":{"next":"quote2"}},
+        "scriptstyle1":{"c":{"next":"script2"},"t":{"next":"style2"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "style2":{"y":{"next":"style3"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "style3":{"l":{"next":"style4"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "style4":{"e":{"next":"style_tag_body"}, "**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "style_tag_body":{">":{"accept":"tag","next":"style_body"},"'":{"next":"style_tag_quote1"},"\"":{"next":"style_tag_quote2"},"**":{"next":"style_tag_body"}}, 
+        "style_tag_quote1":{"'":{"next":"style_tag_body"},"**":{"next":"style_tag_quote1"}},
+        "style_tag_quote2":{"\"":{"next":"style_tag_body"},"**":{"next":"style_tag_quote2"}},
+        "style_body":{"<":{"next":"style_close1"}, "'":{"next":"style_quote1"},"\"":{"next":"style_quote2"}, "**":{"next":"style_body"}},
+        "style_quote1":{"'":{"next":"style_body"}, "**":{"next":"style_quote1"}},
+        "style_quote2":{"\"":{"next":"style_body"}, "**":{"next":"style_quote2"}},
+        "style_close1":{"/":{"next":"style_close2"},"**":{"next":"style_body"}},
+        "style_close2":{"s":{"next":"style_close3"}, "**":{"next":"style_body"}},
+        "style_close3":{"t":{"next":"style_close4"}, "**":{"next":"style_body"}},
+        "style_close4":{"y":{"next":"style_close5"}, "**":{"next":"style_body"}},
+        "style_close5":{"l":{"next":"style_close6"}, "**":{"next":"style_body"}},
+        "style_close6":{"e":{"next":"style_close7"}, "**":{"next":"style_body"}},
+        "style_close7":{">":{"next":"data", "accept":"data", "trailing_tag":"style"}, "**":{"next":"style_body"}},
+        "script2":{"r":{"next":"script3"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "script3":{"i":{"next":"script4"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "script4":{"p":{"next":"script5"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "script5":{"t":{"next":"script_tag_body"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "script_tag_body":{">":{"accept":"tag","next":"script_body"},"'":{"next":"script_tag_quote1"}, "\"":{"next":"script_tag_quote2"},"**":{"next":"script_tag_body"}},
+        "script_tag_quote1":{"'":{"next":"style_tag_body"},"**":{"next":"script_tag_quote1"}},
+        "script_tag_quote2":{"\"":{"next":"style_tag_body"},"**":{"next":"script_tag_quote2"}},
+        "script_body":{"<":{"next":"script_close1"}, "'":{"next":"script_quote1"},"\"":{"next":"script_quote2"}, "**":{"next":"script_body"}},
+        "script_quote1":{"'":{"next":"script_body"},"**":{"next":"script_quote1"}},
+        "script_quote2":{"\"":{"next":"script_body"}, "**":{"next":"script_quote2"}},
+        "script_close1":{"/":{"next":"script_close2"},"**":{"next":"script_body"}},
+        "script_close2":{"s":{"next":"script_close3"},"**":{"next":"script_body"}},
+        "script_close3":{"c":{"next":"script_close4"},"**":{"next":"script_body"}},
+        "script_close4":{"r":{"next":"script_close5"},"**":{"next":"script_body"}},
+        "script_close5":{"i":{"next":"script_close6"},"**":{"next":"script_body"}},
+        "script_close6":{"p":{"next":"script_close7"},"**":{"next":"script_body"}},
+        "script_close7":{"t":{"next":"script_close8"},"**":{"next":"script_body"}},
+        "script_close8":{">":{"accept":"data","next":"data", "trailing_tag":"script"},"**":{"next":"script_body"}},
 
+    }
+}
 
 @dataclass 
 class Text:
@@ -45,19 +101,55 @@ class HTMLParser:
         self.tokens = []
         self.unfinished = []
 
-    #slightly enhanced version compared to the one in the book. Better handles style and script tags.
-    def parse2(self,viewSource = False):
+    #better version of parse that uses a DFA (albeit a simple one)
+    #it doesn't freak out when encountering quotes inside tag bodies (nor does it freak out if there are closing tags in those quotes)
+    def parse(self,viewSource = False):
         if viewSource: #TODO: format the text with newlines and such. Maybe just use a subclass of HTMLParser
             return Text(self.body, None) #TODO: check if we need anything else for this, like a div parent
 
         text = ""
+        state = DFA["start"]
+        i = 0
+
+        for i in self.body:
+            logger.debug("In state %s: ", state)
+            if i in DFA["states"][state]:
+                if "accept" in DFA["states"][state][i] and DFA["states"][state][i]["accept"] == "tag":
+                    self.add_tag(text)
+                    text = ""
+                elif "accept" in DFA["states"][state][i] and DFA["states"][state][i]["accept"] == "data":
+                    possible_tag = ""
+                    
+                    if "trailing_tag" in DFA["states"][state][i]:
+                        possible_tag_len = len(DFA["states"][state][i]["trailing_tag"]) #excludes implicit </
+                        if len(text) >= possible_tag_len + 2 and text[-possible_tag_len-2:] == "</" + DFA["states"][state][i]["trailing_tag"]: #use I know, verbose if statements are gross
+                            possible_tag = "/" + DFA["states"][state][i]["trailing_tag"]
+                            text = text[0:len(text)-possible_tag_len-2]
+                        else: 
+                            logger.error("This state should never be reached. We have a DFA state that should only be closed when it encounters the trailing tag yet the trailing tag cannot be extracted")
+                            logger.error("String is: %s", text)
+                            logger.error("Trailing tag is %s", "</" + DFA["states"][state][i]["trailing_tag"])
+                            
+                    self.add_text(text)
+                    self.add_tag(possible_tag) #if tag == "" then it will be ignored
+                    text = ""
+                else: text += i
+                state = DFA["states"][state][i]["next"]
+            else:
+                text += i 
+                state = DFA["states"][state]["**"]["next"]
+            
+
+        if state == "data" and text != "":
+            self.add_text(text)
+        return self.finish()
 
     #could be more elegant
     #TODO: support <pre> here with another switch case (maybe even code)
 
     #I should really just be writing DFAs for this,but its a lot more work than what I think I need right now
     #TODO: seriously need to replace this with a DFA and stop being lazy. 
-    def parse(self, viewSource = False):
+    def parse_old(self, viewSource = False):
 
         if viewSource:
             return Text(self.body, None) #TODO: check if we need anything else for this, like a div parent
@@ -110,10 +202,12 @@ class HTMLParser:
 
 
     def add_text(self, text):
-        if text.isspace(): return
-        AMP_REMAPS = { #TODO: there is almost certainly a better way of doing this (eh)
-            "&quot;": "\"", 
-            "&copy;":"©", 
+        if text.isspace() or len(text) == 0: return
+
+        logger.debug("Adding text: %s", text)
+        AMP_REMAPS = { #TODO: there is almost certainly a better way of doing this that is more performant (eh)
+            "&quot;": "\"", #it would use a DFA that iterates through and replaces as strings are encountered
+            "&copy;":"©",   #actually somewhat trivial to implement, will get to it when the need for performance arises
             "&ndash;":"-", 
             "&amp;":"@",
             "&lt;":"<",
@@ -130,7 +224,9 @@ class HTMLParser:
         parent.children.append(node)
 
     def add_tag(self, tag):
-        if tag.startswith("!"): return
+        
+        if tag.startswith("!") or tag=="": return #we realistically shouldn't encounter empty tags, and technically I don't think we need to remove them 
+        logger.debug("Adding tag: %s", tag)       
 
         if tag.startswith("/"):
             if len(self.unfinished) == 1: return
@@ -219,8 +315,6 @@ class HTMLParser:
 
 def print_tree(node, indent=0):
     print(" " * indent, node)
-    if(indent >= 6):
-        return
     for child in node.children:
         print_tree(child, indent + 2)
 
