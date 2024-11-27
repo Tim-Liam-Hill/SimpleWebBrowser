@@ -97,14 +97,16 @@ class Element:
 
 #TODO: mayhaps do this as a separate project at somepoint? 
 #TODO: There is definitely a better/more elegant way to implement a lexer
+#TODO: this works well when HTML is well formatted (which it normally would be) but this should handle more malformed HTML
 class HTMLParser:
     HEAD_TAGS = [
         "base", "basefont", "bgsound", "noscript",
         "link", "meta", "title", "style", "script",
     ]
+    NO_NEST_TAGS = ["p"] #tags that should not directly nest in one another
+
     def __init__(self, body):
         self.body = body
-        self.tokens = []
         self.unfinished = []
 
     #better version of parse that uses a DFA (albeit a simple one)
@@ -179,7 +181,13 @@ class HTMLParser:
         logger.debug("Adding tag: %s", tag)       
 
         if tag.startswith("/"):
-            #if len(self.unfinished) == 1: return #TODO: why was this here? is it needed? hmmmmmmmm.....
+            if tag == "/html":
+                return #we need to avoid popping off the html tag as it is the root of the tree. we pop it off then the stack is empty and the program crashes.
+                       #the below which is commented out handles this cas and also the case when there are more closing than opening tags
+                       #pretty soon I intend on implementing an algorithm to match opening with closing tags.
+            #if len(self.unfinished) == 1: return #this was placed here to ensure code doesn't fail if we have more closing than opening braces
+            #if tag ==
+            
             node = self.unfinished.pop()
             parent = self.unfinished[-1]
             parent.children.append(node)
@@ -202,6 +210,7 @@ class HTMLParser:
             node = self.unfinished.pop()
             parent = self.unfinished[-1]
             parent.children.append(node)
+        print_tree(self.unfinished[0])
         return self.unfinished.pop()
     
     def implicit_tags(self, tag):
@@ -214,7 +223,7 @@ class HTMLParser:
                     self.add_tag("head")
                 else:
                     self.add_tag("body")
-            else:
+            else: 
                 break
             
     

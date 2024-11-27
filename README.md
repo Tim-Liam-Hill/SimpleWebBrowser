@@ -192,6 +192,35 @@ I have taken a gander a bit later into the book and it seems that we won't be ex
 
 Honestly, I think using the books approach with a bit more elaboration is good enough. What we can do is just extract tag attributes using a more specific DFA once we get to that part. 
 
+
+# Exercizes 
+
+4.6 is a bit much in my opinion/doesn't have a trivial algorithm to use. Consider the below html fragment:
+
+```<b>bold<i>both</b>italic</i>```
+
+Here, we can do what the textbook wants because the tags are balanced (in that for each opening tag there is a closing tag). If that isn't the case we can have an issue. Consider the below example:
+
+```<a> <b> <c> meow </a> <c> meow <b>```
+
+Here we would need to implicitly close tags up until the a tag,, then re-add those tags in the right order. If there is no matching open 'a' tag on the unfinished stack however, we will pop off 
+all elements and encounter an error.
+
+The current way my project has been deeling with this is to just to check the current size of the stack before popping off elements when encountering a closing tag. We only pop off if size > 1.
+I want to better ensure that closing tags actually match opening tags which will mean a more sophisticated algorithm. Also to note: the below html is valid but crashes my parser if the 
+check above is not in place.
+
+```<html><head></head><body></body></head>```
+
+The issue seems to be the lack of any text nodes.
+
+We should also consider how to make sure there are not multiple body and head tags. 
+
+The textbook has kept things simple by operating under the assumption that the html will generally be well formed and that has kept the implementation simple. To handle malformed html will 
+require a slight re-work and more in depth algorithm. 
+
+At some point I may likely need to just clean up a lot of the code I have written but that's okay. 
+
 # QUESTIONS
 
 1. The difference between URI, URN and URL (refer to RFCs)

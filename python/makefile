@@ -7,8 +7,6 @@ test:
 #python3 -m unittest <module_name>.py or package name or whatever
 #only really needed if certain tests take too long to run. 
 
-sample:
-	python3 ./src/URL.py https://google.com
 
 clean:
 	find -type d -name __pycache__ -a -prune -exec rm -rf {} \;
