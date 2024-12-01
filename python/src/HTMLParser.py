@@ -104,7 +104,7 @@ class HTMLParser:
         "base", "basefont", "bgsound", "noscript",
         "link", "meta", "title", "style", "script",
     ]
-    NO_NEST_TAGS = ["p"] #tags that should not directly nest in one another
+    NO_NEST_TAGS = ["p", "i"] #tags that should not directly nest in one another, makes things kinda gross
 
     def __init__(self, body):
         self.body = body
@@ -189,10 +189,17 @@ class HTMLParser:
             #if len(self.unfinished) == 1: return #this was placed here to ensure code doesn't fail if we have more closing than opening braces
             #if tag ==
 
+            #for tags we don't nest, we may end up creating extra closing tags so we need
+            #to check this case (otherwise we would throw an error with the algorithm below)
+
+            if tag[1:] in self.NO_NEST_TAGS and self.unfinished[-1].tag != tag[1:]:
+                return
+
             #correction algorithm: 
             #we make sure the currnet closing tag matches the top tag on the stack
             #if it doesn't, pop current top of stack and save it for later (essentially closing it)
             #do this until we find a matching tag or error. Once done, add back deep copies of popped off tags
+
             stack = []
             while self.unfinished[-1].tag != tag[1:]:
                 if len(self.unfinished) == 1:
@@ -216,6 +223,9 @@ class HTMLParser:
             node = Element(tag, attributes, parent)
             parent.children.append(node)
         else:
+            if tag in self.NO_NEST_TAGS and self.unfinished[-1].tag == tag: 
+                self.add_tag("/" + tag)
+
             parent = self.unfinished[-1] if self.unfinished else None
             tag, attributes = self.get_attributes(tag)
             node = Element(tag, attributes, parent)
