@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from URL import URL
 import logging
+import copy
 logger = logging.getLogger(__name__)
 
 SELF_CLOSING_TAGS = [
@@ -187,10 +188,28 @@ class HTMLParser:
                        #pretty soon I intend on implementing an algorithm to match opening with closing tags.
             #if len(self.unfinished) == 1: return #this was placed here to ensure code doesn't fail if we have more closing than opening braces
             #if tag ==
+
+            #correction algorithm: 
+            #we make sure the currnet closing tag matches the top tag on the stack
+            #if it doesn't, pop current top of stack and save it for later (essentially closing it)
+            #do this until we find a matching tag or error. Once done, add back deep copies of popped off tags
+            stack = []
+            while self.unfinished[-1].tag != tag[1:]:
+                if len(self.unfinished) == 1:
+                    raise ValueError("Malformed HTML has no matching opening tag for tag : " + tag)
+                c = Element(self.unfinished[-1].tag, self.unfinished[-1].attributes, self.unfinished[-1])
+                stack.append(c)
+                node = self.unfinished.pop()
+                parent = self.unfinished[-1]
+                parent.children.append(node)
+
             
             node = self.unfinished.pop()
             parent = self.unfinished[-1]
             parent.children.append(node)
+
+            while len(stack) != 0:
+                self.unfinished.append(stack.pop())
         elif tag in SELF_CLOSING_TAGS:
             tag, attributes = self.get_attributes(tag)
             parent = self.unfinished[-1]
