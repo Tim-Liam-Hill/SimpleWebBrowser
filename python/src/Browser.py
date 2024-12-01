@@ -33,6 +33,7 @@ class Browser:
         self.window_width = INIT_WIDTH
         self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
         self.tokens = []
+        self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
 
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
@@ -45,12 +46,16 @@ class Browser:
 
     def load(self, url):
         content = self.urlHandler.request(url)
-        #TODO: need a case for view-source!!!!!
+        #TODO: need a case for view-source!!!!!???
         self.root_node = HTMLParser(content).parse(self.urlHandler.viewSource)
-        layout = Layout(self.root_node, self.widthForContent())
-        self.display_list = layout.display_list
-        self.doc_height = layout.cursor_y
+        self.createLayout()
         self.draw()
+
+    def createLayout(self):
+        self.document = Layout(self.root_node, self.widthForContent())
+        self.document.layout()
+        self.display_list = self.document.display_list
+        self.doc_height = self.document.cursor_y
 
     def widthForContent(self):
         return self.window_width - SCROLLBAR_WIDTH
@@ -105,9 +110,7 @@ class Browser:
             self.scroll = min(self.scroll, self.doc_height - self.window_height)
         else: self.scroll = 0
         #Don't re-lex tokens, there is no change in the dom if we resize!!!! (at least, not at this stage, maybe with advanced CSS there would be)
-        layout = Layout(self.root_node, self.widthForContent())
-        self.display_list = layout.display_list
-        self.doc_height = layout.cursor_y
+        self.createLayout()
         self.draw()
 
 

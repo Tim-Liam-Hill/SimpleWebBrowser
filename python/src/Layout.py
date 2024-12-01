@@ -43,10 +43,13 @@ class Layout:
         self.family = DEFAULT_FONT_FAMILY
         self.activeTags = []
         self.width = width
+        self.node = root_node
         
         #TODO: pre formatted code (after html parser I guess?)
         #font = tkinter.font.Font() #TODO: support passed in fonts (somehow, once we move away from tkinter)
-        self.recurse(root_node)
+    
+    def layout(self):
+        self.recurse(self.node)
         self.flush()
     
     def recurse(self, node): 
