@@ -165,7 +165,9 @@ class HTMLParser:
             "&lt;":"<",
             "&gt;":">",
             "&#124;": "|",
-            "&#039;":","
+            "&#039;":",",
+            "&nbsp;": " ",
+            "&#x27": "'"
         }
         
         for key, value in AMP_REMAPS.items(): #there is a more efficient way of doing this but its fine
