@@ -1,6 +1,6 @@
 import tkinter
 import tkinter.font
-from Layout import Layout, HSTEP, VSTEP
+from Layout import Layout, DocumentLayout, HSTEP, VSTEP, paint_tree
 from URL import URL, Text, lex
 from HTMLParser import HTMLParser
 import sys
@@ -52,10 +52,11 @@ class Browser:
         self.draw()
 
     def createLayout(self):
-        self.document = Layout(self.root_node, self.widthForContent())
+        self.document = DocumentLayout(self.root_node, self.widthForContent())
         self.document.layout()
-        self.display_list = self.document.display_list
-        self.doc_height = self.document.cursor_y
+        self.display_list = []
+        paint_tree(self.document, self.display_list)
+        self.doc_height = self.document.height
 
     def widthForContent(self):
         return self.window_width - SCROLLBAR_WIDTH
