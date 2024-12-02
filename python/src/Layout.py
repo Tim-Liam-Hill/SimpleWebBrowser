@@ -48,10 +48,6 @@ class DocumentLayout:
         self.parent = None
         self.children = []
         self.max_width = max_width
-        self.x = None
-        self.y = None
-        self.width = None
-        self.height = None
 
     def layout(self):
         self.width = self.max_width
@@ -77,13 +73,6 @@ class BlockLayout:
         self.width = None
         self.height = None
 
-    def layout_intermediate(self):
-        previous = None
-        for child in self.node.children:
-            next = BlockLayout(child, self, previous)
-            self.children.append(next)
-            previous = next
-
     def layout_mode(self):
         if isinstance(self.node, Text):
             return "inline"
@@ -99,19 +88,22 @@ class BlockLayout:
     def layout(self):
         self.x = self.parent.x
         self.width = self.parent.width
+
         if self.previous:
             self.y = self.previous.y + self.previous.height
         else:
             self.y = self.parent.y
+
         mode = self.layout_mode()
         if mode == "block":
+            print("BLOCK ", self.node.tag)
             previous = None
             for child in self.node.children:
                 next = BlockLayout(child, self, previous)
                 self.children.append(next)
                 previous = next
         else:
-            
+            print("NON-BLOCK", self.node.tag)
             self.display_list = []
             self.line = []
             self.cursor_x = 0
@@ -142,7 +134,7 @@ class BlockLayout:
     def paint(self):
         cmds = []
 
-        if isinstance(self.node, Element) and self.node.tag == "pre":
+        if isinstance(self.node, Element) and self.node.tag == "code":
             x2, y2 = self.x + self.width, self.y + self.height
             rect = DrawRect(self.x, self.y, x2, y2, "gray")
             cmds.append(rect)
@@ -265,111 +257,6 @@ class DrawRect:
             self.right, self.bottom - scroll,
             width=0,
             fill=self.color)
-
-
-#TODO: test cases. Lol
-# class Layout:
-#     def __init__(self, root_node, width): #TODO: annotate what width is here (I think its the effective width layout has to work with)
-#         self.display_list = []
-#         self.line = []
-#         self.cursor_x = HSTEP
-#         self.cursor_y = VSTEP
-#         self.fontSize = DEFAULT_FONT_SIZE
-#         self.weight = "normal"
-#         self.style = "roman"
-#         self.leading = DEFAULT_LEADING
-#         self.superscript = False
-#         self.small_caps = False
-#         self.family = DEFAULT_FONT_FAMILY
-#         self.activeTags = []
-#         self.width = width
-#         self.node = root_node
-        
-#         #TODO: pre formatted code (after html parser I guess?)
-#         #font = tkinter.font.Font() #TODO: support passed in fonts (somehow, once we move away from tkinter)
-    
-#     def layout(self):
-#         self.recurse(self.node)
-#         self.flush()
-    
-#     def recurse(self, node): 
-        
-#         if isinstance(node, Text):
-#             for word in node.text.split():
-#                 self.word(word)
-#         elif node.tag not in ["script","style"]: #TODO: make this a global var somewhere
-#             self.handleOpenTag(node.tag)
-#             for child in node.children:
-#                 self.recurse(child)
-#             self.handleCloseTag(node.tag)
-
-#     def word(self, word):
-
-#         font = get_font(self.fontSize, self.weight, self.style, self.family)
-
-#         if self.small_caps:
-#             word = word.upper()
-
-#         w = font.measure(word)
-#         if self.cursor_x + w >= self.width - HSTEP:
-#             self.flush()
-#         self.line.append((self.cursor_x, word, font, self.superscript))
-#         self.cursor_x += w + font.measure(" ")
-
-#     def flush(self):
-#         if not self.line: return 
-#         metrics = [font.metrics() for x, word, font, isSuperscript in self.line]
-#         max_ascent = max([metric["ascent"] for metric in metrics])
-#         baseline = self.cursor_y +  self.leading * max_ascent
-#         for x, word, font, isSuperscript in self.line:
-#             y = baseline - font.metrics("ascent") if not isSuperscript else baseline - 1.8*font.metrics("ascent")
-#             self.display_list.append((x, y, word, font))
-#         max_descent = max([metric["descent"] for metric in metrics])
-#         self.cursor_y = baseline + 1.25 * max_descent
-#         self.cursor_x = HSTEP
-#         self.line = []
-
-#     def handleOpenTag(self, tag):
-#         if tag == "i":
-#             self.style = "italic"
-#         elif tag == "b":
-#             self.weight = "bold"
-#         elif tag == "small":
-#             self.fontSize -= 2
-#         elif tag == "big":
-#             self.fontSize += 4
-#         elif tag == "sup":
-#             self.fontSize /=2
-#             self.superscript = True
-#         elif tag == "abbr":
-#             self.small_caps = True 
-#             self.family = "Courier"
-#             self.fontSize *= 0.75
-#             self.weight = "bold"
-#         elif tag == "br":
-#             self.flush()
-#             self.cursor_y += VSTEP
-
-#     def handleCloseTag(self, tag):
-#         if tag == "i":
-#             self.style = "roman"
-#         elif tag == "b":
-#             self.weight = "normal"
-#         elif tag == "small":
-#             self.fontSize += 2
-#         elif tag == "big":
-#             self.fontSize -=4
-#         elif tag == "sup":
-#             self.fontSize *=2
-#             self.superscript = False
-#         elif tag == "abbr":
-#             self.small_caps = False
-#             self.family = DEFAULT_FONT_FAMILY
-#             self.fontSize /= 0.75
-#             self.weight = "normal"
-#         elif tag == "p":
-#             self.flush()
-#             self.cursor_y += VSTEP
 
 if __name__ == "__main__": 
     logging.basicConfig(level=logging.DEBUG)

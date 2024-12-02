@@ -52,6 +52,7 @@ class Browser:
         self.draw()
 
     def createLayout(self):
+        logger.info("Creating DOM from HTML Tree")
         self.document = DocumentLayout(self.root_node, self.widthForContent())
         self.document.layout()
         self.display_list = []
@@ -110,6 +111,9 @@ class Browser:
 
     def resize(self, e):
         logger.debug("Configure Event")
+        if e.height == self.window_height and e.width == self.window_width:
+            logger.debug("No change in proportions, returning")
+            return
         self.window_height = e.height
         self.window_width = e.width
         if self.doc_height > self.window_height:
