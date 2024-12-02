@@ -1,6 +1,6 @@
 import tkinter
 import tkinter.font
-from Layout import Layout, DocumentLayout, HSTEP, VSTEP, paint_tree
+from Layout import DocumentLayout, HSTEP, VSTEP, paint_tree
 from URL import URL, Text, lex
 from HTMLParser import HTMLParser
 import sys
@@ -64,11 +64,16 @@ class Browser:
     def draw(self):
 
         self.canvas.delete("all")
+
+        for cmd in self.display_list:
+            if cmd.top > self.scroll + self.window_height: continue
+            if cmd.bottom < self.scroll: continue
+            cmd.execute(self.scroll, self.canvas)
         
-        for x, y, word, font in self.display_list:
-            if y > self.scroll + self.window_height: continue
-            if y + VSTEP < self.scroll: continue
-            self.canvas.create_text(x, y- self.scroll, text=word, font=font, anchor='nw')
+        # for x, y, word, font in self.display_list:
+        #     if y > self.scroll + self.window_height: continue
+        #     if y + VSTEP < self.scroll: continue
+        #     self.canvas.create_text(x, y- self.scroll, text=word, font=font, anchor='nw')
 
         #scrollbar
         if self.doc_height > self.window_height:
