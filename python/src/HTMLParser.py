@@ -220,7 +220,7 @@ class HTMLParser:
 
             while len(stack) != 0:
                 self.unfinished.append(stack.pop())
-        elif tag in SELF_CLOSING_TAGS:
+        elif tag.split(" ")[0] in SELF_CLOSING_TAGS:
             tag, attributes = self.get_attributes(tag)
             parent = self.unfinished[-1]
             node = Element(tag, attributes, parent)
@@ -311,6 +311,6 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
     url = URL()
-    content = url.request("https://browser.engineering/html.html")
+    content = url.request("file:///home/tim/Documents/Projects/SimpleBrowser/SimpleWebBrowser/python/src/static-html/test.html")#("https://browser.engineering/html.html")
     p = HTMLParser(content)
     print_tree(p.parse())

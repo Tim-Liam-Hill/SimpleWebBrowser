@@ -52,7 +52,7 @@ class DocumentLayout:
     def layout(self):
         self.width = self.max_width
         self.x = HSTEP
-        self.y = VSTEP
+        self.y = 0
         child = BlockLayout(self.node, self, None)
         self.children.append(child)
         child.layout()
@@ -96,14 +96,12 @@ class BlockLayout:
 
         mode = self.layout_mode()
         if mode == "block":
-            print("BLOCK ", self.node.tag)
             previous = None
             for child in self.node.children:
                 next = BlockLayout(child, self, previous)
                 self.children.append(next)
                 previous = next
         else:
-            print("NON-BLOCK", self.node.tag)
             self.display_list = []
             self.line = []
             self.cursor_x = 0
