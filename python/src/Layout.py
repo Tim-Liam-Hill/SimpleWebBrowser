@@ -116,6 +116,7 @@ class BlockLayout:
             self.small_caps = False
             self.family = DEFAULT_FONT_FAMILY
             self.activeTags = []
+            self.list_indent = 0
 
 
             self.recurse(self.node)
@@ -201,6 +202,8 @@ class BlockLayout:
         elif tag == "br":
             self.flush()
             self.cursor_y += VSTEP
+        elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
+            self.list_indent += 1
 
     def handleCloseTag(self, tag):
         if tag == "i":
@@ -222,6 +225,8 @@ class BlockLayout:
         elif tag == "p":
             self.flush()
             self.cursor_y += VSTEP
+        elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
+            self.list_indent -= 1
 
 
 class DrawText:
