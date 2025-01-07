@@ -168,7 +168,8 @@ class HTMLParser:
             "&#039;":",",
             "&nbsp;": " ",
             "&#x27;": "'",
-            "&#x2F;": "/"
+            "&#x2F;": "/",
+            "&raquo;": "»"
         }
         
         for key, value in AMP_REMAPS.items(): #there is a more efficient way of doing this but its fine
@@ -264,7 +265,7 @@ class HTMLParser:
     def get_attributes(self,text):
         text = text.lstrip()
         parts = text.split()
-        tag = parts[0].casefold()
+        tag = parts[0] #.casefold() -> casefolding here causes bugs since closing tag later won't match the opening tag if the tag has any capital letters
         in_key = True 
         key = ""
         val = ""
