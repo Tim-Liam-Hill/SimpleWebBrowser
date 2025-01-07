@@ -127,7 +127,7 @@ class Browser:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     b = Browser()
 
     if(len(sys.argv) != 2):

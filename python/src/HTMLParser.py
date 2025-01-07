@@ -243,7 +243,7 @@ class HTMLParser:
             node = self.unfinished.pop()
             parent = self.unfinished[-1]
             parent.children.append(node)
-            print_tree(self.unfinished[0])
+            #print_tree(self.unfinished[0])
         return self.unfinished.pop()
     
     def implicit_tags(self, tag):
