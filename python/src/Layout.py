@@ -53,7 +53,8 @@ class DocumentLayout:
         self.width = self.max_width
         self.x = HSTEP
         self.y = 0
-        child = BlockLayout(self.node, self, None)
+        layoutProps = LayoutDisplayProperties()
+        child = BlockLayout(self.node, self, None, layoutProps)
         self.children.append(child)
         child.layout()
         self.height = child.height
@@ -61,8 +62,23 @@ class DocumentLayout:
     def paint(self):
         return []
 
+#Stores properties used to implement font style, weight etc
+#TODO: this possibly needs a rework once CSS is implemented but oh whale
+class LayoutDisplayProperties:
+    def __init__(self):
+            self.fontSize = DEFAULT_FONT_SIZE
+            self.weight = "normal"
+            self.style = "roman"
+            self.leading = DEFAULT_LEADING
+            self.superscript = False
+            self.small_caps = False
+            self.family = DEFAULT_FONT_FAMILY
+            self.activeTags = []
+            self.list_indent = 0
+            self.bullet = False
+
 class BlockLayout:
-    def __init__(self, node, parent, previous):
+    def __init__(self, node, parent, previous, layoutProps):
         self.node = node
         self.parent = parent
         self.previous = previous
@@ -72,6 +88,7 @@ class BlockLayout:
         self.y = None
         self.width = None
         self.height = None
+        self.layoutProps = layoutProps
 
     def layout_mode(self):
         if isinstance(self.node, Text):
@@ -86,6 +103,8 @@ class BlockLayout:
             return "block"
         
     def layout(self):
+        if(isinstance(self.node, Element)):
+            self.handleOpenTag(self.node.tag)
         self.x = self.parent.x
         self.width = self.parent.width
 
@@ -96,9 +115,10 @@ class BlockLayout:
 
         mode = self.layout_mode()
         if mode == "block":
+            
             previous = None
             for child in self.node.children:
-                next = BlockLayout(child, self, previous)
+                next = BlockLayout(child, self, previous, self.layoutProps)
                 self.children.append(next)
                 previous = next
         else:
@@ -107,23 +127,13 @@ class BlockLayout:
             self.cursor_x = 0
             self.cursor_y = 0
 
-            #TODO: move to global/reference variable of sometype.
-            self.fontSize = DEFAULT_FONT_SIZE
-            self.weight = "normal"
-            self.style = "roman"
-            self.leading = DEFAULT_LEADING
-            self.superscript = False
-            self.small_caps = False
-            self.family = DEFAULT_FONT_FAMILY
-            self.activeTags = []
-            self.list_indent = 0
-
-
             self.recurse(self.node)
             self.flush()
             
         for child in self.children:
             child.layout()
+        if(isinstance(self.node, Element)):
+            self.handleCloseTag(self.node.tag)
         
         if mode == "block":
             self.height = sum([child.height for child in self.children])
@@ -147,6 +157,14 @@ class BlockLayout:
     def recurse(self, node): 
         
         if isinstance(node, Text):
+            if self.layoutProps.bullet:
+                print(self.layoutProps.list_indent)
+                if self.layoutProps.list_indent == 1:
+                    self.word("• ")
+                elif self.layoutProps.list_indent == 2:
+                    self.word("◦ ")
+                else: 
+                    self.word("‣ ")
             for word in node.text.split():
                 self.word(word)
         elif node.tag not in ["script","style"]: #TODO: make this a global var somewhere
@@ -157,22 +175,22 @@ class BlockLayout:
 
     def word(self, word):
 
-        font = get_font(self.fontSize, self.weight, self.style, self.family)
+        font = get_font(self.layoutProps.fontSize, self.layoutProps.weight, self.layoutProps.style, self.layoutProps.family)
 
-        if self.small_caps:
-            word = word.upper()
+        if self.layoutProps.small_caps:
+            word = word.upper()        
 
         w = font.measure(word)
         if self.cursor_x + w >= self.width - HSTEP:
             self.flush()
-        self.line.append((self.cursor_x, word, font, self.superscript))
+        self.line.append((self.cursor_x, word, font, self.layoutProps.superscript))
         self.cursor_x += w + font.measure(" ")
 
     def flush(self):
         if not self.line: return 
         metrics = [font.metrics() for x, word, font, isSuperscript in self.line]
         max_ascent = max([metric["ascent"] for metric in metrics])
-        baseline = self.cursor_y +  self.leading * max_ascent
+        baseline = self.cursor_y +  self.layoutProps.leading * max_ascent
         for rel_x, word, font, isSuperscript in self.line:
             x = self.x + rel_x
             y =  self.y + baseline - font.metrics("ascent") if not isSuperscript else baseline - 1.8*font.metrics("ascent")
@@ -184,49 +202,57 @@ class BlockLayout:
 
     def handleOpenTag(self, tag):
         if tag == "i":
-            self.style = "italic"
+            self.layoutProps.style = "italic"
         elif tag == "b":
-            self.weight = "bold"
+            self.layoutProps.weight = "bold"
         elif tag == "small":
-            self.fontSize -= 2
+            self.layoutProps.fontSize -= 2
         elif tag == "big":
-            self.fontSize += 4
+            self.layoutProps.fontSize += 4
         elif tag == "sup":
-            self.fontSize /=2
-            self.superscript = True
+            self.layoutProps.fontSize /=2
+            self.layoutProps.superscript = True
         elif tag == "abbr":
-            self.small_caps = True 
-            self.family = "Courier"
-            self.fontSize *= 0.75
-            self.weight = "bold"
+            self.layoutProps.small_caps = True 
+            self.layoutProps.family = "Courier"
+            self.layoutProps.fontSize *= 0.75
+            self.layoutProps.weight = "bold"
         elif tag == "br":
             self.flush()
             self.cursor_y += VSTEP
         elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
-            self.list_indent += 1
+            print("OPEN LIST")
+            self.layoutProps.list_indent += 1
+            print(self.layoutProps.list_indent)
+        elif tag == 'li':
+            self.layoutProps.bullet = True
 
     def handleCloseTag(self, tag):
         if tag == "i":
-            self.style = "roman"
+            self.layoutProps.style = "roman"
         elif tag == "b":
-            self.weight = "normal"
+            self.layoutProps.weight = "normal"
         elif tag == "small":
-            self.fontSize += 2
+            self.layoutProps.fontSize += 2
         elif tag == "big":
-            self.fontSize -=4
+            self.layoutProps.fontSize -=4
         elif tag == "sup":
-            self.fontSize *=2
-            self.superscript = False
+            self.layoutProps.fontSize *=2
+            self.layoutProps.superscript = False
         elif tag == "abbr":
-            self.small_caps = False
-            self.family = DEFAULT_FONT_FAMILY
-            self.fontSize /= 0.75
-            self.weight = "normal"
+            self.layoutProps.small_caps = False
+            self.layoutProps.family = DEFAULT_FONT_FAMILY
+            self.layoutProps.fontSize /= 0.75
+            self.layoutProps.weight = "normal"
         elif tag == "p":
             self.flush()
             self.cursor_y += VSTEP
         elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
-            self.list_indent -= 1
+            print("CLOSE LIST")
+            self.layoutProps.list_indent -= 1
+            print(self.layoutProps.list_indent)
+        elif tag == 'li':
+            self.layoutProps.bullet = False
 
 
 class DrawText:
