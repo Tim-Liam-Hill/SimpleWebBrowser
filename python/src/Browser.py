@@ -1,6 +1,6 @@
 import tkinter
 import tkinter.font
-from Layout import DocumentLayout, HSTEP, VSTEP, paint_tree
+from Layout import DocumentLayout, HSTEP, VSTEP, paint_tree, style
 from URL import URL, Text, lex
 from HTMLParser import HTMLParser
 import sys
@@ -48,6 +48,7 @@ class Browser:
         content = self.urlHandler.request(url)
         #TODO: need a case for view-source!!!!!???
         self.root_node = HTMLParser(content).parse(self.urlHandler.viewSource)
+        style(self.root_node)
         self.createLayout()
         self.draw()
 

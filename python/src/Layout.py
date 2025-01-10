@@ -3,6 +3,7 @@ import tkinter
 import tkinter.font
 from URL import URL, Text, lex
 from HTMLParser import Text, Element
+from CSS.CSSParser import CSSParser
 import math
 import logging
 logger = logging.getLogger(__name__)
@@ -143,9 +144,11 @@ class BlockLayout:
     def paint(self):
         cmds = []
 
-        if isinstance(self.node, Element) and self.node.tag == "pre":
+        bgcolor = self.node.style.get("background-color",
+                                      "transparent")
+        if bgcolor != "transparent":
             x2, y2 = self.x + self.width, self.y + self.height
-            rect = DrawRect(self.x, self.y, x2, y2, "gray")
+            rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
             cmds.append(rect)
 
         if self.layout_mode() == "inline":
@@ -158,7 +161,6 @@ class BlockLayout:
         
         if isinstance(node, Text):
             if self.layoutProps.bullet:
-                print(self.layoutProps.list_indent)
                 if self.layoutProps.list_indent == 1:
                     self.word("• ")
                 elif self.layoutProps.list_indent == 2:
@@ -221,9 +223,7 @@ class BlockLayout:
             self.flush()
             self.cursor_y += VSTEP
         elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
-            print("OPEN LIST")
             self.layoutProps.list_indent += 1
-            print(self.layoutProps.list_indent)
         elif tag == 'li':
             self.layoutProps.bullet = True
 
@@ -248,12 +248,18 @@ class BlockLayout:
             self.flush()
             self.cursor_y += VSTEP
         elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
-            print("CLOSE LIST")
             self.layoutProps.list_indent -= 1
-            print(self.layoutProps.list_indent)
         elif tag == 'li':
             self.layoutProps.bullet = False
 
+def style(node):
+    node.style = {}
+    if isinstance(node, Element) and "style" in node.attributes:
+        pairs = CSSParser(node.attributes["style"]).body()
+        for property, value in pairs.items():
+            node.style[property] = value
+    for child in node.children:
+        style(child)
 
 class DrawText:
     def __init__(self, x1, y1, text, font):
