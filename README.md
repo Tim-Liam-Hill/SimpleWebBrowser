@@ -38,6 +38,12 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * scrolling for different platforms
 * on browser resize, don't reset scroll amount but instead make it proportional to original scroll
 * heading tags!!!!! REEEEEEEEEEE (just all the tags in general)
+* Currently the browser runs the HTML parser twice on first startup (not the http request because that is cached) likely due to the first tkinter config event. Make sure this doesn't happen when we switch libraries.
+* TODO: nice syntax highlighting for view source.
+
+# WishList
+
+* support some basic svg
 
 # Exercises 1
 
@@ -192,6 +198,99 @@ I have taken a gander a bit later into the book and it seems that we won't be ex
 
 Honestly, I think using the books approach with a bit more elaboration is good enough. What we can do is just extract tag attributes using a more specific DFA once we get to that part. 
 
+# Chapter 5
+
+Seems like a refactor is in order. Seems like layout is going into a Tree pattern as well, so we 
+don't want to have all the member variables in this class that we have now (since then initing becomes real hard). What we can do is make a new class that holds css/styling properties and clone and pass it down to children as needed. We can move the widt into this class aswell. 
+
+Let's read the chapter fully before writing any code (which is uncharateristic of me I know). 
+
+Seems like the books naming conventions match (Safari)[https://webkit.org/blog/114/webcore-rendering-i-the-basics/] somewhat.
+
+### TODO: test https://news.ycombinator.com/ at the end of this chapter, it should like somewhat alright.
+
+So we got some problems. Our browser isn't throwing any errors, but the web page we are rendering doesn't look quite right. For starters, block elements don't seem to have blocks between them. Only gaps that appear between elements are as a result of my previous work with paragraphs. We also have a problem with our HTML parser: for https://browser.engineering we get the following when printing the tree:
+
+``` 
+<html>
+ <html>
+ <html>
+ <html>
+ <html>
+ <html>
+ <html>
+ <html>
+ <html>
+   <body>
+     <html>
+       <head>
+         <meta>
+           <link>
+           ...
+```
+
+What the hell is that??? 
+
+I also need to rework how I am handling things like italics and bolding etc (ie: these properties need to pass down the tree). Undoubtably the next chapter has some things that might address this but still.
+
+Oh, and text get's sorta cut off at the bottom of the browser. REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE.
+
+So, here is what we should do:
+
+1. Make sure the HTML parser works (since it seems there is an edge case that makes it break)
+2. Get a better understanding of the DOM we are building 
+3. Fix the issue with BlockLayout not having extra spaces (?) (this will solve the issue of bottom text being cut in half I believe)
+4. Maybe even just rework the whole Layout file
+
+I think my issue happens when I create Non-Block elements (things just seem to stop).
+The issue is very likely due to my malformed HTML tree (at least for site https://browser.engineering/layout.html#size-and-position).
+
+I shall get back to this tomorrow. 
+Reminder:
+- Fix HTMLParser
+- get my recurse function back in since I accidentally yeeted it. 
+- make sure non block bois work. 
+
+--- the next day --- 
+
+let's fix this boi. Minimal reproduction needed to cause the duplicate error is below. It seems 
+like the error is related to self closing tags with explicit />. I think I can adjust the DFA slightly to handle this. Note that the same error occurs if a tag that is self closing doesn't explicitly self close. 
+
+``` 
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+    </head>
+    <body>        
+    </body>
+</html>
+```
+
+I don't think the DFA needs to change: it will produce tokens correctly regardless of whether a self closing tag uses /> or not. 
+
+``` 
+elif tag in SELF_CLOSING_TAGS:
+```
+
+That's the issue. My tag is ```'meta charset="utf-8" /'``` which obviously isn't recognized as a self closing tag. Simple fix: extract the tag name before comparison.
+
+So, when using the lovely hub as a test website it seems like the svg tag can throw some curveballs. At some point it would be nice to be able 
+to parse svg tags, but for now I will just parse the svg tag as having a bunch of text. That is to say: an svg tag will only have one child which is a text tag.
+Later on I can work on how I want to parse this (since I imagine svg's have their own weird rules).
+
+I fixed one bug but still have another on the hub. Honestly, my browser seems to work with a bunch of other sites so I am inclined to think this is due to the hub being an absolute mess of a website. [Github](https://github.com/aws/aws-sdk-js-v3/issues/6779) might be having issues as well for me. I am going to leave it for now so that I can make progress. 
+
+# Chapter 6
+
+Now we starting to do some cooking. 
+So for the last chapter I already worked on a better system for parsing html and tag bodies. It seems like I won't need to necessarily replace that but I do need to consider how to incorporate what this chapter does into what I am doing.
+
+On the brightside, once I have implemented this chapter, I can go back and download stylesheets to apply to pages. Yay! We can (and may have to) incorporate multithreading into the browser so that multiple resources can be downloaded in tandem. Yay! 
+
+So this chapter builds a parser that takes in property value pairs. I will need one that can parse actual CSS files. I will almost certainly have to extend what is going on here. Update: I think that this actually does handle parsing full CSS files. I am going to read through the chapter fully once then come back to this. 
+
+I may have to implement my own id selector (since that seems important).
 
 # Exercizes 
 
@@ -220,6 +319,9 @@ The textbook has kept things simple by operating under the assumption that the h
 require a slight re-work and more in depth algorithm. 
 
 At some point I may likely need to just clean up a lot of the code I have written but that's okay. 
+
+I finished ex 4.6 before 4.2, maybe I should have done them the other way around? not sure but anyway, handling these p and i as special cases is annoying and makes the code less elegant but 
+whatever.
 
 # QUESTIONS
 

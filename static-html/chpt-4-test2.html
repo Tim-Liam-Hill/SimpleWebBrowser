@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script x="y" j='t'>
+            console.log("HEllo world");
+            if(10 < 20){
+                console.log('meow');
+            }
+        </script>
+        <style>
+            div > p {
+                background-color: aqua;
+            }
+        </style>
+    </head>
+<body>
+    <b>Bold but below should not be bold</b>
+    <div>
+        <big>Round 3</big>
+    </div>
+    <p>
+        I need to ensure that attributes that use quotes and have embedded html don't destroy everything
+    </p>
+    <vizzie a="<div>meow</div>">
+    Final text
+    </vizzie>
+    <img src="https://google.com?cats" alt="mr meow">
+    
+</body>
+</html>
