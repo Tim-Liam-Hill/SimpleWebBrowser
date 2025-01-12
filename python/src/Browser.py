@@ -55,6 +55,8 @@ class Browser:
             logger.error("Could not open default browser css file")
         #--------------------------------------
 
+    #We will consider the load function to be the start of everything. the passed in url
+    #is the base url that everything else is relative to. 
     def load(self, url):
         content = self.urlHandler.request(url)
         #TODO: need a case for view-source!!!!!???

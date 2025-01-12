@@ -41,7 +41,6 @@ class URLCache:
         logger.info("Cache miss for %s", key)
         raise ValueError("Cache Miss")
     
-
 DATA_REGEX = '^data:(.*)(;base64)?,(.*)$'
 FILE_REGEX = '^file://((\/[\da-zA-Z\s\-_\.]+)+)|([A-Za-z0-9]:(\\\\[a-za-zA-Z\d\s\-_\.]+)+)$'
 URL_REGEX = '^([A-Za-z0-9]+\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+(\.([a-zA-Z]){2,6})?([a-zA-Z0-9\.\&\/\?\:@\-_=#])*$'
@@ -384,7 +383,7 @@ def load(url):
     if url == "":
         body = u.request()
     else: body = u.request(url)
-    #print(lex(body, u.viewSource))
+    print(lex(body, u.viewSource))
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
