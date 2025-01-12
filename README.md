@@ -36,10 +36,11 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Once done, re-write in C++ with better design patterns. (lol, probably won't)
 * Horizontal scrolling
 * scrolling for different platforms
-* on browser resize, don't reset scroll amount but instead make it proportional to original scroll
+* on browser resize, don't reset scroll amount but instead make it proportional to original scroll (done)
 * heading tags!!!!! REEEEEEEEEEE (just all the tags in general)
 * Currently the browser runs the HTML parser twice on first startup (not the http request because that is cached) likely due to the first tkinter config event. Make sure this doesn't happen when we switch libraries.
 * TODO: nice syntax highlighting for view source.
+* TODO: have an invalidate cache option when making requests to URL
 
 # WishList
 
@@ -291,6 +292,14 @@ On the brightside, once I have implemented this chapter, I can go back and downl
 So this chapter builds a parser that takes in property value pairs. I will need one that can parse actual CSS files. I will almost certainly have to extend what is going on here. Update: I think that this actually does handle parsing full CSS files. I am going to read through the chapter fully once then come back to this. 
 
 I may have to implement my own id selector (since that seems important).
+
+So, we may need to rework our validation code inside of URL since now we are supporting relative urls :/. Actually, do we?? 
+
+We can use the resolve function and then the request function afterwards? 
+What we need is the base host and scheme. I suppose what we can do is return that with the content of our first request? If there are relative links then necessarily they relate to the main content right?? But what about when we make requests for other things? How do we keep track???
+Sigh. 
+
+Keep the event logic in the Browser class and call appropriate functions for the active page. 
 
 # Exercizes 
 
