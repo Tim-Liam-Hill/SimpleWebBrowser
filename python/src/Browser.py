@@ -4,6 +4,7 @@ from Layout import DocumentLayout, HSTEP, VSTEP, paint_tree, style
 from URL import URL, Text, lex
 from HTMLParser import HTMLParser
 import sys
+from CSS.CSSParser import CSSParser
 import logging
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,9 @@ INNER_SCROLLBAR_WIDTH = 18
 INNER_SCROLLBAR_HEIGHT = 40
 SCROLLBAR_COLOR = 'deep sky blue'
 INNER_SCROLLBAR_COLOR = 'sky blue'
+DEFAULT_CSS_PATH = '../../browser.css'
 
+#TODO: this gonna need a rework to support mutliple pages but that's okay.
 class Browser:
     def __init__(self):
         # Initialize instance variables--------
@@ -44,11 +47,19 @@ class Browser:
         self.window.bind("<Configure>", self.resize)
         #--------------------------------------
 
+        #css
+        logger.info("Loading default Browser CSS")
+        try:
+            self.defaultCSS = CSSParser(open(DEFAULT_CSS_PATH).read()).parse()
+        except ValueError:
+            logger.error("Could not open default browser css file")
+        #--------------------------------------
+
     def load(self, url):
         content = self.urlHandler.request(url)
         #TODO: need a case for view-source!!!!!???
         self.root_node = HTMLParser(content).parse(self.urlHandler.viewSource)
-        style(self.root_node)
+        style(self.root_node, self.defaultCSS.copy())
         self.createLayout()
         self.draw()
 
@@ -72,11 +83,6 @@ class Browser:
             if cmd.bottom < self.scroll: continue
             cmd.execute(self.scroll, self.canvas)
         
-        # for x, y, word, font in self.display_list:
-        #     if y > self.scroll + self.window_height: continue
-        #     if y + VSTEP < self.scroll: continue
-        #     self.canvas.create_text(x, y- self.scroll, text=word, font=font, anchor='nw')
-
         #scrollbar
         if self.doc_height > self.window_height:
             self.canvas.create_rectangle(self.widthForContent(),  0, self.window_width, self.window_height, fill=SCROLLBAR_COLOR)

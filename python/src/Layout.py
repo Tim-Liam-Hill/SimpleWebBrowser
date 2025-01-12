@@ -252,14 +252,21 @@ class BlockLayout:
         elif tag == 'li':
             self.layoutProps.bullet = False
 
-def style(node):
+def style(node, rules):
     node.style = {}
+
+    for selector, body in rules:
+        if not selector.matches(node): continue
+        for property, value in body.items():
+            node.style[property] = value
+    #style attributes should override stylesheets apparently 
     if isinstance(node, Element) and "style" in node.attributes:
         pairs = CSSParser(node.attributes["style"]).body()
         for property, value in pairs.items():
             node.style[property] = value
+
     for child in node.children:
-        style(child)
+        style(child, rules)
 
 class DrawText:
     def __init__(self, x1, y1, text, font):
