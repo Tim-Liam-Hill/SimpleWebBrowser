@@ -301,6 +301,31 @@ Sigh.
 
 Keep the event logic in the Browser class and call appropriate functions for the active page. 
 
+* Page will store all the variables about the document (document height etc)
+* Browser will store the info regarding the window (window height) and p
+
+we need a window class
+
+* Browser has a singular window which holds all the information about the space on which we can render
+* Browser has multiple pages, each with their own unique scroll values, doc heights etc
+* Each page has a reference to the window object which it uses to calculate its own values n shit
+* Browser has the on resize listeners which it then uses to update tkinter
+* the window class does NOT store the tkinter canvas and such, the browser does. Window just stores info about the space on which we render and handles rendering of things not unique to a page (eg: scroll bar thingy, search bar etc). 
+* ACTUALLY, why shouldn't window store those things? I don't think its a bad idea actually.
+* but then window needs to know about the active page.
+* so then maybe window takes care of those things?
+* but then window basically ends up taking over the role of browser.
+* So I guess we don't need a window class after all. 
+* But here is the thing: someone has to store data about the tkinter window (width height etc)
+* This data needs to be made available to each and every page, without the page being in control of them (pages need this info to draw content)
+* Thing is, are pages ever able to call their own draw function? If so, they need a reference that lets them access the window values. If not, then we can just pass down the values any time we do a render
+* I think the latter will work. If there is a click on the screen that will be processed by the event handlers which will be defined in Browser (since we need to check if click on page content or navbar etc). Then, if needed, we can propagate that click down to the page and call the page's draw function once done with the window values
+* This way no copies of data and stale data. 
+
+KISS
+
+
+
 # Exercizes 
 
 4.6 is a bit much in my opinion/doesn't have a trivial algorithm to use. Consider the below html fragment:

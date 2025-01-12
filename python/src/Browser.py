@@ -5,6 +5,7 @@ from URL import URL, Text, lex
 from HTMLParser import HTMLParser
 import sys
 from CSS.CSSParser import CSSParser
+from Page import Page
 import logging
 logger = logging.getLogger(__name__)
 
@@ -30,13 +31,13 @@ class Browser:
         )
         self.canvas.pack(fill="both", expand=1)
         self.urlHandler = URL()
-        self.display_list = []
         self.scroll = 0
         self.window_height = INIT_HEIGHT #height of rendered window
         self.window_width = INIT_WIDTH
         self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
-        self.tokens = []
         self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
+        self.pages = []
+        self.activePage = Page()
 
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
@@ -58,55 +59,22 @@ class Browser:
     #We will consider the load function to be the start of everything. the passed in url
     #is the base url that everything else is relative to. 
     def load(self, url):
-        content = self.urlHandler.request(url)
-        #TODO: need a case for view-source!!!!!???
-        self.root_node = HTMLParser(content).parse(self.urlHandler.viewSource)
-        style(self.root_node, self.defaultCSS.copy())
-        self.createLayout()
-        self.draw()
-
-    def createLayout(self):
-        logger.info("Creating DOM from HTML Tree")
-        self.document = DocumentLayout(self.root_node, self.widthForContent())
-        self.document.layout()
-        self.display_list = []
-        paint_tree(self.document, self.display_list)
-        self.doc_height = self.document.height
+        self.activePage.load(url)
 
     def widthForContent(self):
         return self.window_width - SCROLLBAR_WIDTH
 
-    def draw(self):
-
-        self.canvas.delete("all")
-
-        for cmd in self.display_list:
-            if cmd.top > self.scroll + self.window_height: continue
-            if cmd.bottom < self.scroll: continue
-            cmd.execute(self.scroll, self.canvas)
-        
-        #scrollbar
-        if self.doc_height > self.window_height:
-            self.canvas.create_rectangle(self.widthForContent(),  0, self.window_width, self.window_height, fill=SCROLLBAR_COLOR)
-            #start y can go to maximum of self.window_height - INNER_SCROLL_HEIGHT
-            proportionScrolled = (self.scroll )/(self.doc_height- self.window_height)
-            
-            start_y = min( proportionScrolled * (self.window_height-INNER_SCROLLBAR_HEIGHT), self.window_height-INNER_SCROLLBAR_HEIGHT)
-            self.canvas.create_rectangle(self.window_width -  INNER_SCROLLBAR_WIDTH - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH)/2,  start_y, self.window_width - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH), start_y + INNER_SCROLLBAR_HEIGHT, fill=INNER_SCROLLBAR_COLOR)
-
-
-    #TODO: make sure we don't go beyond content
     def scrolldown(self, e):
         logger.debug("Scrolling down")
         if self.doc_height > self.window_height:
             self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - self.window_height)
         else: self.scroll = 0
-        self.draw()
+        self.activePage.draw()
     
     def scrollup(self, e):
         logger.debug("Scrolling up")
         self.scroll = max(self.scroll - SCROLL_STEP, 0)
-        self.draw()
+        self.activePage.draw()
     
     def mouseWheelScroll(self, e):
         #TODO: implement for Windows and Mac since they have differences

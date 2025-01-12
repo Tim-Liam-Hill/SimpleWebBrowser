@@ -19,41 +19,18 @@ INNER_SCROLLBAR_COLOR = 'sky blue'
 DEFAULT_CSS_PATH = '../../browser.css'
 
 #TODO: this gonna need a rework to support mutliple pages but that's okay.
-class Browser:
-    def __init__(self):
+class Page:
+    def __init__(self, window, canvas, urlHandler, defaultCSS):
         # Initialize instance variables--------
-        self.window = tkinter.Tk()
-        self.canvas = tkinter.Canvas(
-            self.window, 
-            width=INIT_WIDTH,
-            height=INIT_HEIGHT
-        )
-        self.canvas.pack(fill="both", expand=1)
+        self.window = window 
+        self.canvas = canvas
+
         self.urlHandler = URL()
         self.display_list = []
         self.scroll = 0
-        self.window_height = INIT_HEIGHT #height of rendered window
-        self.window_width = INIT_WIDTH
-        self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
-        self.tokens = []
         self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
+        self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
 
-        #event handlers
-        self.window.bind("<Down>", self.scrolldown)
-        self.window.bind("<Up>", self.scrollup)
-        self.window.bind("<MouseWheel>", self.mouseWheelScroll)
-        self.window.bind("<Button-4>", self.linuxWheelScroll)
-        self.window.bind("<Button-5>", self.linuxWheelScroll)
-        self.window.bind("<Configure>", self.resize)
-        #--------------------------------------
-
-        #css
-        logger.info("Loading default Browser CSS")
-        try:
-            self.defaultCSS = CSSParser(open(DEFAULT_CSS_PATH).read()).parse()
-        except ValueError:
-            logger.error("Could not open default browser css file")
-        #--------------------------------------
 
     #We will consider the load function to be the start of everything. the passed in url
     #is the base url that everything else is relative to. 
