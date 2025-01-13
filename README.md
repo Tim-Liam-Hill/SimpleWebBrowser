@@ -333,6 +333,12 @@ Back a day later, lets refactor.
 
 It is a good thing I read ahead sometimes: what I am doing is actually what ends up being done in the next chapter (with the same logic w.r.t separation of concerns it seems). With this in mind let's stop what I am doing now with this refactor and focus instead on completing this chapter.
 
+Reverted, but now it seems like google.com is throwing errors. why? Seems like we have some legacy code: we shouldn't have a flush function any more since text belongs to text nodes. We need to implement functionality of 'br' and 'p' tags without flush 
+
+So some more things are broken. Superscript isn't working which is annoying. Also not sure how to reimplement br elements. Reee.
+
+Turns out the re-implementation for br was pretty simple. Now just need to figure out superscript (which should be doable).
+
 # Exercizes 
 
 4.6 is a bit much in my opinion/doesn't have a trivial algorithm to use. Consider the below html fragment:

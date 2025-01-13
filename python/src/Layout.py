@@ -104,8 +104,7 @@ class BlockLayout:
             return "block"
         
     def layout(self):
-        if(isinstance(self.node, Element)):
-            self.handleOpenTag(self.node.tag)
+
         self.x = self.parent.x
         self.width = self.parent.width
 
@@ -113,6 +112,9 @@ class BlockLayout:
             self.y = self.previous.y + self.previous.height
         else:
             self.y = self.parent.y
+
+        if(isinstance(self.node, Element)):
+            self.handleOpenTag(self.node.tag)
 
         mode = self.layout_mode()
         if mode == "block":
@@ -141,6 +143,7 @@ class BlockLayout:
         else: self.height = self.cursor_y
     
     #According to the book, can block elements not draw 
+    #TODO: what did I mean by the above???
     def paint(self):
         cmds = []
 
@@ -220,8 +223,8 @@ class BlockLayout:
             self.layoutProps.fontSize *= 0.75
             self.layoutProps.weight = "bold"
         elif tag == "br":
-            self.flush()
-            self.cursor_y += VSTEP
+            #self.flush()
+            self.y += VSTEP
         elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
             self.layoutProps.list_indent += 1
         elif tag == 'li':
