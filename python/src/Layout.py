@@ -198,7 +198,7 @@ class BlockLayout:
         baseline = self.cursor_y +  self.layoutProps.leading * max_ascent
         for rel_x, word, font, isSuperscript in self.line:
             x = self.x + rel_x
-            y =  self.y + baseline - font.metrics("ascent") if not isSuperscript else baseline - 1.8*font.metrics("ascent")
+            y =  self.y + baseline - font.metrics("ascent") if not isSuperscript else self.y + baseline - 1.8*font.metrics("ascent")
             self.display_list.append((x, y, word, font))
         max_descent = max([metric["descent"] for metric in metrics])
         self.cursor_y = baseline + 1.25 * max_descent
