@@ -34,7 +34,7 @@ class Browser:
         self.scroll = 0
         self.window_height = INIT_HEIGHT #height of rendered window
         self.window_width = INIT_WIDTH
-        self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
+        
         self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
         self.pages = []
         self.activePage = Page()

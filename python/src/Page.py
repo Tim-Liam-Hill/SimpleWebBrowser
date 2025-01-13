@@ -3,7 +3,6 @@ import tkinter.font
 from Layout import DocumentLayout, HSTEP, VSTEP, paint_tree, style
 from URL import URL, Text, lex
 from HTMLParser import HTMLParser
-import sys
 from CSS.CSSParser import CSSParser
 import logging
 logger = logging.getLogger(__name__)
@@ -16,20 +15,20 @@ INNER_SCROLLBAR_WIDTH = 18
 INNER_SCROLLBAR_HEIGHT = 40
 SCROLLBAR_COLOR = 'deep sky blue'
 INNER_SCROLLBAR_COLOR = 'sky blue'
-DEFAULT_CSS_PATH = '../../browser.css'
+
 
 #TODO: this gonna need a rework to support mutliple pages but that's okay.
 class Page:
-    def __init__(self, window, canvas, urlHandler, defaultCSS):
+    def __init__(self, urlHandler, defaultCSS):
         # Initialize instance variables--------
-        self.window = window 
-        self.canvas = canvas
 
         self.urlHandler = URL()
         self.display_list = []
         self.scroll = 0
         self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
-        self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
+        self.doc_height = 0 #keeps track of the height of the document (DOM, not tkinter window)
+        self.defaultCSS = defaultCSS
+        self.urlHandler = urlHandler
 
 
     #We will consider the load function to be the start of everything. the passed in url
@@ -53,7 +52,7 @@ class Page:
     def widthForContent(self):
         return self.window_width - SCROLLBAR_WIDTH
 
-    def draw(self):
+    def draw(self, canvas):
 
         self.canvas.delete("all")
 
@@ -108,9 +107,6 @@ class Page:
         #Don't re-lex tokens, there is no change in the dom if we resize!!!! (at least, not at this stage, maybe with advanced CSS there would be)
         self.createLayout()
         self.draw()
-
-
-
 
 if __name__ == "__main__":
     logger.info("TODO: implement main method for page")

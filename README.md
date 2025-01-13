@@ -324,7 +324,15 @@ we need a window class
 
 KISS
 
+Back a day later, lets refactor. 
 
+* Page stores all data for a specific window
+* Browser stores all the pages as well as active page and tkinter window
+* Page can have a font cache that is available to all instances of page.
+
+(reminder, I am at heading 5)
+
+It is a good thing I read ahead sometimes: what I am doing is actually what ends up being done in the next chapter (with the same logic w.r.t separation of concerns it seems). With this in mind let's stop what I am doing now with this refactor and focus instead on completing this chapter.
 
 # Exercizes 
 
