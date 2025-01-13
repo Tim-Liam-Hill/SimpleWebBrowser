@@ -36,11 +36,10 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Once done, re-write in C++ with better design patterns. (lol, probably won't)
 * Horizontal scrolling
 * scrolling for different platforms
-* on browser resize, don't reset scroll amount but instead make it proportional to original scroll (done)
+* on browser resize, don't reset scroll amount but instead make it proportional to original scroll
 * heading tags!!!!! REEEEEEEEEEE (just all the tags in general)
 * Currently the browser runs the HTML parser twice on first startup (not the http request because that is cached) likely due to the first tkinter config event. Make sure this doesn't happen when we switch libraries.
 * TODO: nice syntax highlighting for view source.
-* TODO: have an invalidate cache option when making requests to URL
 
 # WishList
 
