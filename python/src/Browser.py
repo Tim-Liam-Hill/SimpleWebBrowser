@@ -140,7 +140,7 @@ if __name__ == "__main__":
     b = Browser()
 
     if(len(sys.argv) != 2):
-        b.load("file:///home/tim/Documents/Projects/SimpleBrowser/SimpleWebBrowser/python/src/static-html/chpt3-test.html")
+        b.load("file:///home/tim/Documents/Projects/SimpleBrowser/SimpleWebBrowser/static-html/chpt3-test.html")
     else: b.load(sys.argv[1])
     tkinter.mainloop()
     
