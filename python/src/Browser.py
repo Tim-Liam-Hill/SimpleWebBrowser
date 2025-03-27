@@ -2,11 +2,12 @@ import tkinter
 import tkinter.font
 from Layout import DocumentLayout, HSTEP, VSTEP, paint_tree, style
 from URL import URL
-from HTMLParser import HTMLParser
+from HTMLParser import Element, HTMLParser
 import sys
 from CSS.CSSParser import CSSParser
 import logging
 import os 
+from Utils import tree_to_list
 logger = logging.getLogger(__name__)
 
 INIT_WIDTH, INIT_HEIGHT = 800, 600
@@ -65,6 +66,13 @@ class Browser:
         content = self.urlHandler.request(url)
         #TODO: need a case for view-source!!!!!???
         self.root_node = HTMLParser(content).parse(self.urlHandler.viewSource)
+        links = [node.attributes["href"]
+             for node in tree_to_list(self.root_node, [])
+             if isinstance(node, Element)
+             and node.tag == "link"
+             and node.attributes.get("rel") == "stylesheet"
+             and "href" in node.attributes]
+        logger.info(links)
         style(self.root_node, self.defaultCSS.copy())
         self.createLayout()
         self.draw()

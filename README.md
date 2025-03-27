@@ -13,7 +13,12 @@ I know I will need a virtual environment in the future, so why not just set one 
 
 ```
 python3 -m venv ./env
+source ./env/bin/activate
+deactivate
 ```
+
+Not entirely sure if I have done things correctly :/ we will find out at some point I suppose. 
+Why did I create the virtual environment in the root and not in the python folder????????
 
 
 # lessons learned
@@ -369,6 +374,11 @@ We are back, and to get back into this we need to pick up slightly. For starters
 I recently was introduced to a way of developing in which you write your unit tests first then have live reloading enabled while you write the code that satisfies the unit tests. In realtime you can see the result of the changes you make which I think is very rad and will help me be a better developer. I want to implement that into this project if I can. 
 
 Basically, [this post](https://stackoverflow.com/questions/73776076/is-there-a-way-to-rerun-all-pytest-tests-when-a-file-is-saved) covers exactly what I want. Nice!! 
+
+Somehow I feel like it is late for that (even though it isn't but eh). 
+
+Next step: heading 4 because we currently aren't extracting href links. URL class will need to change a bit to validate links :/
+
 
 # Exercizes 
 

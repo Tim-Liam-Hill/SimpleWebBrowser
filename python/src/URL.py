@@ -54,7 +54,7 @@ class URL:
     HTTP_VERSION = 'HTTP/1.1'
     MAX_REDIRECTS = 7
     
-    #To make more extensible, we can take in options here EG: options related to headers n shit. 
+    #To make more extensible, we can take in options here EG: options related to headers n such 
     def __init__(self):
         #All class variables
         self.viewSource = False 
@@ -68,7 +68,6 @@ class URL:
             ["User-Agent","Meow-Meow-Browser24"],
             ["Accept-Encoding","gzip"]
         ]
-        self.cache = None
         self.connections = {}
         self.cache = URLCache()
         ##---------------------

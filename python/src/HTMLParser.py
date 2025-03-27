@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from URL import URL
 import logging
-import copy
+import os
+CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
 
 SELF_CLOSING_TAGS = [
@@ -312,6 +313,6 @@ if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
     url = URL()
-    content = url.request("file:///home/tim/Documents/Projects/SimpleBrowser/SimpleWebBrowser/python/src/static-html/test.html")#("https://browser.engineering/html.html")
+    content = url.request(f"{CURR_FILEPATH}../../static-html/test.html")
     p = HTMLParser(content)
     print_tree(p.parse())
