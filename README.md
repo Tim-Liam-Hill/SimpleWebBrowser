@@ -1,6 +1,18 @@
-# TODOs 
 
-* TODO: create new Tag for Script elements and handle them differently. Use similar handling for pre and code tags 
+# Run steps
+
+Its been a hot moment since I have worked on this project. This is leading me to realize how important documentation really is since I have forgotten what I was working on and how to run this project. TeeHee~
+
+Browser is the main entry point. We run that file. As of chapter 6 the way of running is:
+
+```
+python3 Browser.py <url>
+```
+
+# lessons learned
+
+ * setting up testing before writing any code is a good idea
+ * main branch should always have latest working code. Leave experiments and such for other branches
 
 # SimpleWebBrowser
 A simple web browser built with the help of https://browser.engineering/index.html
@@ -40,6 +52,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * heading tags!!!!! REEEEEEEEEEE (just all the tags in general)
 * Currently the browser runs the HTML parser twice on first startup (not the http request because that is cached) likely due to the first tkinter config event. Make sure this doesn't happen when we switch libraries.
 * TODO: nice syntax highlighting for view source.
+* TODO: create new Tag for Script elements and handle them differently. Use similar handling for pre and code tags 
 
 # WishList
 
@@ -338,6 +351,12 @@ Reverted, but now it seems like google.com is throwing errors. why? Seems like w
 So some more things are broken. Superscript isn't working which is annoying. Also not sure how to reimplement br elements. Reee.
 
 Turns out the re-implementation for br was pretty simple. Now just need to figure out superscript (which should be doable).
+
+ *** a period of time passes *** 
+We are back, and to get back into this we need to pick up slightly. For starters, let's fix some obvious bugs.
+
+1. we aren't pathing correctly when reading the Default css file. IE: if you run the python command outside the director of Browser.py then the code will file to find the Default css file. 
+2. Setup some better testing ???? TDD????????
 
 # Exercizes 
 

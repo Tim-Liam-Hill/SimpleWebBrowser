@@ -6,6 +6,7 @@ from HTMLParser import HTMLParser
 import sys
 from CSS.CSSParser import CSSParser
 import logging
+import os 
 logger = logging.getLogger(__name__)
 
 INIT_WIDTH, INIT_HEIGHT = 800, 600
@@ -16,7 +17,9 @@ INNER_SCROLLBAR_WIDTH = 18
 INNER_SCROLLBAR_HEIGHT = 40
 SCROLLBAR_COLOR = 'deep sky blue'
 INNER_SCROLLBAR_COLOR = 'sky blue'
-DEFAULT_CSS_PATH = './browser.css'
+DEFAULT_CSS_PATH = 'browser.css'
+DEFAULT_FILE_PATH = '../../static-html/test.html' #path from this file's directory to default file we show
+CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 
 #TODO: this gonna need a rework to support mutliple pages but that's okay.
 class Browser:
@@ -49,8 +52,9 @@ class Browser:
 
         #css
         logger.info("Loading default Browser CSS")
+        
         try:
-            self.defaultCSS = CSSParser(open(DEFAULT_CSS_PATH).read()).parse()
+            self.defaultCSS = CSSParser(open(f'{CURR_FILEPATH}/{DEFAULT_CSS_PATH}').read()).parse()
         except ValueError:
             logger.error("Could not open default browser css file")
         #--------------------------------------
@@ -140,7 +144,7 @@ if __name__ == "__main__":
     b = Browser()
 
     if(len(sys.argv) != 2):
-        b.load("file:///home/tim/Documents/Projects/SimpleBrowser/SimpleWebBrowser/static-html/chpt3-test.html")
+        b.load(f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}')
     else: b.load(sys.argv[1])
     tkinter.mainloop()
     
