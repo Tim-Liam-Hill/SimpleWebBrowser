@@ -9,6 +9,13 @@ Browser is the main entry point. We run that file. As of chapter 6 the way of ru
 python3 Browser.py <url>
 ```
 
+I know I will need a virtual environment in the future, so why not just set one up now??? 
+
+```
+python3 -m venv ./env
+```
+
+
 # lessons learned
 
  * setting up testing before writing any code is a good idea
@@ -351,12 +358,17 @@ Reverted, but now it seems like google.com is throwing errors. why? Seems like w
 So some more things are broken. Superscript isn't working which is annoying. Also not sure how to reimplement br elements. Reee.
 
 Turns out the re-implementation for br was pretty simple. Now just need to figure out superscript (which should be doable).
+-> that was done. Nice. 
 
  *** a period of time passes *** 
 We are back, and to get back into this we need to pick up slightly. For starters, let's fix some obvious bugs.
 
-1. we aren't pathing correctly when reading the Default css file. IE: if you run the python command outside the director of Browser.py then the code will file to find the Default css file. 
+1. we aren't pathing correctly when reading the Default css file. IE: if you run the python command outside the director of Browser.py then the code will file to find the Default css file. (done)
 2. Setup some better testing ???? TDD????????
+
+I recently was introduced to a way of developing in which you write your unit tests first then have live reloading enabled while you write the code that satisfies the unit tests. In realtime you can see the result of the changes you make which I think is very rad and will help me be a better developer. I want to implement that into this project if I can. 
+
+Basically, [this post](https://stackoverflow.com/questions/73776076/is-there-a-way-to-rerun-all-pytest-tests-when-a-file-is-saved) covers exactly what I want. Nice!! 
 
 # Exercizes 
 
