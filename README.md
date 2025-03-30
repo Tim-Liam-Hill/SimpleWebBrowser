@@ -65,6 +65,12 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Currently the browser runs the HTML parser twice on first startup (not the http request because that is cached) likely due to the first tkinter config event. Make sure this doesn't happen when we switch libraries.
 * TODO: nice syntax highlighting for view source.
 * TODO: create new Tag for Script elements and handle them differently. Use similar handling for pre and code tags 
+* gitignore should ignore pycache
+
+# BUGS
+
+* seems like the bottom text of the page gets cut off in some sites
+* HTML parser seems like it is struggling on url https://javascript.info/currying-partials 
 
 # WishList
 
@@ -378,6 +384,15 @@ Basically, [this post](https://stackoverflow.com/questions/73776076/is-there-a-w
 Somehow I feel like it is late for that (even though it isn't but eh). 
 
 Next step: heading 4 because we currently aren't extracting href links. URL class will need to change a bit to validate links :/
+
+
+The problem here is the books code assumes we have always saved the base url's scheme, host and port in the URL object and it uses that to construct relative urls. This should work for me but I feel like it could be bug prone: if you make a request to a different domain (eg: google to fetch a font) and then try resolve a relative link (maybe you are dynamically resolving a stylesheet?) then you would get the wrong relative link. I am going to pass in an additional param so that we always specify which url is the base for our. 
+
+Wait, so what they have done is they create a new URL for each new url string. I seem to be doing something different where I have a URL 'manager' that is used for each URL. So, I can either change to be more like them or carry on my approach. I think I might adopt their approach. But it feels kinda stinky somehow, so instead let's keep my approach and refactor URL to stop using those member variables for path, host etc. 
+
+Who doesn't love a good refactor? While we are at it, why are Text and Tag classes in the URL.py file? This seems like a weird place for them to be. 
+
+View source is a thing we need to keep track of
 
 
 # Exercizes 

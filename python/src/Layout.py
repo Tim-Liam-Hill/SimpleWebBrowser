@@ -1,7 +1,7 @@
 import sys
 import tkinter
 import tkinter.font
-from URL import URL, Text, lex
+from URLHandler import URLHandler, Text, lex
 from HTMLParser import Text, Element
 from CSS.CSSParser import CSSParser
 import math
@@ -304,5 +304,5 @@ class DrawRect:
 if __name__ == "__main__": 
     logging.basicConfig(level=logging.DEBUG)
     window = tkinter.Tk()
-    url = URL()
+    url = URLHandler()
 

@@ -1,4 +1,4 @@
-from src.URL import URL 
+from python.src.URLHandler import URL 
 import unittest
 
 class TestURL(unittest.TestCase):

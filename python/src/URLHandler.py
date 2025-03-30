@@ -45,7 +45,7 @@ DATA_REGEX = '^data:(.*)(;base64)?,(.*)$'
 FILE_REGEX = '^file://((\/[\da-zA-Z\s\-_\.]+)+)|([A-Za-z0-9]:(\\\\[a-za-zA-Z\d\s\-_\.]+)+)$'
 URL_REGEX = '^([A-Za-z0-9]+\:\/\/)?[a-zA-Z0-9\.\/\?\:@\-_=#]+(\.([a-zA-Z]){2,6})?([a-zA-Z0-9\.\&\/\?\:@\-_=#])*$'
 
-class URL:
+class URLHandler:
     """Given a url, extracts scheme and returns data based on the protocol
     NEED TO MAKE SURE THAT VIEWSOURCE IS SET/CHECKED SOMEHOW
     There will be a different class responsible for parsing the html into a syntax
@@ -57,12 +57,8 @@ class URL:
     #To make more extensible, we can take in options here EG: options related to headers n such 
     def __init__(self):
         #All class variables
-        self.viewSource = False 
-        self.scheme = ""
-        self.port = 0
+
         self.redirectCount = 0
-        self.host = ""
-        self.path = ""
         self.requestHeaders = [
             ["Connection", "Keep-alive"],
             ["User-Agent","Meow-Meow-Browser24"],
@@ -93,30 +89,38 @@ class URL:
 
         return False 
     
+    #used to resovle relative urls to the actual url to request
+    #resources from
+    def resolve(self, url):
+        pass 
     #given a string url, extracts the http scheme. Throw error if invalid scheme. Returns scheme and 
     #url without scheme
     #https://developer.mozilla.org/en-US/docs/Web/URI/Schemes
     #'The scheme of a URI is the first part of the URI, before the : character.'
-    def extractScheme(self, url):
+    #isViewSource is used to keep track of whether or not we are already in 'view-source' between recursive calls
+    def extractScheme(self, url, isViewSource = False):
         err = "Input url %s does not contain a supported scheme\n"%(url)
         err += "Accepted schemes are: \n\thttp\n\thttps\n\tfile\n\tdata\n\tview-source\n"
 
         scheme = url.split(":",1)[0]
         if scheme.lower() in ["http","https", "file"]:
             url = url.split("://",1)[1]
-            return scheme.lower(), url 
+            return scheme.lower(), url
         elif scheme.lower() in ["data"]:
             url = url.split(":",1)[1]
-            return scheme.lower(), url 
+            return scheme.lower(), url
         elif scheme.lower() == "view-source":
-            if self.viewSource: #stops multiple view-source:view-source from being valid
+            if isViewSource: #stops multiple view-source:view-source from being valid
                 raise ValueError(err)
-            self.viewSource = True 
             junk, url = scheme = url.split(":",1)
-            return self.extractScheme(url)
+            return self.extractScheme(url, True)
         else: 
             raise ValueError(err)
 
+    def isViewSource(self, url):
+
+        scheme = url.split(":",1)[0]
+        return scheme.lower() == "view-source"
 
     #Makes a request based on the input URL. Make this the entry function and move shit from
     #constructor. Implement destructor
@@ -125,30 +129,30 @@ class URL:
         if not self.validateURL(url):
             raise ValueError("Input URL is not of a valid format")        
 
-        if reset:
+        if reset: #TODO: document why this is here. I know it relates to redirects and such
             self.resetBetweenRequest()
-        self.scheme, url = self.extractScheme(url)
-        self.path = url 
+        scheme, path = self.extractScheme(url) #throws an error so match case doesn't need default case?
 
-        match self.scheme:
+
+        match scheme:
             case "file":
-                return self.fileRequest()
+                return self.fileRequest(path)
             case "http":
-                return self.httpRequest()
+                return self.httpRequest(path, scheme)
             case "https":
-                return self.httpRequest()
+                return self.httpRequest(path, scheme)
             case "data":
-                return self.dataRequest()
+                return self.dataRequest(path)
     
     def resetBetweenRequest(self):
         self.viewSource = False 
         self.redirectCount = 0
 
-    #Doesn't handle the OSError, that can be handled by lower down (or maybe we will figure it out
+    #Doesn't handle the OSError, that can be handled by lower down/higher up (or maybe we will figure it out
     #eventually
-    def fileRequest(self):
+    def fileRequest(self, path):
         content = ""
-        with open(self.path, "r") as f:
+        with open(path, "r") as f:
             content = f.read()
         return content 
         
@@ -159,13 +163,13 @@ class URL:
     #TODO: one thing I can do is return the html based on the content
     #eg: if it is an image or video, return img tag with the necessary nonsense set
     #that makes the most sense to me right now. 
-    def dataRequest(self):
+    def dataRequest(self, path):
         #so we have 2 main cases:
         #base64 or not base64
         #we also need to support a bunch of different charsets don't we. REEEEEEEEE
         #https://datatracker.ietf.org/doc/html/rfc2045 may help
-        print(self.path)
-        preamble, data = self.path.split(",",1)
+ 
+        preamble, data = path.split(",",1)
         
         #default to plain text mediatype with URL encoded string 
         if preamble == "":
@@ -174,33 +178,33 @@ class URL:
         return ""
 
     #eventually need to handle post requests. But that is a problem for later.
-    def httpRequest(self):
+    def httpRequest(self, path, scheme):
 
-        if "/" not in self.path:
-            self.path = self.path + "/"
-        self.host, self.path = self.path.split("/", 1)
-        self.path = "/" + self.path
+        if "/" not in path:
+            path = path + "/"
+        host, path = path.split("/", 1)
+        path = "/" + path
 
         try:
-            content = self.cache.get(self.scheme + "://" + self.host + self.path)
+            content = self.cache.get(scheme + "://" + host + path)
             logger.info("Returning content from cache")
             return content
         except ValueError:
             pass
         
-        if self.scheme == "http":
-            self.port = 80
-        elif self.scheme == "https":
-            self.port = 443
+        if scheme == "http":
+            port = 80
+        elif scheme == "https":
+            port = 443
         
-        if ":" in self.host:
-            self.host, port = self.host.split(":", 1)
-            self.port = int(port)
+        if ":" in host:
+            host, port = host.split(":", 1)
+            port = int(port)
         
-        s = self.getSocket()
+        s = self.getSocket(scheme, host, port)
 
-        request = "GET {} {}\r\n".format(self.path, URL.HTTP_VERSION) #may need to change eventually if we do POST requests. 
-        request += "Host: {}\r\n".format(self.host)
+        request = "GET {} {}\r\n".format(path, URLHandler.HTTP_VERSION) #may need to change eventually if we do POST requests. 
+        request += "Host: {}\r\n".format(host)
         for headerPair in self.requestHeaders:
             request += headerPair[0] + ": " + headerPair[1] + "\r\n"
         request += "\r\n"
@@ -226,7 +230,7 @@ class URL:
         logger.debug(response_headers)
 
         if str(HTTPStatus.MOVED_PERMANENTLY.value) in status:
-            return self.handleRedirect(response_headers)
+            return self.handleRedirect(response_headers, scheme, host)
             
         if "transfer-encoding" in response_headers:
             content = self.handleTransferEncoding(response_headers, response)
@@ -239,11 +243,11 @@ class URL:
         else: content = content.decode("utf-8")
 
         if 'cache-control' in response_headers:
-            self.cacheResponse(content, response_headers)
+            self.cacheResponse(content, response_headers, scheme, host, path)
 
         return content
     
-    def cacheResponse(self, content, response_headers):
+    def cacheResponse(self, content, response_headers,scheme, host, path):
             directives = response_headers['cache-control'].split(", ")
             #https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control technically we can cache if no-cache 
             #is set but that complicates things so let's just make things simple. 
@@ -252,25 +256,24 @@ class URL:
             arr = [s for s in directives if "max-age" in s]
             if len(arr) != 0 and len(noCache) == 0:
                 maxAge = int(arr[0].split("=")[1])
-                self.cache.put(self.scheme + "://" + self.host + self.path, content, maxAge) #may need to change eventually if we do POST requests
+                self.cache.put(scheme + "://" + host + path, content, maxAge) #may need to change eventually if we do POST requests
             #elif 'Expires' #TODO: use 'Expires' header if maxAge is missing
 
     
-    def handleRedirect(self, response_headers):
-        if self.redirectCount == URL.MAX_REDIRECTS:
+    def handleRedirect(self, response_headers, scheme, host):
+        if self.redirectCount == URLHandler.MAX_REDIRECTS:
             return "<html><body>Maximum redirect limit reached</body></html>"
         newLoc = response_headers["location"]
         logger.info("Redirecting to {}".format(newLoc))
         self.redirectCount += 1
 
         try: #need to check if absolute or relative path provided
-            self.extractScheme(newLoc)
-            return self.request(response_headers["location"], False)
+            return self.request(newLoc, False)
         except ValueError:
-            return self.request("{}://{}{}".format(self.scheme,self.host,newLoc), False)
+            return self.request("{}://{}{}".format(scheme,host,newLoc), False)
     
-    def getSocket(self) -> socket.socket:
-        key = "{}://{}".format(self.scheme, self.host)
+    def getSocket(self, scheme, host, port) -> socket.socket:
+        key = "{}://{}".format(scheme, host)
         logger.info("Getting socket for {}".format(key))
         if key in self.connections:
             if not self.isSocketClosed(self.connections[key]):
@@ -284,10 +287,10 @@ class URL:
             type=socket.SOCK_STREAM,
             proto=socket.IPPROTO_TCP,
         )
-        s.connect((self.host, self.port))
-        if self.scheme == "https":
+        s.connect((host, port))
+        if scheme == "https":
             ctx = ssl.create_default_context() #default good enough for most use cases
-            s = ctx.wrap_socket(s, server_hostname=self.host)
+            s = ctx.wrap_socket(s, server_hostname=host)
         
         self.connections[key] = s 
         return s

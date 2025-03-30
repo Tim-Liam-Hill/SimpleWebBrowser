@@ -1,7 +1,7 @@
 import tkinter
 import tkinter.font
 from Layout import DocumentLayout, HSTEP, VSTEP, paint_tree, style
-from URL import URL
+from URLHandler import URLHandler
 from HTMLParser import Element, HTMLParser
 import sys
 from CSS.CSSParser import CSSParser
@@ -33,7 +33,7 @@ class Browser:
             height=INIT_HEIGHT
         )
         self.canvas.pack(fill="both", expand=1)
-        self.urlHandler = URL()
+        self.urlHandler = URLHandler()
         self.display_list = []
         self.scroll = 0
         self.window_height = INIT_HEIGHT #height of rendered window
@@ -64,8 +64,8 @@ class Browser:
     #is the base url that everything else is relative to. 
     def load(self, url):
         content = self.urlHandler.request(url)
-        #TODO: need a case for view-source!!!!!???
-        self.root_node = HTMLParser(content).parse(self.urlHandler.viewSource)
+
+        self.root_node = HTMLParser(content).parse(self.urlHandler.isViewSource(url))
         links = [node.attributes["href"]
              for node in tree_to_list(self.root_node, [])
              if isinstance(node, Element)

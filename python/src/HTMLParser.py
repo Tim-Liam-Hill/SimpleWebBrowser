@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from URL import URL
+from URLHandler import URLHandler
 import logging
 import os
 CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
@@ -312,7 +312,7 @@ def print_tree(node, indent=0):
 if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
-    url = URL()
+    url = URLHandler()
     content = url.request(f"{CURR_FILEPATH}../../static-html/test.html")
     p = HTMLParser(content)
     print_tree(p.parse())
