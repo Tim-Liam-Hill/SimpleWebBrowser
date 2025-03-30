@@ -398,6 +398,11 @@ So that refactor wasn't too bad. Let's get the resolve functionality working and
 
 I also want to do multithreading for requesting all the additional resources but we will get to that. 
 
+Let's fix a bug (or more) with the HTML parser. 
+
+https://motherfuckingwebsite.com/
+
+I should set up tests for my HTML parser and make sure it passes all of them. Move all the other static html files I have made into that to retain saved work.
 
 # Exercizes 
 

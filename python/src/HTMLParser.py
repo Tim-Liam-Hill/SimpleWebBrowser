@@ -107,7 +107,7 @@ class HTMLParser:
     ]
     NO_NEST_TAGS = ["p", "i"] #tags that should not directly nest in one another, makes things kinda gross
 
-    def __init__(self, body):
+    def __init__(self, body): #TODO: refactor to take in body in parse function
         self.body = body
         self.unfinished = []
 
@@ -250,7 +250,7 @@ class HTMLParser:
     def implicit_tags(self, tag):
         while True:
             open_tags = [node.tag for node in self.unfinished]
-            if open_tags == [] and "html" not in tag:
+            if open_tags == [] and (tag == None or "html" not in tag): #tag could be None
                 self.add_tag("html")
             elif open_tags == ["html"] and not any(substring in tag for substring in ["head", "body", "/html"]):
                 if tag in self.HEAD_TAGS:
@@ -312,7 +312,7 @@ def print_tree(node, indent=0):
 if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
-    url = URLHandler()
+    url = URL()
     content = url.request(f"{CURR_FILEPATH}../../static-html/test.html")
     p = HTMLParser(content)
     print_tree(p.parse())

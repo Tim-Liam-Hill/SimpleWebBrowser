@@ -1,4 +1,4 @@
-from python.src.URLHandler import URL 
+from src.URLHandler import URLHandler
 import unittest
 
 class TestURL(unittest.TestCase):
@@ -9,14 +9,14 @@ class TestURL(unittest.TestCase):
         #- one for each scheme at least
         #- include ports
         #- are we making this case sensitive??? 
-        url = URL()
+        url = URLHandler()
         self.assertEqual(url.extractScheme("http://google.com"),("http","google.com"))
         with self.assertRaises(ValueError):
             url.extractScheme("view-source:view-source:http://google.com")
 
     
     def test_validateURL(self):
-        url = URL()
+        url = URLHandler()
         #some URLS
         self.assertTrue(url.validateURL('http://google.com'))
         self.assertTrue(url.validateURL('https://google.eu/a/asd'))
