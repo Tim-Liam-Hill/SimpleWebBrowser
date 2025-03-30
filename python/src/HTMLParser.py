@@ -19,6 +19,9 @@ SELF_CLOSING_TAGS = [
 #- there is a trailing </script or </style (or whatever tag name) tag appended to the data that should be 
 #- broken into a closing tag
 #- only ever trailing_tag flag if accept state set to data (but not always present if this is the case)
+# IE: because we go straight from a script or style tag into the data state, we may run into a case where
+# we would start closing a tag when in reality we shouldn't be so we explictly check for cases where there is 
+#no content between opening and closing script/style tags (TODO: is this truly necessary? I sorta get for script but for style?)
 #NOTE: technically a tag such as <scri' > will be accepted (and the quote won't be interpreted as creating a string)
 #this could be catered for but I highly doubt we need this at present. Can add it if I really want
 #we would just need to have another subsection for tags, script and style that ensures that the very first word following <
@@ -28,7 +31,7 @@ DFA = {
     "default_transition_key": "**", #needs to be 2 chars to ensure it doesn't overlap with chars in language
     "states": {
         "data": {"<":{"accept":"data", "next":"pre_tag"}, "**":{"next": "data"}},
-        "pre_tag":{">":{"accept":"tag", "next":"data"}, "s":{"next":"scriptstyle1"}, "**":{"next":"in_tag"}},
+        "pre_tag":{">":{"accept":"tag", "next":"data"}, "s":{"next":"scriptstyle1"}, "!": {"next": "comment1"}, "**":{"next":"in_tag"}},
         "in_tag": {">":{"accept":"tag", "next":"data"},"'":{"next":"quote1"}, "\"": {"next":"quote2"}, "**":{"next":"in_tag"}},
         "quote1":{"'":{"next":"in_tag"},"**":{"next":"quote1"}},
         "quote2":{"\"":{"next":"in_tag"}, "**":{"next":"quote2"}},
@@ -67,6 +70,11 @@ DFA = {
         "script_close6":{"p":{"next":"script_close7"},"**":{"next":"script_body"}},
         "script_close7":{"t":{"next":"script_close8"},"**":{"next":"script_body"}},
         "script_close8":{">":{"accept":"data","next":"data", "trailing_tag":"script"},"**":{"next":"script_body"}},
+        "comment1": {"-":{"next":"comment2"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "comment2": {"-":{"next":"comment_body"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
+        "comment_body": {"-":{"next":"comment_end1"}, "**": {"next":"comment_body"}},
+        "comment_end1": {"-":{"next":"comment_end2"},"**": {"next":"comment_body"} },
+        "comment_end2": {">":{"accept":"tag","next":"data"},"**": {"next":"comment_body"} },
     }
 }
 
@@ -145,9 +153,12 @@ class HTMLParser:
                     text = ""
                 else: text += i
                 state = DFA["states"][state][i]["next"]
+                logger.info(state)
             else:
                 text += i 
                 state = DFA["states"][state]["**"]["next"]
+                logger.info(state)
+
             
 
         if state == "data" and text != "":
@@ -312,7 +323,7 @@ def print_tree(node, indent=0):
 if __name__ == "__main__":
 
     logging.basicConfig(level=logging.DEBUG)
-    url = URL()
+    url = URLHandler()
     content = url.request(f"{CURR_FILEPATH}../../static-html/test.html")
     p = HTMLParser(content)
     print_tree(p.parse())

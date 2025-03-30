@@ -403,6 +403,30 @@ Let's fix a bug (or more) with the HTML parser.
 https://motherfuckingwebsite.com/
 
 I should set up tests for my HTML parser and make sure it passes all of them. Move all the other static html files I have made into that to retain saved work.
+Honestly, using the book's HTML parser kinda has made things more difficult for me now because of how I tried to extend it. It might be worthwhile refactoring the Parser sooner to fix all the bugs and get rid of the weird behaviour. 
+
+
+HTML comments are ruining my code. May need to extend the DFA. 
+What is interesting is that my code doesn't seem to fail with all html comments so this is likely an edge case
+
+``` 
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    
+    <!-- FOR THE CURIOUS: This site was made by @thebarrytone. Don't tell my mom. -->
+
+</head>
+
+<body>
+    <div>asfasdfsdaf</div>
+    <div>Meow</div>
+</body>
+</html>
+```
+
+The above code doesn't fail but it also doesn't render anything. Comments are definitely not being parsed correctly. What is likely happening is my code treats the comment as an opening bracket that never get's closed
 
 # Exercizes 
 
