@@ -153,11 +153,11 @@ class HTMLParser:
                     text = ""
                 else: text += i
                 state = DFA["states"][state][i]["next"]
-                logger.info(state)
+                logger.debug(state)
             else:
                 text += i 
                 state = DFA["states"][state]["**"]["next"]
-                logger.info(state)
+                logger.debug(state)
 
             
 
@@ -261,7 +261,7 @@ class HTMLParser:
     def implicit_tags(self, tag):
         while True:
             open_tags = [node.tag for node in self.unfinished]
-            if open_tags == [] and (tag == None or "html" not in tag): #tag could be None
+            if open_tags == [] and (tag == None or (len(tag) >= 4 and "html" not in tag[:4])): #tag could be None
                 self.add_tag("html")
             elif open_tags == ["html"] and not any(substring in tag for substring in ["head", "body", "/html"]):
                 if tag in self.HEAD_TAGS:

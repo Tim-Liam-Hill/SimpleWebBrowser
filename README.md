@@ -66,6 +66,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * TODO: nice syntax highlighting for view source.
 * TODO: create new Tag for Script elements and handle them differently. Use similar handling for pre and code tags 
 * gitignore should ignore pycache
+* env file for debugging (allow for debugging individual modules would be cool: this is what Hadoop/Spark/Hive/HBase do)
 
 # BUGS
 
@@ -426,7 +427,19 @@ What is interesting is that my code doesn't seem to fail with all html comments 
 </html>
 ```
 
-The above code doesn't fail but it also doesn't render anything. Comments are definitely not being parsed correctly. What is likely happening is my code treats the comment as an opening bracket that never get's closed
+The above code doesn't fail but it also doesn't render anything. Comments are definitely not being parsed correctly. What is likely happening is my code treats the comment as an opening bracket that never get's closed.
+Done, not bad. 
+
+But we still have some bugs. Trying http://frogfind.com/about.php and getting errors. The issue was kinda funny: the condition for whether to add an html tag would check whether the string 'html' appears in the contents of the tag we are about to add. The problem is: it should actually be checking whether or not the tag we are about to add IS the html tag and as a result, the below HTML would attempt to add the meta tag assuming we already had another tag on the stack (leading to an invalid index access):
+
+```
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 2.0//EN">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+<html>
+...
+```
 
 # Exercizes 
 
