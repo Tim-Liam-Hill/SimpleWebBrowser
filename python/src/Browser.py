@@ -72,8 +72,21 @@ class Browser:
              and node.tag == "link"
              and node.attributes.get("rel") == "stylesheet"
              and "href" in node.attributes]
+        
+        rules = self.defaultCSS.copy()
+
+        for link in links: #TODO: multithreading here to spead up fetching of resources
+            
+            try:
+                style_url = self.urlHandler.resolve(link, url)
+                body = self.urlHandler.request(style_url)
+            except ValueError as e:
+                logger.info(e)
+                logger.info("Skipping retrieving CSS for malformed URL")
+                continue
+            rules.extend(CSSParser(body).parse())
         logger.info(links)
-        style(self.root_node, self.defaultCSS.copy())
+        style(self.root_node, rules)
         self.createLayout()
         self.draw()
 

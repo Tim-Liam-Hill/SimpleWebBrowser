@@ -392,7 +392,11 @@ Wait, so what they have done is they create a new URL for each new url string. I
 
 Who doesn't love a good refactor? While we are at it, why are Text and Tag classes in the URL.py file? This seems like a weird place for them to be. 
 
-View source is a thing we need to keep track of
+View source is a thing we need to keep track of.
+
+So that refactor wasn't too bad. Let's get the resolve functionality working and then fix some HTML parser issues. 
+
+I also want to do multithreading for requesting all the additional resources but we will get to that. 
 
 
 # Exercizes 

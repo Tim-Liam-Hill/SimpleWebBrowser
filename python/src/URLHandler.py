@@ -90,9 +90,40 @@ class URLHandler:
         return False 
     
     #used to resovle relative urls to the actual url to request
-    #resources from
-    def resolve(self, url):
-        pass 
+    #resources from. 
+    def resolve(self, url, baseURL):
+
+        if not self.validateURL(url):
+            raise ValueError("Input URL '{}' is not of a valid format".format(url))      
+
+        scheme, path = self.extractScheme(baseURL) 
+
+        if "/" not in path:
+            path = path + "/"
+        host, path = path.split("/", 1)
+        path = "/" + path
+
+        if scheme == "http":
+            port = 80
+        elif scheme == "https":
+            port = 443
+        
+        if ":" in host:
+            host, port = host.split(":", 1)
+            port = int(port)
+
+        if "://" in url: return url
+        if not url.startswith("/"):
+            dir, _ = path.rsplit("/", 1)
+            while url.startswith("../"):
+                _, url = url.split("/", 1)
+                if "/" in dir:
+                    dir, _ = dir.rsplit("/", 1)
+            url = dir + "/" + url
+        if url.startswith("//"):
+            return scheme + ":" + url
+        else:
+            return scheme + "://" + host + ":" + str(port) + url
     #given a string url, extracts the http scheme. Throw error if invalid scheme. Returns scheme and 
     #url without scheme
     #https://developer.mozilla.org/en-US/docs/Web/URI/Schemes
