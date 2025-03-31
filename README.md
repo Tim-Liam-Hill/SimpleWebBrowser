@@ -25,6 +25,8 @@ Why did I create the virtual environment in the root and not in the python folde
 
  * setting up testing before writing any code is a good idea
  * main branch should always have latest working code. Leave experiments and such for other branches
+ * setup your dev environment BEFORE you right code. If you want to do a python venv, its a bit easier to do that before you start writing code and downloading dependencies
+ * test test test. Having unit tests makes refactoring later a lot easier (you can make sure you still provide old functionality)
 
 # SimpleWebBrowser
 A simple web browser built with the help of https://browser.engineering/index.html
@@ -48,6 +50,8 @@ Some websites to support:
 * https://endchan.org/ (or rather, some less degenerate imageboard websites)
 * https://physicscourses.colorado.edu/phys3220/3220_fa97/3220_fa97.html
 * https://nothings.org/
+
+Something that will be cool to do is to create my own little website/intranet thing. I host a very simple set of html pages with CSS and JS supported by this browser. You can then navigate through these pages to see how the browser functions. Yay!! 
 
 # Thoughts
 
@@ -456,6 +460,38 @@ Actually nevermind: it does work and I am just confused because the colors didn'
 We will need a lot of testing for this. I might also rework the CSS system a bit. The biggest issue right now seems to be the descendant tag thingies.
 
 What I think I will do is complete this chapter then come back and rework as necessary. A lot of the code can be reused but I think some better design patterns exist (or rather, for the things I want to implement I will need a more complex solution than the base cases the book provides). 
+
+Since we are diverting from the book let's get down what we want to support.
+
+The desire for this CSS 'engine' is for it to support basic styling elements. The list for now will be:
+
+* tag, class, id selectors
+* background colors
+* text color
+* font family and size 
+* text position (center, left, right)
+* border (Question: will we support border radius? would be cool to do this)
+* padding
+* margin
+* display
+
+Possible additions:
+
+* a subset of flex 
+* grid 
+* z index
+* tables (this isn't really css??)
+* background images (this is ambitious)
+
+I do want some element of layout control. That is to say: I think it would cool to display things not just on the right hand side but actually relative to each other. 
+
+The thing about the above list is that we won't implement each thing fully. For example: for border there are a lot of things that can be implemented (dashed borders, double borders etc). Not all of those will be supported in all likelihood.
+
+I need to understand CSS a bit better, I have forgotten Inline vs Block elements and the quirks between the two. 
+
+I think I will rework CSSParser to work similarly to how I refactored the URL class. That is: you create 1 CSSParser object and use that to parse everything (not a new object for everything).
+
+TODO: remember to get style tag contents. 
 
 # Exercizes 
 
