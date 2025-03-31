@@ -110,6 +110,9 @@ class TagSelector:
     def matches(self, node):
         return isinstance(node, Element) and self.tag == node.tag
     
+    def __repr__(self):
+        return "TagSelector: {}".format(self.tag)
+    
 class DescendantSelector:
     def __init__(self, ancestor, descendant):
         self.ancestor = ancestor
@@ -120,6 +123,9 @@ class DescendantSelector:
         while node.parent:
             if self.ancestor.matches(node.parent): return True
             node = node.parent
+    
+    def __repr__(self):
+        return "DescendantSelector"
 
 #TODO: class selectors and ID selectors 
 

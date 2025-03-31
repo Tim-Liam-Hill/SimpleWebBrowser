@@ -85,7 +85,8 @@ class Browser:
                 logger.info("Skipping retrieving CSS for malformed URL")
                 continue
             rules.extend(CSSParser(body).parse())
-        logger.info(links)
+        logger.info(self.defaultCSS.copy())
+        logger.info(rules)
         style(self.root_node, rules)
         self.createLayout()
         self.draw()

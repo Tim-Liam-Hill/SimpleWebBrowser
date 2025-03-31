@@ -441,6 +441,22 @@ But we still have some bugs. Trying http://frogfind.com/about.php and getting er
 ...
 ```
 
+Its funny: I am meant to be in chapter 6 but I find myself fixing chapter 5's bugs. I am okay with that I guess, the longer this project goes the more progress slows but in some ways that should be expected (especially since I want to do more than what the textbook's code does by default).
+
+So now we have a problem: if we only apply the default browser css then pre get's formatted correctly, but if we apply the other css files then pre does not get formatted correctly. Why? 
+
+Also interesting: if I create a new css file and give it the below contents, then we aren't seeing the expected results. There is a div with an inline style that should have a blue background but it isn't getting that. 
+
+``` 
+div {background-color: aqua;}
+p {background-color: aqua;}
+```
+Actually nevermind: it does work and I am just confused because the colors didn't blend well. 
+
+We will need a lot of testing for this. I might also rework the CSS system a bit. The biggest issue right now seems to be the descendant tag thingies.
+
+What I think I will do is complete this chapter then come back and rework as necessary. A lot of the code can be reused but I think some better design patterns exist (or rather, for the things I want to implement I will need a more complex solution than the base cases the book provides). 
+
 # Exercizes 
 
 4.6 is a bit much in my opinion/doesn't have a trivial algorithm to use. Consider the below html fragment:
