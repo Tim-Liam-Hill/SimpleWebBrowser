@@ -77,6 +77,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 
 * seems like the bottom text of the page gets cut off in some sites
 * HTML parser seems like it is struggling on url https://javascript.info/currying-partials 
+* I have assumed you can't have tags inside of li elements. You can, and when this happens I render extra bullet points
 
 # WishList
 
@@ -508,6 +509,8 @@ Eyy it does actually work: https://tjasink.com/games/bb/ uses a class selector f
 The book deletes a whole bunch of things from earlier that are now no longer used but I cannot yet do that: I have to make sure I retain functionality. 
 
 need to just go back and test small, big, abbr abd sup again. They should still work but it doesn't hurt to check
+
+One thing I definitely want to do is make sure that I preserve the given formatting for p and pre tags since I am currently not doing that. It makes sites like [this](https://tjasink.com/games/bb/ ) look like a jumbled mess. 
 
 # Exercizes 
 

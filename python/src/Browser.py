@@ -19,7 +19,7 @@ INNER_SCROLLBAR_HEIGHT = 40
 SCROLLBAR_COLOR = 'deep sky blue'
 INNER_SCROLLBAR_COLOR = 'sky blue'
 DEFAULT_CSS_PATH = 'browser.css'
-DEFAULT_FILE_PATH = '../../static-html/test.html' #path from this file's directory to default file we show
+DEFAULT_FILE_PATH = '../tests/htmlparser_test_cases/test.html' #path from this file's directory to default file we show
 CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 
 #TODO: this gonna need a rework to support mutliple pages but that's okay.
@@ -73,6 +73,7 @@ class Browser:
         self.draw()
     
     def getCSSRules(self, root_node, base_url):
+        logger.info("Determining CSS rules for page")
         node_list = tree_to_list(root_node, [])
         links = [node.attributes["href"]
             for node in node_list
@@ -172,7 +173,6 @@ class Browser:
         #Don't re-lex tokens, there is no change in the dom if we resize!!!! (at least, not at this stage, maybe with advanced CSS there would be)
         self.createLayout()
         self.draw()
-
 
 
 
