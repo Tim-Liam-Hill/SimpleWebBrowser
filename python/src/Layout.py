@@ -8,10 +8,10 @@ import math
 import logging
 logger = logging.getLogger(__name__)
 
-DEFAULT_FONT_SIZE = 16 #TODO: dedicated text class 
+#DEFAULT_FONT_SIZE = 16 #TODO: dedicated text class 
 HSTEP, VSTEP = 13, 18
 DEFAULT_LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
-DEFAULT_FONT_FAMILY = "Times"
+#DEFAULT_FONT_FAMILY = "Times"
 FONTS = {}
 SELF_CLOSING_TAGS = [
     "area", "base", "br", "col", "embed", "hr", "img", "input",
@@ -25,6 +25,14 @@ BLOCK_ELEMENTS = [
     "figcaption", "main", "div", "table", "form", "fieldset",
     "legend", "details", "summary"
 ]
+
+INHERITED_PROPERTIES = {
+    "font-size": "26px",
+    "font-style": "normal",
+    "font-weight": "normal",
+    "color": "black",
+    "font-family": 'Times'
+}
 
 #TODO: support more fonts 
 def get_font(size, weight, style, family):
@@ -67,13 +75,13 @@ class DocumentLayout:
 #TODO: this possibly needs a rework once CSS is implemented but oh whale
 class LayoutDisplayProperties:
     def __init__(self):
-            self.fontSize = DEFAULT_FONT_SIZE
-            self.weight = "normal"
-            self.style = "roman"
+            # self.fontSize = DEFAULT_FONT_SIZE
+            # self.weight = "normal"
+            # self.style = "roman"
             self.leading = DEFAULT_LEADING
             self.superscript = False
             self.small_caps = False
-            self.family = DEFAULT_FONT_FAMILY
+            # self.family = DEFAULT_FONT_FAMILY
             self.activeTags = []
             self.list_indent = 0
             self.bullet = False
@@ -155,32 +163,37 @@ class BlockLayout:
             cmds.append(rect)
 
         if self.layout_mode() == "inline":
-            for x, y, word, font in self.display_list:
-                cmds.append(DrawText(x, y, word, font))
+            for x, y, word, font, color in self.display_list:
+                cmds.append(DrawText(x, y, word, font, color))
 
         return cmds
     
     def recurse(self, node): 
         
         if isinstance(node, Text):
-            if self.layoutProps.bullet:
+            if self.layoutProps.bullet: #TODO: there is a better implementation for this
                 if self.layoutProps.list_indent == 1:
-                    self.word("• ")
+                    self.word("• ", node)
                 elif self.layoutProps.list_indent == 2:
-                    self.word("◦ ")
+                    self.word("◦ ", node)
                 else: 
-                    self.word("‣ ")
+                    self.word("‣ ", node)
             for word in node.text.split():
-                self.word(word)
+                self.word(word, node)
         elif node.tag not in ["script","style"]: #TODO: make this a global var somewhere
             self.handleOpenTag(node.tag)
             for child in node.children:
                 self.recurse(child)
             self.handleCloseTag(node.tag)
 
-    def word(self, word):
-
-        font = get_font(self.layoutProps.fontSize, self.layoutProps.weight, self.layoutProps.style, self.layoutProps.family)
+    def word(self, word, node):
+        weight = node.style["font-weight"]
+        style = node.style["font-style"]
+        family = node.style["font-family"]
+        color = node.style["color"]
+        if style == "normal": style = "roman"
+        size = int(float(node.style["font-size"][:-2]) * .75)
+        font = get_font(size, weight, style, family) 
 
         if self.layoutProps.small_caps:
             word = word.upper()        
@@ -188,40 +201,41 @@ class BlockLayout:
         w = font.measure(word)
         if self.cursor_x + w >= self.width - HSTEP:
             self.flush()
-        self.line.append((self.cursor_x, word, font, self.layoutProps.superscript))
+        self.line.append((self.cursor_x, word, font, self.layoutProps.superscript, color))
         self.cursor_x += w + font.measure(" ")
 
     def flush(self):
         if not self.line: return 
-        metrics = [font.metrics() for x, word, font, isSuperscript in self.line]
+        metrics = [font.metrics() for x, word, font, isSuperscript, color in self.line]
         max_ascent = max([metric["ascent"] for metric in metrics])
         baseline = self.cursor_y +  self.layoutProps.leading * max_ascent
-        for rel_x, word, font, isSuperscript in self.line:
+        for rel_x, word, font, isSuperscript, color in self.line:
             x = self.x + rel_x
             y =  self.y + baseline - font.metrics("ascent") if not isSuperscript else self.y + baseline - 1.8*font.metrics("ascent")
-            self.display_list.append((x, y, word, font))
+            self.display_list.append((x, y, word, font, color))
         max_descent = max([metric["descent"] for metric in metrics])
         self.cursor_y = baseline + 1.25 * max_descent
         self.cursor_x = 0
         self.line = []
 
     def handleOpenTag(self, tag):
-        if tag == "i":
-            self.layoutProps.style = "italic"
-        elif tag == "b":
-            self.layoutProps.weight = "bold"
-        elif tag == "small":
-            self.layoutProps.fontSize -= 2
-        elif tag == "big":
-            self.layoutProps.fontSize += 4
-        elif tag == "sup":
-            self.layoutProps.fontSize /=2
+        # if tag == "i":
+        #     self.layoutProps.style = "italic"
+        # elif tag == "b":
+        #     self.layoutProps.weight = "bold"
+        # elif tag == "small":
+        #     self.layoutProps.fontSize -= 2
+        # elif tag == "big":
+        #     self.layoutProps.fontSize += 4
+        # elif tag == "sup":
+        if tag == "sup":
+            # self.layoutProps.fontSize /=2
             self.layoutProps.superscript = True
         elif tag == "abbr":
             self.layoutProps.small_caps = True 
-            self.layoutProps.family = "Courier"
-            self.layoutProps.fontSize *= 0.75
-            self.layoutProps.weight = "bold"
+            # self.layoutProps.family = "Courier"
+            # self.layoutProps.fontSize *= 0.75
+            # self.layoutProps.weight = "bold"
         elif tag == "br":
             #self.flush()
             self.y += VSTEP
@@ -231,22 +245,23 @@ class BlockLayout:
             self.layoutProps.bullet = True
 
     def handleCloseTag(self, tag):
-        if tag == "i":
-            self.layoutProps.style = "roman"
-        elif tag == "b":
-            self.layoutProps.weight = "normal"
-        elif tag == "small":
-            self.layoutProps.fontSize += 2
-        elif tag == "big":
-            self.layoutProps.fontSize -=4
-        elif tag == "sup":
-            self.layoutProps.fontSize *=2
+        # if tag == "i":
+        #     self.layoutProps.style = "roman"
+        # elif tag == "b":
+        #     self.layoutProps.weight = "normal"
+        # elif tag == "small":
+        #     self.layoutProps.fontSize += 2
+        # elif tag == "big":
+        #     self.layoutProps.fontSize -=4
+        # elif tag == "sup":
+        if tag == "sup":
+        #    self.layoutProps.fontSize *=2
             self.layoutProps.superscript = False
         elif tag == "abbr":
             self.layoutProps.small_caps = False
-            self.layoutProps.family = DEFAULT_FONT_FAMILY
-            self.layoutProps.fontSize /= 0.75
-            self.layoutProps.weight = "normal"
+            # self.layoutProps.family = DEFAULT_FONT_FAMILY
+            # self.layoutProps.fontSize /= 0.75
+            # self.layoutProps.weight = "normal"
         elif tag == "p":
             self.flush()
             self.cursor_y += VSTEP
@@ -258,6 +273,12 @@ class BlockLayout:
 def style(node, rules):
     node.style = {}
 
+    for property, default_value in INHERITED_PROPERTIES.items():
+        if node.parent:
+            node.style[property] = node.parent.style[property]
+        else:
+            node.style[property] = default_value
+
     for selector, body in rules:
         if not selector.matches(node): continue
         for property, value in body.items():
@@ -267,24 +288,35 @@ def style(node, rules):
         pairs = CSSParser(node.attributes["style"]).body()
         for property, value in pairs.items():
             node.style[property] = value
+    
+    if node.style["font-size"].endswith("%"):
+        if node.parent:
+            parent_font_size = node.parent.style["font-size"]
+        else:
+            parent_font_size = INHERITED_PROPERTIES["font-size"]
+        node_pct = float(node.style["font-size"][:-1]) / 100
+        parent_px = float(parent_font_size[:-2])
+        node.style["font-size"] = str(node_pct * parent_px) + "px"
 
     for child in node.children:
         style(child, rules)
 
 class DrawText:
-    def __init__(self, x1, y1, text, font):
+    def __init__(self, x1, y1, text, font, color):
         self.top = y1
         self.left = x1
         self.text = text
         self.font = font
         self.bottom = y1 + font.metrics("linespace")
+        self.color = color
 
     def execute(self, scroll, canvas):
         canvas.create_text(
             self.left, self.top - scroll,
             text=self.text,
             font=self.font,
-            anchor='nw')
+            anchor='nw',
+            fill=self.color)
     
 class DrawRect:
     def __init__(self, x1, y1, x2, y2, color):

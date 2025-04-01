@@ -1,6 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
-from HTMLParser import Element, Text
+from HTMLParser import Element
 
 class CSSParser:
     def __init__(self, s):

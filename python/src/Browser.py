@@ -30,7 +30,8 @@ class Browser:
         self.canvas = tkinter.Canvas(
             self.window, 
             width=INIT_WIDTH,
-            height=INIT_HEIGHT
+            height=INIT_HEIGHT,
+            bg="white"
         )
         self.canvas.pack(fill="both", expand=1)
         self.urlHandler = URLHandler()

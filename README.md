@@ -71,6 +71,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * TODO: create new Tag for Script elements and handle them differently. Use similar handling for pre and code tags 
 * gitignore should ignore pycache
 * env file for debugging (allow for debugging individual modules would be cool: this is what Hadoop/Spark/Hive/HBase do)
+* decide if/how to support external fonts (if that is in scope). It may be possible to create custom fonts dynamically??? 
 
 # BUGS
 
@@ -503,6 +504,10 @@ When we do rework our css functionality we will have to remember to keep file or
 I need to not get too ahead of myself: some css things will get implemented later it seems. Regardless, there seems to be an issue. Background colors should be showing correctly but aren't (unless there is inline styling). It might actually be that the websites I am choosing are bad examples though :/ (https://www.classicdosgames.com/ was one I just tried but this doesn't choose background color by tag). Implementing other selectors could be useful round about now. 
 
 Eyy it does actually work: https://tjasink.com/games/bb/ uses a class selector for the body and this reflects in my browser. Yay!! 
+
+The book deletes a whole bunch of things from earlier that are now no longer used but I cannot yet do that: I have to make sure I retain functionality. 
+
+need to just go back and test small, big, abbr abd sup again. They should still work but it doesn't hurt to check
 
 # Exercizes 
 
