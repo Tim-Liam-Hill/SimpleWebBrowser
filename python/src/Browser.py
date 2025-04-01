@@ -1,10 +1,10 @@
 import tkinter
 import tkinter.font
-from Layout import DocumentLayout, HSTEP, VSTEP, paint_tree, style
+from Layout import DocumentLayout, paint_tree, style
 from URLHandler import URLHandler
 from HTMLParser import Element, HTMLParser
 import sys
-from CSS.CSSParser import CSSParser
+from CSS.CSSParser import CSSParser, cascade_priority
 import logging
 import os 
 from Utils import tree_to_list
@@ -41,7 +41,7 @@ class Browser:
         self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
         self.tokens = []
         self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
-
+        
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
@@ -66,30 +66,44 @@ class Browser:
         content = self.urlHandler.request(url)
 
         self.root_node = HTMLParser(content).parse(self.urlHandler.isViewSource(url))
+        rules = self.getCSSRules(self.root_node,url)
+        style(self.root_node, sorted(rules, key=cascade_priority))
+        self.createLayout()
+        self.draw()
+    
+    def getCSSRules(self, root_node, base_url):
+        node_list = tree_to_list(root_node, [])
         links = [node.attributes["href"]
-             for node in tree_to_list(self.root_node, [])
-             if isinstance(node, Element)
-             and node.tag == "link"
-             and node.attributes.get("rel") == "stylesheet"
-             and "href" in node.attributes]
-        
+            for node in node_list
+            if isinstance(node, Element)
+            and node.tag == "link"
+            and node.attributes.get("rel") == "stylesheet"
+            and "href" in node.attributes]
+    
         rules = self.defaultCSS.copy()
 
         for link in links: #TODO: multithreading here to spead up fetching of resources
             
             try:
-                style_url = self.urlHandler.resolve(link, url)
+                style_url = self.urlHandler.resolve(link, base_url)
                 body = self.urlHandler.request(style_url)
             except ValueError as e:
                 logger.info(e)
                 logger.info("Skipping retrieving CSS for malformed URL")
                 continue
             rules.extend(CSSParser(body).parse())
-        logger.info(self.defaultCSS.copy())
-        logger.info(rules)
-        style(self.root_node, rules)
-        self.createLayout()
-        self.draw()
+
+        #Internal css
+        style_nodes = [n for n in node_list 
+                       if isinstance(n, Element) and n.tag == "style"]
+        
+        for node in style_nodes:
+            if len(node.children) == 1: #just a sanity check, it is possible there are no children. Should never be more than one
+                rules.extend(CSSParser(node.children[0].text).parse())
+
+        logger.debug(self.defaultCSS.copy())
+        logger.debug(rules)
+        return rules
 
     def createLayout(self):
         logger.info("Creating DOM from HTML Tree")
@@ -106,7 +120,7 @@ class Browser:
 
         self.canvas.delete("all")
 
-        for cmd in self.display_list:
+        for cmd in self.display_list: 
             if cmd.top > self.scroll + self.window_height: continue
             if cmd.bottom < self.scroll: continue
             cmd.execute(self.scroll, self.canvas)

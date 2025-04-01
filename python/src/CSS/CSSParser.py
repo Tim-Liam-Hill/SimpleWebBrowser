@@ -106,6 +106,7 @@ class CSSParser:
 class TagSelector:
     def __init__(self, tag):
         self.tag = tag
+        self.priority = 1
 
     def matches(self, node):
         return isinstance(node, Element) and self.tag == node.tag
@@ -117,6 +118,7 @@ class DescendantSelector:
     def __init__(self, ancestor, descendant):
         self.ancestor = ancestor
         self.descendant = descendant
+        self.priority = ancestor.priotity + descendant.priority
 
     def matches(self, node):
         if not self.descendant.matches(node): return False
@@ -128,6 +130,10 @@ class DescendantSelector:
         return "DescendantSelector"
 
 #TODO: class selectors and ID selectors 
+
+def cascade_priority(rule):
+    selector, body = rule 
+    return selector.priority
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)

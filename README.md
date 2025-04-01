@@ -493,6 +493,17 @@ I think I will rework CSSParser to work similarly to how I refactored the URL cl
 
 TODO: remember to get style tag contents. 
 
+Alrighty, what to work on now? 
+* Extract style from style tags 
+* rework CSSParser
+* Figure out why CSS not working when I load in external stylesheets. -> turns out it is working. I was expecting pre tags to still display gray but their color is being overridden by a different stylesheet and I need to parse hex colors to colors we can use. -> actually wait, no I don't think this was it 
+
+When we do rework our css functionality we will have to remember to keep file order priority (since some files of lower priority may load faster than files of another priority).
+
+I need to not get too ahead of myself: some css things will get implemented later it seems. Regardless, there seems to be an issue. Background colors should be showing correctly but aren't (unless there is inline styling). It might actually be that the websites I am choosing are bad examples though :/ (https://www.classicdosgames.com/ was one I just tried but this doesn't choose background color by tag). Implementing other selectors could be useful round about now. 
+
+Eyy it does actually work: https://tjasink.com/games/bb/ uses a class selector for the body and this reflects in my browser. Yay!! 
+
 # Exercizes 
 
 4.6 is a bit much in my opinion/doesn't have a trivial algorithm to use. Consider the below html fragment:
