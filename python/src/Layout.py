@@ -1,31 +1,19 @@
-import sys
 import tkinter
 import tkinter.font
-from URLHandler import URLHandler, Text, lex
+from URLHandler import URLHandler, Text
 from HTMLParser import Text, Element
 from CSS.CSSParser import CSSParser
 import math
 import logging
 logger = logging.getLogger(__name__)
 
-#DEFAULT_FONT_SIZE = 16 #TODO: dedicated text class 
 HSTEP, VSTEP = 13, 18
 DEFAULT_LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
-#DEFAULT_FONT_FAMILY = "Times"
 FONTS = {}
 SELF_CLOSING_TAGS = [
     "area", "base", "br", "col", "embed", "hr", "img", "input",
     "link", "meta", "param", "source", "track", "wbr",
 ]
-BLOCK_ELEMENTS = [
-    "html", "body", "article", "section", "nav", "aside",
-    "h1", "h2", "h3", "h4", "h5", "h6", "hgroup", "header",
-    "footer", "address", "p", "hr", "pre", "blockquote",
-    "ol", "ul", "menu", "li", "dl", "dt", "dd", "figure",
-    "figcaption", "main", "div", "table", "form", "fieldset",
-    "legend", "details", "summary"
-]
-
 INHERITED_PROPERTIES = {
     "font-size": "26px", #TODO: need a better idea on how to make font-sizes look lekker
     "font-style": "normal",
@@ -35,7 +23,7 @@ INHERITED_PROPERTIES = {
     "background-color": "white" # text book doesn't have this as inherited but I believe it should be based on what my browser does
 }
 
-#TODO: support more fonts 
+#TODO: support more fonts. Also set up a more sophisticated cache at some point??
 def get_font(size, weight, style, family):
     key = (size, weight, style)
     if key not in FONTS:
@@ -51,7 +39,6 @@ def paint_tree(layout_object, display_list):
     for child in layout_object.children:
         paint_tree(child, display_list)
 
-#TODO: when we get to adding CSS, this is gonna need a big overhaul. We need to think carefully about how to let CSS adjust properties. 
 class DocumentLayout:
     def __init__(self, node, max_width):
         self.node = node
@@ -61,14 +48,14 @@ class DocumentLayout:
 
     def layout(self):
         self.width = self.max_width
-        self.x = HSTEP
+        self.x = 0
         self.y = 0
         layoutProps = LayoutDisplayProperties()
         child = BlockLayout(self.node, self, None, layoutProps)
         self.children.append(child)
         child.layout()
         self.height = child.height
-    
+
     def paint(self):
         return []
 
@@ -76,17 +63,15 @@ class DocumentLayout:
 #TODO: this possibly needs a rework once CSS is implemented but oh whale
 class LayoutDisplayProperties:
     def __init__(self):
-            # self.fontSize = DEFAULT_FONT_SIZE
-            # self.weight = "normal"
-            # self.style = "roman"
-            self.leading = DEFAULT_LEADING
+            self.leading = DEFAULT_LEADING #TODO: this will become padding?? Actually probably not
             self.superscript = False
             self.small_caps = False
-            # self.family = DEFAULT_FONT_FAMILY
-            self.activeTags = []
             self.list_indent = 0
             self.bullet = False
 
+#Kind of a weird class to be honest. It's called block layout which would lead us to think that all elements
+# of this class would have display: block, but how the book uses this class this isn't the case.
+# Maybe at some point its worth a rework??
 class BlockLayout:
     def __init__(self, node, parent, previous, layoutProps):
         self.node = node
@@ -100,22 +85,17 @@ class BlockLayout:
         self.height = None
         self.layoutProps = layoutProps
 
-    def layout_mode(self):
-        if isinstance(self.node, Text):
-            return "inline"
-        elif any([isinstance(child, Element) and \
-                  child.tag in BLOCK_ELEMENTS
-                  for child in self.node.children]):
-            return "block"
-        elif self.node.children:
-            return "inline"
-        else:
-            return "block"
-        
+    #TODO: support more than block/inline
+    def layout_mode(self): #TODO: enum for display vals
+
+        if "display" in self.node.style and self.node.style.get("display") in ["block", "inline"]:
+            return self.node.style.get("display")
+        else: return "inline"
+
     def layout(self):
 
         self.x = self.parent.x
-        self.width = self.parent.width
+        self.width = self.parent.width #TODO: determine width and height here. 
 
         if self.previous:
             self.y = self.previous.y + self.previous.height
@@ -127,7 +107,7 @@ class BlockLayout:
 
         mode = self.layout_mode()
         if mode == "block":
-            
+
             previous = None
             for child in self.node.children:
                 next = BlockLayout(child, self, previous, self.layoutProps)
@@ -141,18 +121,16 @@ class BlockLayout:
 
             self.recurse(self.node)
             self.flush()
-            
+
         for child in self.children:
             child.layout()
         if(isinstance(self.node, Element)):
             self.handleCloseTag(self.node.tag)
-        
+
         if mode == "block":
             self.height = sum([child.height for child in self.children])
         else: self.height = self.cursor_y
-    
-    #According to the book, can block elements not draw 
-    #TODO: what did I mean by the above???
+
     def paint(self):
         cmds = []
 
@@ -168,16 +146,16 @@ class BlockLayout:
                 cmds.append(DrawText(x, y, word, font, color))
 
         return cmds
-    
-    def recurse(self, node): 
-        
+
+    def recurse(self, node):
+
         if isinstance(node, Text):
-            if self.layoutProps.bullet: #TODO: there is a better implementation for this
+            if self.layoutProps.bullet and self.parent.node.tag == "li": #TODO: there is a better implementation for this
                 if self.layoutProps.list_indent == 1:
                     self.word("• ", node)
                 elif self.layoutProps.list_indent == 2:
                     self.word("◦ ", node)
-                else: 
+                else:
                     self.word("‣ ", node)
             for word in node.text.split():
                 self.word(word, node)
@@ -194,20 +172,20 @@ class BlockLayout:
         color = node.style["color"]
         if style == "normal": style = "roman"
         size = int(float(node.style["font-size"][:-2]) * .75)
-        font = get_font(size, weight, style, family) 
+        font = get_font(size, weight, style, family)
 
         if self.layoutProps.small_caps:
-            word = word.upper()        
+            word = word.upper()
 
         w = font.measure(word)
-        if self.cursor_x + w >= self.width - HSTEP:
+        if self.cursor_x + w >= self.width - HSTEP: #TODO: what if overflow set? 
             self.flush()
         self.line.append((self.cursor_x, word, font, self.layoutProps.superscript, color))
         self.cursor_x += w + font.measure(" ")
 
-    def flush(self):
-        if not self.line: return 
-        metrics = [font.metrics() for x, word, font, isSuperscript, color in self.line]
+    def flush(self): #TODO: use a single object in line to hold vars so we don't need such verbose lines
+        if not self.line: return
+        metrics = [font.metrics() for x, word, font, isSuperscript, color in self.line] #like this
         max_ascent = max([metric["ascent"] for metric in metrics])
         baseline = self.cursor_y +  self.layoutProps.leading * max_ascent
         for rel_x, word, font, isSuperscript, color in self.line:
@@ -215,30 +193,19 @@ class BlockLayout:
             y =  self.y + baseline - font.metrics("ascent") if not isSuperscript else self.y + baseline - 1.8*font.metrics("ascent")
             self.display_list.append((x, y, word, font, color))
         max_descent = max([metric["descent"] for metric in metrics])
+        
         self.cursor_y = baseline + 1.25 * max_descent
         self.cursor_x = 0
+
         self.line = []
 
     def handleOpenTag(self, tag):
-        # if tag == "i":
-        #     self.layoutProps.style = "italic"
-        # elif tag == "b":
-        #     self.layoutProps.weight = "bold"
-        # elif tag == "small":
-        #     self.layoutProps.fontSize -= 2
-        # elif tag == "big":
-        #     self.layoutProps.fontSize += 4
-        # elif tag == "sup":
         if tag == "sup":
             # self.layoutProps.fontSize /=2
             self.layoutProps.superscript = True
         elif tag == "abbr":
-            self.layoutProps.small_caps = True 
-            # self.layoutProps.family = "Courier"
-            # self.layoutProps.fontSize *= 0.75
-            # self.layoutProps.weight = "bold"
+            self.layoutProps.small_caps = True
         elif tag == "br":
-            #self.flush()
             self.y += VSTEP
         elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
             self.layoutProps.list_indent += 1
@@ -246,33 +213,18 @@ class BlockLayout:
             self.layoutProps.bullet = True
 
     def handleCloseTag(self, tag):
-        # if tag == "i":
-        #     self.layoutProps.style = "roman"
-        # elif tag == "b":
-        #     self.layoutProps.weight = "normal"
-        # elif tag == "small":
-        #     self.layoutProps.fontSize += 2
-        # elif tag == "big":
-        #     self.layoutProps.fontSize -=4
-        # elif tag == "sup":
+
         if tag == "sup":
         #    self.layoutProps.fontSize *=2
             self.layoutProps.superscript = False
         elif tag == "abbr":
             self.layoutProps.small_caps = False
-            # self.layoutProps.family = DEFAULT_FONT_FAMILY
-            # self.layoutProps.fontSize /= 0.75
-            # self.layoutProps.weight = "normal"
-        elif tag == "p":
-            self.flush()
-            self.cursor_y += VSTEP
         elif tag == 'ul' or tag == 'ol': #going to treat ordered and unordered lists the same
             self.layoutProps.list_indent -= 1
         elif tag == 'li':
             self.layoutProps.bullet = False
 
 def style(node, rules):
-    node.style = {}
 
     for property, default_value in INHERITED_PROPERTIES.items():
         if node.parent:
@@ -284,12 +236,12 @@ def style(node, rules):
         if not selector.matches(node): continue
         for property, value in body.items():
             node.style[property] = value
-    #style attributes should override stylesheets apparently 
+    #style attributes should override stylesheets apparently
     if isinstance(node, Element) and "style" in node.attributes:
         pairs = CSSParser(node.attributes["style"]).body()
         for property, value in pairs.items():
             node.style[property] = value
-    
+
     if node.style["font-size"].endswith("%"):
         if node.parent:
             parent_font_size = node.parent.style["font-size"]
@@ -312,13 +264,14 @@ class DrawText:
         self.color = color
 
     def execute(self, scroll, canvas):
+        #TODO: create react around text so we can have background colors for non-block elements
         canvas.create_text(
             self.left, self.top - scroll,
             text=self.text,
             font=self.font,
             anchor='nw',
             fill=self.color)
-    
+
 class DrawRect:
     def __init__(self, x1, y1, x2, y2, color):
         self.top = y1
@@ -326,7 +279,7 @@ class DrawRect:
         self.bottom = y2
         self.right = x2
         self.color = color
-    
+
     def execute(self, scroll, canvas):
         canvas.create_rectangle(
             self.left, self.top - scroll,
@@ -334,7 +287,7 @@ class DrawRect:
             width=0,
             fill=self.color)
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     window = tkinter.Tk()
     url = URLHandler()

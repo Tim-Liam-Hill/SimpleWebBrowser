@@ -63,21 +63,23 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * setup documentation of classes/methods 
 * Once done, re-write in C++ with better design patterns. (lol, probably won't)
 * Horizontal scrolling
-* scrolling for different platforms
-* on browser resize, don't reset scroll amount but instead make it proportional to original scroll
+* scrolling for different platforms/OS
+* on browser resize, don't reset scroll amount but instead make it proportional to original scroll (done)
 * heading tags!!!!! REEEEEEEEEEE (just all the tags in general)
 * Currently the browser runs the HTML parser twice on first startup (not the http request because that is cached) likely due to the first tkinter config event. Make sure this doesn't happen when we switch libraries.
 * TODO: nice syntax highlighting for view source.
 * TODO: create new Tag for Script elements and handle them differently. Use similar handling for pre and code tags 
-* gitignore should ignore pycache
+* gitignore should ignore pycache (done)
 * env file for debugging (allow for debugging individual modules would be cool: this is what Hadoop/Spark/Hive/HBase do)
 * decide if/how to support external fonts (if that is in scope). It may be possible to create custom fonts dynamically??? 
+* tool that analyzes code base for code smells and such
 
 # BUGS
 
 * seems like the bottom text of the page gets cut off in some sites
 * HTML parser seems like it is struggling on url https://javascript.info/currying-partials 
-* I have assumed you can't have tags inside of li elements. You can, and when this happens I render extra bullet points
+* I have assumed you can't have tags inside of li elements. You can, and when this happens I render extra bullet points. The solution is to prepend an extra text element to a li when we encounter it to handle the bullet point. Need to be sure to check that there isn't already a bullet point there though (maybe a specialized class for this).
+
 
 # WishList
 
@@ -516,7 +518,28 @@ Shouldn't we be inheriting background color???
 
 test.html is not displaying as expected. I think it relates to the fact that background color is not being inherited and that inheritance isn't working quite as expected???
 
-Think I got it: certain tags aren't passing inherited properties as they should. Maybe when a non-block element has children??? 
+Think I got it: certain tags aren't passing inherited properties as they should. Maybe when a non-block element has children???  Yeah. I think we may need to extend our check for when to consider an element inline or block. Or maybe just handle background color differently??? Maybe I am getting bogged down in a weird edge case that shouldn't really be a thing. Regardless, I need to read up on Block Elements and such. 
+
+The solution here is to pass in background color to the DrawText object and then create a rectangle on top of which the text appears (since creating text does not allow for a background in tkinter). This will likely need to change once we start using a different library. For now I may ignore, we will see
+
+Interestingly enough, it seems like [background-color isn't inherited](https://developer.mozilla.org/en-US/docs/Web/CSS/background-color#formal_definition). 
+
+Ideally for CSS would should have a list of regex/rules for what values can appear on the rhs of a given value. 
+
+For now:
+1. Refactor CSS parser to handle more cases of css. 
+2. Get started on other exercises 
+3. ID selector
+4. borders (REMEMBER TO UPDATE WIDTHS!!)
+5. padding and margin (REMEMBER TO UPDATE WIDTHS!)
+
+6.1 -> done 
+6.6 -> In Progress
+The problem here is the css side of things (parsing, applying) works, but my block layout and inline layout aint printing how I want it to. REEEEEEEE. 
+
+I think I need to re-examine how nodes pass x and y coordinates to one-another. How we know whether or not to start on the same line depends on the previous nodes display. we should maybe create a function that when called tells the next node where to continue (this could also be useful if we decide to implement some basic grid/flex).
+
+6.4 -> In progress
 
 # Exercizes 
 

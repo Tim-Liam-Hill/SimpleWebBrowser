@@ -72,6 +72,7 @@ class Browser:
         self.createLayout()
         self.draw()
     
+    #TODO: we should consider having a cache for computed stylesheets if computing them becomes too slow
     def getCSSRules(self, root_node, base_url):
         logger.info("Determining CSS rules for page")
         node_list = tree_to_list(root_node, [])

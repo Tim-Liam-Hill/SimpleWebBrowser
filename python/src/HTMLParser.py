@@ -84,6 +84,7 @@ class Text:
         self.text = text
         self.children = []
         self.parent = parent
+        self.style = {}
 
     def __repr__(self):
         return repr(self.text)
@@ -92,12 +93,13 @@ class Text:
         return self.text
 
 @dataclass
-class Element:
+class Element: #ELEMENTS HAVE A STYLE ATTRIBUTE!!!
     def __init__(self, tag, attributes, parent):
         self.tag = tag
         self.attributes = attributes
         self.children = []
         self.parent = parent
+        self.style = {}
     
     def __repr__(self):
         return "<" + self.tag + ">"
