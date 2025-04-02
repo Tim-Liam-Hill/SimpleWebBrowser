@@ -31,7 +31,8 @@ INHERITED_PROPERTIES = {
     "font-style": "normal",
     "font-weight": "normal",
     "color": "black",
-    "font-family": 'Times'
+    "font-family": 'Times',
+    "background-color": "white" # text book doesn't have this as inherited but I believe it should be based on what my browser does
 }
 
 #TODO: support more fonts 

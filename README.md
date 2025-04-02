@@ -512,6 +512,12 @@ need to just go back and test small, big, abbr abd sup again. They should still 
 
 One thing I definitely want to do is make sure that I preserve the given formatting for p and pre tags since I am currently not doing that. It makes sites like [this](https://tjasink.com/games/bb/ ) look like a jumbled mess. 
 
+Shouldn't we be inheriting background color??? 
+
+test.html is not displaying as expected. I think it relates to the fact that background color is not being inherited and that inheritance isn't working quite as expected???
+
+Think I got it: certain tags aren't passing inherited properties as they should. Maybe when a non-block element has children??? 
+
 # Exercizes 
 
 4.6 is a bit much in my opinion/doesn't have a trivial algorithm to use. Consider the below html fragment:

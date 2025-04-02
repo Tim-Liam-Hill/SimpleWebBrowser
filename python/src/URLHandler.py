@@ -103,6 +103,8 @@ class URLHandler:
         host, path = path.split("/", 1)
         path = "/" + path
 
+        port = 80
+
         if scheme == "http":
             port = 80
         elif scheme == "https":
