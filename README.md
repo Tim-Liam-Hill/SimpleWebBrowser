@@ -73,6 +73,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * env file for debugging (allow for debugging individual modules would be cool: this is what Hadoop/Spark/Hive/HBase do)
 * decide if/how to support external fonts (if that is in scope). It may be possible to create custom fonts dynamically??? 
 * tool that analyzes code base for code smells and such
+* display: none
 
 # BUGS
 
@@ -538,6 +539,16 @@ For now:
 The problem here is the css side of things (parsing, applying) works, but my block layout and inline layout aint printing how I want it to. REEEEEEEE. 
 
 I think I need to re-examine how nodes pass x and y coordinates to one-another. How we know whether or not to start on the same line depends on the previous nodes display. we should maybe create a function that when called tells the next node where to continue (this could also be useful if we decide to implement some basic grid/flex).
+
+Need to think about what happens to spans inside div? 
+I think Tkinter is messing with me. I am not sure you can have two text blocks side by side :/  -> nope, it definitely does. The issue is me. 
+
+Found the issue: I am drawing rects over content I previously drew. Background color of white was throwing me off
+So my logic was right and I was confused. Fix: make sure we correct the starting x and ending x for the rects that surround text. (Should there even be these rects??)
+
+So now when inline doesn't draw rects everything works, but we need to add the rects in the event there is a background color/border/etc.
+
+Need to handle display: none
 
 6.4 -> In progress
 

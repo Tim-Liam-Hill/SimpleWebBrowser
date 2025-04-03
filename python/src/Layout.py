@@ -20,7 +20,8 @@ INHERITED_PROPERTIES = {
     "font-weight": "normal",
     "color": "black",
     "font-family": 'Times',
-    "background-color": "white" # text book doesn't have this as inherited but I believe it should be based on what my browser does
+    #"background-color": "transparent" # text book doesn't have this as inherited but I believe it should be based on what my browser does
+    #having this inherited caused problems so oops
 }
 
 #TODO: support more fonts. Also set up a more sophisticated cache at some point??
@@ -69,9 +70,14 @@ class LayoutDisplayProperties:
             self.list_indent = 0
             self.bullet = False
 
+    def layout_mode(self):
+        return "block"
+
 #Kind of a weird class to be honest. It's called block layout which would lead us to think that all elements
 # of this class would have display: block, but how the book uses this class this isn't the case.
 # Maybe at some point its worth a rework??
+# In any case, we would need to have a better solution for other display modes so if we get far enough this will need 
+# to be changed
 class BlockLayout:
     def __init__(self, node, parent, previous, layoutProps):
         self.node = node
@@ -84,6 +90,9 @@ class BlockLayout:
         self.width = None
         self.height = None
         self.layoutProps = layoutProps
+        self.cursor_x = 0
+        self.cursor_y = 0
+        self.last_cursor_y = self.cursor_y #used for non-block elements to know where to continue
 
     #TODO: support more than block/inline
     def layout_mode(self): #TODO: enum for display vals
@@ -94,20 +103,20 @@ class BlockLayout:
 
     def layout(self):
 
-        self.x = self.parent.x
-        self.width = self.parent.width #TODO: determine width and height here. 
+        self.x = self.parent.x #adjust x here if we have properties that would (like left and right)
+        self.width = self.parent.width #TODO: determine width and height here.
 
         if self.previous:
-            self.y = self.previous.y + self.previous.height
-        else:
-            self.y = self.parent.y
+            if self.previous.layout_mode() == "inline" and self.layout_mode() == "inline":
+                self.y = self.previous.y + self.previous.last_cursor_y
+            else: self.y = self.previous.y + self.previous.height
+        else: self.y = self.parent.y
 
         if(isinstance(self.node, Element)):
             self.handleOpenTag(self.node.tag)
 
         mode = self.layout_mode()
         if mode == "block":
-
             previous = None
             for child in self.node.children:
                 next = BlockLayout(child, self, previous, self.layoutProps)
@@ -116,11 +125,19 @@ class BlockLayout:
         else:
             self.display_list = []
             self.line = []
-            self.cursor_x = 0
-            self.cursor_y = 0
+            if self.previous and self.previous.layout_mode() == "block":
+                self.cursor_x = 0
+            elif self.previous:
+                self.cursor_x = self.previous.cursor_x #CHECK IF NEED TO ADVANCE TO NEXT LINE!
+            else:
+                self.cursor_x = 0
+            self.cursor_y = 0 # this is fine, we assume we always start at the top of the div
 
             self.recurse(self.node)
+            temp_x = self.cursor_x
+            self.last_cursor_y = self.cursor_y
             self.flush()
+            self.cursor_x = temp_x #preserve value of cursor x so that the next line can boi at the right place
 
         for child in self.children:
             child.layout()
@@ -131,7 +148,26 @@ class BlockLayout:
             self.height = sum([child.height for child in self.children])
         else: self.height = self.cursor_y
 
-    def paint(self):
+    def paint(self): #maybe separate into different functions based on display?? 
+        cmds = []
+
+        match self.layout_mode():
+            case "inline":
+                return self.paintInline()
+            case "block":
+                return self.paintBlock()
+            case default:
+                return self.paintInline()
+    
+    def paintInline(self):
+        cmds = []
+        
+        for x, y, word, font, color in self.display_list:
+            cmds.append(DrawText(x, y, word, font, color))
+
+        return cmds
+
+    def paintBlock(self):
         cmds = []
 
         bgcolor = self.node.style.get("background-color",
@@ -140,13 +176,9 @@ class BlockLayout:
             x2, y2 = self.x + self.width, self.y + self.height
             rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
             cmds.append(rect)
-
-        if self.layout_mode() == "inline":
-            for x, y, word, font, color in self.display_list:
-                cmds.append(DrawText(x, y, word, font, color))
-
+        
         return cmds
-
+    
     def recurse(self, node):
 
         if isinstance(node, Text):
@@ -159,7 +191,7 @@ class BlockLayout:
                     self.word("‣ ", node)
             for word in node.text.split():
                 self.word(word, node)
-        elif node.tag not in ["script","style"]: #TODO: make this a global var somewhere
+        elif node.tag not in ["script","style", "head"]: #TODO: make this a global var somewhere
             self.handleOpenTag(node.tag)
             for child in node.children:
                 self.recurse(child)
@@ -178,7 +210,7 @@ class BlockLayout:
             word = word.upper()
 
         w = font.measure(word)
-        if self.cursor_x + w >= self.width - HSTEP: #TODO: what if overflow set? 
+        if self.cursor_x + w >= self.width - HSTEP: #TODO: what if overflow set?
             self.flush()
         self.line.append((self.cursor_x, word, font, self.layoutProps.superscript, color))
         self.cursor_x += w + font.measure(" ")
@@ -193,7 +225,7 @@ class BlockLayout:
             y =  self.y + baseline - font.metrics("ascent") if not isSuperscript else self.y + baseline - 1.8*font.metrics("ascent")
             self.display_list.append((x, y, word, font, color))
         max_descent = max([metric["descent"] for metric in metrics])
-        
+
         self.cursor_y = baseline + 1.25 * max_descent
         self.cursor_x = 0
 
@@ -223,6 +255,11 @@ class BlockLayout:
             self.layoutProps.list_indent -= 1
         elif tag == 'li':
             self.layoutProps.bullet = False
+
+    def __repr__(self):
+        if isinstance(self.node, Element):
+            return self.node.tag
+        else: return self.node.text
 
 def style(node, rules):
 
@@ -264,13 +301,15 @@ class DrawText:
         self.color = color
 
     def execute(self, scroll, canvas):
-        #TODO: create react around text so we can have background colors for non-block elements
+
         canvas.create_text(
             self.left, self.top - scroll,
             text=self.text,
             font=self.font,
             anchor='nw',
             fill=self.color)
+
+
 
 class DrawRect:
     def __init__(self, x1, y1, x2, y2, color):

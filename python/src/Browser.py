@@ -2,7 +2,7 @@ import tkinter
 import tkinter.font
 from Layout import DocumentLayout, paint_tree, style
 from URLHandler import URLHandler
-from HTMLParser import Element, HTMLParser
+from HTMLParser import Element, HTMLParser, print_tree
 import sys
 from CSS.CSSParser import CSSParser, cascade_priority
 import logging
@@ -70,6 +70,9 @@ class Browser:
         rules = self.getCSSRules(self.root_node,url)
         style(self.root_node, sorted(rules, key=cascade_priority))
         self.createLayout()
+        #print_tree(self.document)
+        #print(self.display_list)
+  
         self.draw()
     
     #TODO: we should consider having a cache for computed stylesheets if computing them becomes too slow
