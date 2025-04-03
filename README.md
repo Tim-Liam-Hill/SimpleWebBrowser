@@ -74,12 +74,15 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * decide if/how to support external fonts (if that is in scope). It may be possible to create custom fonts dynamically??? 
 * tool that analyzes code base for code smells and such
 * display: none
+* Block layout into different classes since I think it is doing a bit much. 
 
 # BUGS
 
 * seems like the bottom text of the page gets cut off in some sites
 * HTML parser seems like it is struggling on url https://javascript.info/currying-partials 
 * I have assumed you can't have tags inside of li elements. You can, and when this happens I render extra bullet points. The solution is to prepend an extra text element to a li when we encounter it to handle the bullet point. Need to be sure to check that there isn't already a bullet point there though (maybe a specialized class for this).
+* for inline elements, the width we draw the rect is just marginally too long
+
 
 
 # WishList
@@ -546,7 +549,14 @@ I think Tkinter is messing with me. I am not sure you can have two text blocks s
 Found the issue: I am drawing rects over content I previously drew. Background color of white was throwing me off
 So my logic was right and I was confused. Fix: make sure we correct the starting x and ending x for the rects that surround text. (Should there even be these rects??)
 
-So now when inline doesn't draw rects everything works, but we need to add the rects in the event there is a background color/border/etc.
+So now when inline doesn't draw rects everything works, but we need to add the rects in the event there is a background color/border/etc. The plan is to make a list of rects when we flush lines and add this to the display list for a block layout
+
+So, how about:
+* keep track of min cursor x 
+* when flush, if background color we first append a draw rect (eventually we will add border info)
+* we use min_cursor x as start and wherever last word finished as end
+* cursor_y + y = start and height becomes height of line
+* reset min_cursor_x after flush
 
 Need to handle display: none
 

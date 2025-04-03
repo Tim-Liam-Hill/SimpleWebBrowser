@@ -5,6 +5,7 @@ from HTMLParser import Text, Element
 from CSS.CSSParser import CSSParser
 import math
 import logging
+from dataclasses import dataclass
 logger = logging.getLogger(__name__)
 
 HSTEP, VSTEP = 13, 18
@@ -73,6 +74,24 @@ class LayoutDisplayProperties:
     def layout_mode(self):
         return "block"
 
+@dataclass 
+class InlineTextInfo:
+    def __init__(self, x, y, word, font, color):
+        self.x = x 
+        self.y = y 
+        self.word = word 
+        self.font = font 
+        self.color = color
+
+@dataclass
+class InlineRectInfo: 
+    def __init__(self, x,y,x2,y2,color): #this may need to hold css properties instead of color eventually?
+        self.x = x 
+        self.y = y 
+        self.background_color = color
+        self.x2 = x2 
+        self.y2 = y2
+
 #Kind of a weird class to be honest. It's called block layout which would lead us to think that all elements
 # of this class would have display: block, but how the book uses this class this isn't the case.
 # Maybe at some point its worth a rework??
@@ -93,6 +112,7 @@ class BlockLayout:
         self.cursor_x = 0
         self.cursor_y = 0
         self.last_cursor_y = self.cursor_y #used for non-block elements to know where to continue
+        self.min_cursor_x = 0 #only needed for inline layout at present 
 
     #TODO: support more than block/inline
     def layout_mode(self): #TODO: enum for display vals
@@ -149,7 +169,6 @@ class BlockLayout:
         else: self.height = self.cursor_y
 
     def paint(self): #maybe separate into different functions based on display?? 
-        cmds = []
 
         match self.layout_mode():
             case "inline":
@@ -159,11 +178,14 @@ class BlockLayout:
             case default:
                 return self.paintInline()
     
-    def paintInline(self):
+    def paintInline(self): #TODO: maybe we can skip the paint step and just append DrawText/DrawRect directly to display list?
         cmds = []
         
-        for x, y, word, font, color in self.display_list:
-            cmds.append(DrawText(x, y, word, font, color))
+        for elem in self.display_list:
+            if isinstance(elem, InlineTextInfo):
+                cmds.append(DrawText(elem.x, elem.y, elem.word, elem.font, elem.color))
+            elif isinstance(elem, InlineRectInfo):
+                cmds.append(DrawRect(elem.x,elem.y,elem.x2,elem.y2,elem.background_color))
 
         return cmds
 
@@ -179,6 +201,7 @@ class BlockLayout:
         
         return cmds
     
+    #only for inline elephants
     def recurse(self, node):
 
         if isinstance(node, Text):
@@ -189,6 +212,7 @@ class BlockLayout:
                     self.word("◦ ", node)
                 else:
                     self.word("‣ ", node)
+            self.min_cursor_x = self.cursor_x #if previous element inline and didn't go all the way to end then this won't be zero
             for word in node.text.split():
                 self.word(word, node)
         elif node.tag not in ["script","style", "head"]: #TODO: make this a global var somewhere
@@ -220,14 +244,23 @@ class BlockLayout:
         metrics = [font.metrics() for x, word, font, isSuperscript, color in self.line] #like this
         max_ascent = max([metric["ascent"] for metric in metrics])
         baseline = self.cursor_y +  self.layoutProps.leading * max_ascent
+        text_display_list = []
+
         for rel_x, word, font, isSuperscript, color in self.line:
             x = self.x + rel_x
             y =  self.y + baseline - font.metrics("ascent") if not isSuperscript else self.y + baseline - 1.8*font.metrics("ascent")
-            self.display_list.append((x, y, word, font, color))
+            text_display_list.append(InlineTextInfo(x, y, word, font, color))
         max_descent = max([metric["descent"] for metric in metrics])
+        
+        if self.node.style.get("background-color") != "transparent": 
+            self.display_list.append(InlineRectInfo(self.x+self.min_cursor_x, self.y + self.cursor_y, self.cursor_x, self.y + self.cursor_y + 1.25*max_descent +  max_ascent,self.node.style.get("background-color")))
+
+        #Rects must be rendered before text otherwise text gets covered 
+        self.display_list = self.display_list + text_display_list
 
         self.cursor_y = baseline + 1.25 * max_descent
         self.cursor_x = 0
+        self.min_cursor_x = 0
 
         self.line = []
 
