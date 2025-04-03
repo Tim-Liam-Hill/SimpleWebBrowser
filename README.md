@@ -551,6 +551,8 @@ So my logic was right and I was confused. Fix: make sure we correct the starting
 
 So now when inline doesn't draw rects everything works, but we need to add the rects in the event there is a background color/border/etc. The plan is to make a list of rects when we flush lines and add this to the display list for a block layout
 
+Bam. Did fix things, but now its also broken. When we have large passages of text we jump too far down. Hmmmmm...
+
 So, how about:
 * keep track of min cursor x 
 * when flush, if background color we first append a draw rect (eventually we will add border info)
