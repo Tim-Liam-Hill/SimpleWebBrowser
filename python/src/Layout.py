@@ -41,7 +41,73 @@ def paint_tree(layout_object, display_list):
     for child in layout_object.children:
         paint_tree(child, display_list)
 
-class DocumentLayout:
+
+class Layout:
+    '''The base class that all LayoutTypes inherit from'''
+
+    def __init__(self, node, parent, previous):
+        self.node = node 
+        self.x = 0 
+        self.y = 0 
+        self.display_list = []
+        self.parent = parent 
+        self.previous = previous
+        
+
+    def getWidth(self):
+        '''Returns the width of the layout object, taking into account CSS properties as necessary'''
+
+        pass 
+
+    def getHeight(self):
+        '''Returns the height of the layout object, taking into account CSS properties as necessary'''
+
+        pass 
+
+    def getX(self):
+        '''Returns the left hand start co-ordinate layout object, taking into account CSS properties as necessary
+        
+        This value will be for where the bounding rectangle starts and so is 'outside' any padding or border
+        '''
+
+        pass 
+
+    def getY(self):
+        '''Returns the vertical start co-ordinate layout object, taking into account CSS properties as necessary
+        
+        This value will be for where the bounding rectangle starts and so is 'outside' any padding or border
+        '''
+
+        pass
+
+    def getXStart(self):
+        '''Returns the abolute x value for where the next text/element should be displayed.
+        
+        This allows us to handle cases for when text follows on the same line as the previous element for example.
+        '''
+        pass
+
+    def layout(self):
+        '''Forces this Layout Object to create all of its layout children'''
+
+        pass 
+    
+    def paint(self):
+        '''Populates the draw commands in the display list necessary for this element to render its content on a canvas'''
+
+        pass
+
+    def getDisplayList(self):
+        '''Returns the display list for this object'''
+
+        pass
+
+    def getLayoutMode(self):
+        '''Returns this objects CSS display property'''
+        pass 
+
+
+class DocumentLayout: #edge case that doesn't need to inherit everything from Layout
     def __init__(self, node, max_width):
         self.node = node
         self.parent = None
@@ -52,13 +118,12 @@ class DocumentLayout:
         self.width = self.max_width
         self.x = 0
         self.y = 0
-        layoutProps = LayoutDisplayProperties()
-        child = BlockLayout(self.node, self, None, layoutProps)
+        layoutProps = LayoutDisplayProperties() #TODO: remove
+        child = BlockLayout1(self.node, self, None, layoutProps)
         self.children.append(child)
         child.layout()
         self.height = child.height
-        print(self.children)
-        print("DocumentLayoutHeight ", self.height)
+
 
     def paint(self):
         return []
@@ -76,30 +141,13 @@ class LayoutDisplayProperties:
     def layout_mode(self):
         return "block"
 
-@dataclass 
-class InlineTextInfo:
-    def __init__(self, x, y, word, font, color):
-        self.x = x 
-        self.y = y 
-        self.word = word 
-        self.font = font 
-        self.color = color
-
-@dataclass
-class InlineRectInfo: 
-    def __init__(self, x,y,x2,y2,color): #this may need to hold css properties instead of color eventually?
-        self.x = x 
-        self.y = y 
-        self.background_color = color
-        self.x2 = x2 
-        self.y2 = y2
 
 #Kind of a weird class to be honest. It's called block layout which would lead us to think that all elements
 # of this class would have display: block, but how the book uses this class this isn't the case.
 # Maybe at some point its worth a rework??
 # In any case, we would need to have a better solution for other display modes so if we get far enough this will need 
 # to be changed
-class BlockLayout:
+class BlockLayout1:
     def __init__(self, node, parent, previous, layoutProps):
         self.node = node
         self.parent = parent
@@ -142,7 +190,7 @@ class BlockLayout:
         if mode == "block":
             previous = None
             for child in self.node.children:
-                next = BlockLayout(child, self, previous, self.layoutProps)
+                next = BlockLayout1(child, self, previous, self.layoutProps)
                 self.children.append(next)
                 previous = next
         else:

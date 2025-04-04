@@ -561,6 +561,17 @@ So, how about:
 * cursor_y + y = start and height becomes height of line
 * reset min_cursor_x after flush
 
+* 2 different classes: blocklayout and inline layout.
+* method to compute x, y and width (maybe height as well in the case of setting explicit height)
+* height and width won't be member variables, they will be methods (maybe for some cases they will be member variables but all layouts will call the methods rather than access the variables directly.)
+* also methods to compute cursor x and cursor y 
+* method for getHeight()
+* method for getStartNextContent (since your height and where the next text should start are not always the same)
+
+what to do about layout props and handle open/close tags? Layout props I think we can get rid of tbh, and if that is the case then we won't need the handleOpen/Close tags (since they modify layout props). We can slot those into new functions and have finer granularity about when they are called. 
+
+Maybe there is a design patten here I could use, but honestly inheritence is enough. [This](https://stackoverflow.com/questions/44576167/force-child-class-to-override-parents-methods) is a cool replacement for pure virtual methods.
+
 Need to handle display: none
 
 6.4 -> In progress
