@@ -57,6 +57,8 @@ class DocumentLayout:
         self.children.append(child)
         child.layout()
         self.height = child.height
+        print(self.children)
+        print("DocumentLayoutHeight ", self.height)
 
     def paint(self):
         return []
@@ -104,6 +106,7 @@ class BlockLayout:
         self.previous = previous
         self.children = []
         self.display_list = []
+        self.line = []
         self.x = None
         self.y = None
         self.width = None
@@ -165,8 +168,16 @@ class BlockLayout:
             self.handleCloseTag(self.node.tag)
 
         if mode == "block":
-            self.height = sum([child.height for child in self.children])
+            
+            #self.height = sum([child.height for child in self.children])
+            self.height = max([child.cursor_y + child.y for child in self.children]) #TODO: cursor_y vs height: need to finalize how we calculate things
+            #maybe it would be useful to have a function to calculate the next place to continue
+            if self.node.tag == "p": #TODO: this would make more sense if it was in the close tag func but it doesn't work if there
+                                    #since we need to populate our height before our children read it
+                self.height += VSTEP
+            
         else: self.height = self.cursor_y
+        print(self.node, " ", self.height, " ", self.cursor_y, " ", self.last_cursor_y)
 
     def paint(self): #maybe separate into different functions based on display?? 
 
@@ -264,6 +275,7 @@ class BlockLayout:
 
         self.line = []
 
+    #for this and handleCloseTag it is probably more efficient to have a map to functions
     def handleOpenTag(self, tag):
         if tag == "sup":
             # self.layoutProps.fontSize /=2

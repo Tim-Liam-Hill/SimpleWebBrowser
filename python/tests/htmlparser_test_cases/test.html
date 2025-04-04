@@ -4,8 +4,27 @@
         <meta charset="utf-8" />
     </head>
     <body>        
+        <p>In the previous chapter we gave each
+             element a gray background. It looks OK, and it
+             good to have defaults, but sites want a say in how they
+            look. Websites do that with <em>Cascading Style Sheets</em> (), which
+            allow web authors (and, as we’ll see, browser developers) to define how
+            a web page ought to look.</p>
         <div><span style="color: red">span again and </span> <div>boi</div></div>
         
         <span style="background-color: aqua;"> another span span span span span span span span span spans</span>
+        <div>this is a div underneath a div</div>
+
+        <p>To add this to our browser, we’ll need to start by parsing these
+            property–value pairs. I’ll use recursive <em>parsing functions</em>,
+            which are a good way to build a complex parser step by step. The idea is
+            that each parsing function advances through the text being parsed and
+            returns the data it parsed. We’ll have different functions for different
+            types of data, and organize them in a <code>CSSParser</code> class that
+            stores the text being parsed and the parser’s current position in
+            it:</p>
+
+            <div>end</div>
+    
     </body>
 </html>
