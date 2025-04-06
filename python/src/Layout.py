@@ -6,42 +6,20 @@ from CSS.CSSParser import CSSParser
 import math
 import logging
 from abc import ABC, abstractmethod
+from layouts import BlockLayout, InlineLayout
+from python.src.layouts import LayoutConstants
 logger = logging.getLogger(__name__)
-
-"""The amount by which to advance horizontally and vertically by default"""
-HSTEP, VSTEP = 13, 18
-
-""""""
-DEFAULT_LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
-
-"""Font Cache"""
-FONTS = {}
-
-SELF_CLOSING_TAGS = [
-    "area", "base", "br", "col", "embed", "hr", "img", "input",
-    "link", "meta", "param", "source", "track", "wbr",
-]
-
-INHERITED_PROPERTIES = {
-    "font-size": "26px", #TODO: need a better idea on how to make font-sizes look lekker
-    "font-style": "normal",
-    "font-weight": "normal",
-    "color": "black",
-    "font-family": 'Times',
-    #"background-color": "transparent" # text book doesn't have this as inherited but I believe it should be based on what my browser does
-    #having this inherited caused problems so oops
-}
 
 #TODO: support more fonts. Also set up a more sophisticated cache at some point??
 """Used to access fonts in the font cache"""
 def get_font(size, weight, style, family):
     key = (size, weight, style)
-    if key not in FONTS:
+    if key not in LayoutConstants.FONTS:
         font = tkinter.font.Font(size=math.floor(size), weight=weight,
             slant=style, family=family)
         label = tkinter.Label(font=font)
-        FONTS[key] = (font, label)
-    return FONTS[key][0]
+        LayoutConstants.FONTS[key] = (font, label)
+    return LayoutConstants.FONTS[key][0]
 
 """Populates the given display list with the commands needed to style the HTMLElement tree according to the CSS rules"""
 def paint_tree(layout_object, display_list):
@@ -58,6 +36,13 @@ class Layout(ABC):
         self.node = node 
         self.x = 0 
         self.y = 0 
+        
+        '''Width of entire element including margin, padding and borders'''
+        self.width = 0
+        
+        '''Width available for inner text and other elements'''
+        self.content_width = 0
+
         self.display_list = []
         self.parent = parent 
         self.previous = previous
@@ -68,10 +53,34 @@ class Layout(ABC):
         '''Returns the width of the layout object, taking into account CSS properties as necessary'''
 
         pass 
+
+    @abstractmethod
+    def getContentWidth(self):
+        '''Returns the width available inside this element for content
+        
+        This is used as the width for child classes (to be adjusted by CSS as necessary)
+        '''
+
+        pass
+
+    @abstractmethod
+    def calculateContentWidth(self):
+        '''Calculates the width of this element available for inner content'''
+
+        pass 
+
+    @abstractmethod
+    def calculateWidth(self):
+        '''Calculates the entire width of this element, css and content included'''
+
+        pass 
     
     @abstractmethod
     def getHeight(self):
-        '''Returns the height of the layout object, taking into account CSS properties as necessary'''
+        '''Returns the height of the layout object, taking into account CSS properties as necessary
+        
+        Note that this height is inclusive of margin. 
+        '''
 
         pass 
 
@@ -92,13 +101,19 @@ class Layout(ABC):
         '''
 
         pass
-
+    
     @abstractmethod
     def getXStart(self):
         '''Returns the abolute x value for where the next text/element should be displayed.
         
         This allows us to handle cases for when text follows on the same line as the previous element for example.
         '''
+        pass
+    
+    @abstractmethod
+    def getYStart(self):
+        '''Returns absolute y value for where next text/element should be displayed'''
+
         pass
 
     @abstractmethod
@@ -123,6 +138,16 @@ class Layout(ABC):
     def getLayoutMode(self):
         '''Returns this objects CSS display property'''
         pass 
+
+    def createChild(self, node, previous):
+        """Creates and returns a new node based on its display property. Default is InlineLayout if no display property"""
+
+        if "display" in node.style and self.node.style.get("display") in ["block", "inline"]:
+            match node.style.get("display"):
+                case "block": return BlockLayout(node, self, previous)
+                case "inline": return InlineLayout(node, self, previous)
+        else: 
+            return InlineLayout(node, self, previous)
 
 
 class DocumentLayout: #edge case that doesn't need to inherit everything from Layout
@@ -246,7 +271,7 @@ class BlockLayout1:
             #maybe it would be useful to have a function to calculate the next place to continue
             if self.node.tag == "p": #TODO: this would make more sense if it was in the close tag func but it doesn't work if there
                                     #since we need to populate our height before our children read it
-                self.height += VSTEP
+                self.height += LayoutConstants.VSTEP
             
         else: self.height = self.cursor_y
         print(self.node, " ", self.height, " ", self.cursor_y, " ", self.last_cursor_y)
@@ -408,40 +433,6 @@ def style(node, rules):
     for child in node.children:
         style(child, rules)
 
-class DrawText:
-    def __init__(self, x1, y1, text, font, color):
-        self.top = y1
-        self.left = x1
-        self.text = text
-        self.font = font
-        self.bottom = y1 + font.metrics("linespace")
-        self.color = color
-
-    def execute(self, scroll, canvas):
-
-        canvas.create_text(
-            self.left, self.top - scroll,
-            text=self.text,
-            font=self.font,
-            anchor='nw',
-            fill=self.color)
-
-
-
-class DrawRect:
-    def __init__(self, x1, y1, x2, y2, color):
-        self.top = y1
-        self.left = x1
-        self.bottom = y2
-        self.right = x2
-        self.color = color
-
-    def execute(self, scroll, canvas):
-        canvas.create_rectangle(
-            self.left, self.top - scroll,
-            self.right, self.bottom - scroll,
-            width=0,
-            fill=self.color)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

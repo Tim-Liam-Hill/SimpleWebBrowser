@@ -1,7 +1,7 @@
 '''BlockLayout'''
 
 from Layout import Layout
-import LayoutTypes
+import LayoutConstants as LayoutConstants
 
 class BlockLayout(Layout):
     '''The implementation for "block" css display property'''
@@ -10,53 +10,81 @@ class BlockLayout(Layout):
         super().__init__(node,parent,previous)
 
     def getWidth(self):
-        '''Returns the width of the layout object, taking into account CSS properties as necessary'''
 
-        pass 
+        return self.width
+
+    def calculateContentWidth(self): #TODO: implement
+
+        return self.parent.getWidth()
+
+    #TODO: implement
+    def calculateWidth(self):
+
+        return self.parent.getWidth()
     
     def getHeight(self):
-        '''Returns the height of the layout object, taking into account CSS properties as necessary'''
+        '''The height of a block element is dependant on the height of its children'''
+        
+        height = sum([child.getHeight() for child in self.children]) 
+        if self.node.tag == "p": 
+            height += LayoutConstants.VSTEP
 
-        pass 
+        #TODO: add our own borders and padding
+
+        return height
 
     def getX(self):
-        '''Returns the left hand start co-ordinate layout object, taking into account CSS properties as necessary
-        
-        This value will be for where the bounding rectangle starts and so is 'outside' any padding or border
-        '''
 
-        pass 
+        return self.x
 
     def getY(self):
-        '''Returns the vertical start co-ordinate layout object, taking into account CSS properties as necessary
-        
-        This value will be for where the bounding rectangle starts and so is 'outside' any padding or border
-        '''
 
-        pass
+        return self.y
 
     def getXStart(self):
-        '''Returns the abolute x value for where the next text/element should be displayed.
-        
-        This allows us to handle cases for when text follows on the same line as the previous element for example.
-        '''
-        pass
+
+        return self.x
+
+    #TODO: padding and margin?? 
+    def getYStart(self):
+
+        return self.y
 
     def layout(self):
         '''Forces this Layout Object to create all of its layout children'''
 
-        pass 
-    
-    def paint(self): #TODO:Should this be abstract or can we make this generic? 
-        '''Populates the draw commands in the display list necessary for this element to render its content on a canvas'''
+        self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
+        self.y = self.parent.getYStart() #TODO: same here
+        self.width = self.calculateWidth()
+        self.content_width = self.calculateContentWidth()
 
-        pass
+        prev = None
+        for child in self.node.children:
+            next = self.createChild(child,prev)
+            self.children.append(next)
+            prev = next
+        
+        for child in self.children:
+            child.layout()
+
+    def paint(self): #TODO:Should this be abstract or can we make this generic? 
+        cmds = []
+
+        bgcolor = self.node.style.get("background-color",
+                                      "transparent")
+        if bgcolor != "transparent":
+            x2, y2 = self.x + self.width, self.y + self.height
+            rect = LayoutConstants.DrawRect(self.x, self.y, x2, y2, bgcolor)
+            cmds.append(rect)
+        
+        return cmds
 
     def getDisplayList(self):
         '''Returns the display list for this object'''
 
-        pass
+        return self.display_list
 
     def getLayoutMode(self):
         '''Returns this objects CSS display property'''
-        pass 
+        
+        return LayoutConstants.Block
