@@ -75,6 +75,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * tool that analyzes code base for code smells and such
 * display: none
 * Block layout into different classes since I think it is doing a bit much. 
+* Support basic translation?? that would be cool
 
 # BUGS
 
@@ -88,6 +89,8 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 # WishList
 
 * support some basic svg
+* Basic animations (which might end up being doable Interestingly enough)
+* gifs 
 
 # Exercises 1
 
@@ -560,7 +563,6 @@ So, how about:
 * we use min_cursor x as start and wherever last word finished as end
 * cursor_y + y = start and height becomes height of line
 * reset min_cursor_x after flush
-
 * 2 different classes: blocklayout and inline layout.
 * method to compute x, y and width (maybe height as well in the case of setting explicit height)
 * height and width won't be member variables, they will be methods (maybe for some cases they will be member variables but all layouts will call the methods rather than access the variables directly.)
@@ -572,7 +574,17 @@ what to do about layout props and handle open/close tags? Layout props I think w
 
 Maybe there is a design patten here I could use, but honestly inheritence is enough. [This](https://stackoverflow.com/questions/44576167/force-child-class-to-override-parents-methods) is a cool replacement for pure virtual methods.
 
-Need to handle display: none
+Need to handle display: none and list-item because that would be beautiful.
+List item can have an inheritable indent prop which will allow us to have correct indentation.
+
+We need to have a default display option since not all tags will have a display prop (or can we just use Inline as a default?)
+
+Hmm, let's back up a second. [This](https://html.spec.whatwg.org/multipage/dom.html#kinds-of-content) specifies 
+the different type of HTML elements, should we not use this then use a strategy pattern for displaying 
+based on layout?? That could be a good idea. we should perhaps also ensure that [these global attributes](https://html.spec.whatwg.org/multipage/dom.html#kinds-of-content) 
+are present on all html elements (just for good measure).
+
+Just because I was confused: [default layout value is inline](https://developer.mozilla.org/en-US/docs/Web/CSS/display#formal_definition).
 
 6.4 -> In progress
 
