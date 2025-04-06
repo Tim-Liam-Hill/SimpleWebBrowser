@@ -1,0 +1,115 @@
+\doxysection{src.\+URLHandler.\+URLHandler Class Reference}
+\hypertarget{classsrc_1_1URLHandler_1_1URLHandler}{}\label{classsrc_1_1URLHandler_1_1URLHandler}\index{src.URLHandler.URLHandler@{src.URLHandler.URLHandler}}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a4456a3a6a5e30fe4cc5867014a0a1f52}\label{classsrc_1_1URLHandler_1_1URLHandler_a4456a3a6a5e30fe4cc5867014a0a1f52} 
+{\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_aa70bde2525d412b9771581bf91bbe55f}\label{classsrc_1_1URLHandler_1_1URLHandler_aa70bde2525d412b9771581bf91bbe55f} 
+{\bfseries \+\_\+\+\_\+del\+\_\+\+\_\+} (self)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a2137c9417c1d0be07ffac401671b5414}\label{classsrc_1_1URLHandler_1_1URLHandler_a2137c9417c1d0be07ffac401671b5414} 
+{\bfseries validate\+URL} (self, url)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_ab13c8b190602326ead887db915dc4221}\label{classsrc_1_1URLHandler_1_1URLHandler_ab13c8b190602326ead887db915dc4221} 
+{\bfseries resolve} (self, url, base\+URL)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a62e8cf7191f410eed7d013bb6fc96fc6}\label{classsrc_1_1URLHandler_1_1URLHandler_a62e8cf7191f410eed7d013bb6fc96fc6} 
+{\bfseries extract\+Scheme} (self, url, is\+View\+Source=False)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a2deb3347a779048fa004b869ea3f0a58}\label{classsrc_1_1URLHandler_1_1URLHandler_a2deb3347a779048fa004b869ea3f0a58} 
+{\bfseries is\+View\+Source} (self, url)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a906eb43e5ecbd809829a38b008a6246b}\label{classsrc_1_1URLHandler_1_1URLHandler_a906eb43e5ecbd809829a38b008a6246b} 
+{\bfseries request} (self, url=DEFAULT\+\_\+\+PAGE, reset=True)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_af199cd8d45458890fa5de7984374c2ba}\label{classsrc_1_1URLHandler_1_1URLHandler_af199cd8d45458890fa5de7984374c2ba} 
+{\bfseries reset\+Between\+Request} (self)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a85ea9211be38c477f16a162e4490b9fc}\label{classsrc_1_1URLHandler_1_1URLHandler_a85ea9211be38c477f16a162e4490b9fc} 
+{\bfseries file\+Request} (self, path)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a772a349cffe9c9818f1ad8ef26295997}\label{classsrc_1_1URLHandler_1_1URLHandler_a772a349cffe9c9818f1ad8ef26295997} 
+{\bfseries data\+Request} (self, path)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a5d237adb1c8044d3bbb4a3d86c5e5140}\label{classsrc_1_1URLHandler_1_1URLHandler_a5d237adb1c8044d3bbb4a3d86c5e5140} 
+{\bfseries http\+Request} (self, path, scheme)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a06fdc09be8f5af0d24f2a94028fed4d0}\label{classsrc_1_1URLHandler_1_1URLHandler_a06fdc09be8f5af0d24f2a94028fed4d0} 
+{\bfseries cache\+Response} (self, content, response\+\_\+headers, scheme, host, path)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a783ba48a88da5d1e3c41e761ca1f7d54}\label{classsrc_1_1URLHandler_1_1URLHandler_a783ba48a88da5d1e3c41e761ca1f7d54} 
+{\bfseries handle\+Redirect} (self, response\+\_\+headers, scheme, host)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a40c0653e3e6d7fda3d1b33740b719e10}\label{classsrc_1_1URLHandler_1_1URLHandler_a40c0653e3e6d7fda3d1b33740b719e10} 
+socket.\+socket {\bfseries get\+Socket} (self, scheme, host, port)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_aa5db914cc698ddeb9cdcf8a593fc38a2}\label{classsrc_1_1URLHandler_1_1URLHandler_aa5db914cc698ddeb9cdcf8a593fc38a2} 
+bool {\bfseries is\+Socket\+Closed} (self, socket.\+socket sock)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a7d5729d21f35ef5b268d34c757d088c4}\label{classsrc_1_1URLHandler_1_1URLHandler_a7d5729d21f35ef5b268d34c757d088c4} 
+{\bfseries decode\+Body} (self, body, method)
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_ad1f0dd369ac704dd345dcc8036bc66b3}\label{classsrc_1_1URLHandler_1_1URLHandler_ad1f0dd369ac704dd345dcc8036bc66b3} 
+{\bfseries handle\+Transfer\+Encoding} (self, headers, response)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a8c85d83bd530fcb8d6b307979fc7d979}\label{classsrc_1_1URLHandler_1_1URLHandler_a8c85d83bd530fcb8d6b307979fc7d979} 
+int {\bfseries redirect\+Count} = 0
+\item 
+list \mbox{\hyperlink{classsrc_1_1URLHandler_1_1URLHandler_a9abdf7d40ae0b01732cafc716899ea06}{request\+Headers}}
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_aa18714f19b5f51a1cd18b608cc70dd5e}\label{classsrc_1_1URLHandler_1_1URLHandler_aa18714f19b5f51a1cd18b608cc70dd5e} 
+dict {\bfseries connections} = \{\}
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a94bb20a3a60db01f4e410a62b9eb3c94}\label{classsrc_1_1URLHandler_1_1URLHandler_a94bb20a3a60db01f4e410a62b9eb3c94} 
+{\bfseries cache} = \mbox{\hyperlink{classsrc_1_1URLHandler_1_1URLCache}{URLCache}}()
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a6bdbdf4a932c49dbe0ac6edf5d1fc476}\label{classsrc_1_1URLHandler_1_1URLHandler_a6bdbdf4a932c49dbe0ac6edf5d1fc476} 
+bool {\bfseries view\+Source} = False
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Static Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a7bd17d953318c025898d5d972b9beb27}\label{classsrc_1_1URLHandler_1_1URLHandler_a7bd17d953318c025898d5d972b9beb27} 
+str {\bfseries DEFAULT\+\_\+\+PAGE} = \textquotesingle{}https\+://timhill.\+co.\+za\textquotesingle{}
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a48e79a2ce2261b995ce94d695f1477b0}\label{classsrc_1_1URLHandler_1_1URLHandler_a48e79a2ce2261b995ce94d695f1477b0} 
+str {\bfseries HTTP\+\_\+\+VERSION} = \textquotesingle{}HTTP/1.\+1\textquotesingle{}
+\item 
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a7f90a6e5d0855b23cf36d0460cc4cf46}\label{classsrc_1_1URLHandler_1_1URLHandler_a7f90a6e5d0855b23cf36d0460cc4cf46} 
+int {\bfseries MAX\+\_\+\+REDIRECTS} = 7
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb}Given a url, extracts scheme and returns data based on the protocol
+NEED TO MAKE SURE THAT VIEWSOURCE IS SET/CHECKED SOMEHOW
+There will be a different class responsible for parsing the html into a syntax
+tree I suppose, so that will be the thing that needs to take notice.\end{DoxyVerb}
+ 
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{classsrc_1_1URLHandler_1_1URLHandler_a9abdf7d40ae0b01732cafc716899ea06}\index{src.URLHandler.URLHandler@{src.URLHandler.URLHandler}!requestHeaders@{requestHeaders}}
+\index{requestHeaders@{requestHeaders}!src.URLHandler.URLHandler@{src.URLHandler.URLHandler}}
+\doxysubsubsection{\texorpdfstring{requestHeaders}{requestHeaders}}
+{\footnotesize\ttfamily \label{classsrc_1_1URLHandler_1_1URLHandler_a9abdf7d40ae0b01732cafc716899ea06} 
+list src.\+URLHandler.\+URLHandler.\+request\+Headers}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{=\ \ [}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ [\textcolor{stringliteral}{"{}Connection"{}},\ \textcolor{stringliteral}{"{}Keep-\/alive"{}}],}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ [\textcolor{stringliteral}{"{}User-\/Agent"{}},\textcolor{stringliteral}{"{}Meow-\/Meow-\/Browser24"{}}],}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \ \ \ \ [\textcolor{stringliteral}{"{}Accept-\/Encoding"{}},\textcolor{stringliteral}{"{}gzip"{}}]}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ ]}
+
+\end{DoxyCode}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+python/src/URLHandler.\+py\end{DoxyCompactItemize}

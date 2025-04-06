@@ -1,0 +1,48 @@
+\doxysection{src.\+Layout Namespace Reference}
+\hypertarget{namespacesrc_1_1Layout}{}\label{namespacesrc_1_1Layout}\index{src.Layout@{src.Layout}}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{namespacesrc_1_1Layout_ae6e079f9109abc58a2cd63e7fac87a99}\label{namespacesrc_1_1Layout_ae6e079f9109abc58a2cd63e7fac87a99} 
+{\bfseries logger} = logging.\+get\+Logger(\+\_\+\+\_\+name\+\_\+\+\_\+)
+\item 
+\Hypertarget{namespacesrc_1_1Layout_a87524a981c8cc6cf912ff7c1d368bd77}\label{namespacesrc_1_1Layout_a87524a981c8cc6cf912ff7c1d368bd77} 
+{\bfseries HSTEP}
+\item 
+\Hypertarget{namespacesrc_1_1Layout_aad2db95fca2a8338b0e9461e7d041d62}\label{namespacesrc_1_1Layout_aad2db95fca2a8338b0e9461e7d041d62} 
+{\bfseries VSTEP}
+\item 
+\Hypertarget{namespacesrc_1_1Layout_a3b5e6512ef9aed35203321a5cba7de8c}\label{namespacesrc_1_1Layout_a3b5e6512ef9aed35203321a5cba7de8c} 
+float {\bfseries DEFAULT\+\_\+\+LEADING} = 1.\+25
+\item 
+\Hypertarget{namespacesrc_1_1Layout_a20450a5ee50742ae333c733fe2324620}\label{namespacesrc_1_1Layout_a20450a5ee50742ae333c733fe2324620} 
+dict {\bfseries FONTS} = \{\}
+\item 
+list \mbox{\hyperlink{namespacesrc_1_1Layout_aec365be819c803a506ebd30a067ad249}{SELF\+\_\+\+CLOSING\+\_\+\+TAGS}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\begin{DoxyVerb} Layout Module
+
+This file holds the base class all Layouts must implement. Layout classes are related to a single CSS 'display' value,
+such as 'inline' or block. This file further define CSS inherited properties, the FontCache and the methods used to 
+style the HTMLElements based on CSS rules.
+\end{DoxyVerb}
+ 
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{namespacesrc_1_1Layout_aec365be819c803a506ebd30a067ad249}\index{src.Layout@{src.Layout}!SELF\_CLOSING\_TAGS@{SELF\_CLOSING\_TAGS}}
+\index{SELF\_CLOSING\_TAGS@{SELF\_CLOSING\_TAGS}!src.Layout@{src.Layout}}
+\doxysubsubsection{\texorpdfstring{SELF\_CLOSING\_TAGS}{SELF\_CLOSING\_TAGS}}
+{\footnotesize\ttfamily \label{namespacesrc_1_1Layout_aec365be819c803a506ebd30a067ad249} 
+list src.\+Layout.\+SELF\+\_\+\+CLOSING\+\_\+\+TAGS}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ =\ \ [}
+\DoxyCodeLine{00002\ \ \ \ \ \textcolor{stringliteral}{"{}area"{}},\ \textcolor{stringliteral}{"{}base"{}},\ \textcolor{stringliteral}{"{}br"{}},\ \textcolor{stringliteral}{"{}col"{}},\ \textcolor{stringliteral}{"{}embed"{}},\ \textcolor{stringliteral}{"{}hr"{}},\ \textcolor{stringliteral}{"{}img"{}},\ \textcolor{stringliteral}{"{}input"{}},}
+\DoxyCodeLine{00003\ \ \ \ \ \textcolor{stringliteral}{"{}link"{}},\ \textcolor{stringliteral}{"{}meta"{}},\ \textcolor{stringliteral}{"{}param"{}},\ \textcolor{stringliteral}{"{}source"{}},\ \textcolor{stringliteral}{"{}track"{}},\ \textcolor{stringliteral}{"{}wbr"{}},}
+\DoxyCodeLine{00004\ ]}
+
+\end{DoxyCode}

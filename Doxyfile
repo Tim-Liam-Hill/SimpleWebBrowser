@@ -1,0 +1,4 @@
+INPUT = ./python
+FILE_PATTERNS = *.py
+OUTPUT_DIRECTORY = ./docs
+RECURSIVE = YES
