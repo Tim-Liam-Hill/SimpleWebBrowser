@@ -1,11 +1,3 @@
-""" Layout Module
-
-This file holds the base class all Layouts must implement. Layout classes are related to a single CSS 'display' value,
-such as 'inline' or block. This file further define CSS inherited properties, the FontCache and the methods used to 
-style the HTMLElements based on CSS rules.
-
-"""
-
 import tkinter
 import tkinter.font
 from URLHandler import URLHandler, Text

@@ -10,3 +10,6 @@ test:
 
 clean:
 	find -type d -name __pycache__ -a -prune -exec rm -rf {} \;
+
+docs: 
+	doxygen ../Doxyfile
