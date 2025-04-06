@@ -76,6 +76,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * display: none
 * Block layout into different classes since I think it is doing a bit much. 
 * Support basic translation?? that would be cool
+* generate documentation for the code (Doxygen is an option but let's use something new).
 
 # BUGS
 
@@ -585,6 +586,8 @@ based on layout?? That could be a good idea. we should perhaps also ensure that 
 are present on all html elements (just for good measure).
 
 Just because I was confused: [default layout value is inline](https://developer.mozilla.org/en-US/docs/Web/CSS/display#formal_definition).
+
+After some consideration, I am not going to model all HTML elements per the spec: I think that will take things outside of the scope I am willing to do. If I really want to later I can rework it in but for now I will do things based on the display property. The nice part about this is that later on I can reuse display logic if I rework things. 
 
 6.4 -> In progress
 

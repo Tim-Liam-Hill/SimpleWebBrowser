@@ -1,3 +1,11 @@
+""" Layout Module
+
+This file holds the base class all Layouts must implement. Layout classes are related to a single CSS 'display' value,
+such as 'inline' or block. This file further define CSS inherited properties, the FontCache and the methods used to 
+style the HTMLElements based on CSS rules.
+
+"""
+
 import tkinter
 import tkinter.font
 from URLHandler import URLHandler, Text
@@ -5,16 +13,23 @@ from HTMLParser import Text, Element
 from CSS.CSSParser import CSSParser
 import math
 import logging
-from dataclasses import dataclass
+from abc import ABC, abstractmethod
 logger = logging.getLogger(__name__)
 
+"""The amount by which to advance horizontally and vertically by default"""
 HSTEP, VSTEP = 13, 18
+
+""""""
 DEFAULT_LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
+
+"""Font Cache"""
 FONTS = {}
+
 SELF_CLOSING_TAGS = [
     "area", "base", "br", "col", "embed", "hr", "img", "input",
     "link", "meta", "param", "source", "track", "wbr",
 ]
+
 INHERITED_PROPERTIES = {
     "font-size": "26px", #TODO: need a better idea on how to make font-sizes look lekker
     "font-style": "normal",
@@ -26,6 +41,7 @@ INHERITED_PROPERTIES = {
 }
 
 #TODO: support more fonts. Also set up a more sophisticated cache at some point??
+"""Used to access fonts in the font cache"""
 def get_font(size, weight, style, family):
     key = (size, weight, style)
     if key not in FONTS:
@@ -35,6 +51,7 @@ def get_font(size, weight, style, family):
         FONTS[key] = (font, label)
     return FONTS[key][0]
 
+"""Populates the given display list with the commands needed to style the HTMLElement tree according to the CSS rules"""
 def paint_tree(layout_object, display_list):
     display_list.extend(layout_object.paint())
 
@@ -42,7 +59,7 @@ def paint_tree(layout_object, display_list):
         paint_tree(child, display_list)
 
 
-class Layout:
+class Layout(ABC):
     '''The base class that all LayoutTypes inherit from'''
 
     def __init__(self, node, parent, previous):
@@ -52,18 +69,21 @@ class Layout:
         self.display_list = []
         self.parent = parent 
         self.previous = previous
+        self.children = [] #TODO: I think every element has children but double check
         
-
+    @abstractmethod
     def getWidth(self):
         '''Returns the width of the layout object, taking into account CSS properties as necessary'''
 
         pass 
-
+    
+    @abstractmethod
     def getHeight(self):
         '''Returns the height of the layout object, taking into account CSS properties as necessary'''
 
         pass 
 
+    @abstractmethod
     def getX(self):
         '''Returns the left hand start co-ordinate layout object, taking into account CSS properties as necessary
         
@@ -72,6 +92,7 @@ class Layout:
 
         pass 
 
+    @abstractmethod
     def getY(self):
         '''Returns the vertical start co-ordinate layout object, taking into account CSS properties as necessary
         
@@ -80,6 +101,7 @@ class Layout:
 
         pass
 
+    @abstractmethod
     def getXStart(self):
         '''Returns the abolute x value for where the next text/element should be displayed.
         
@@ -87,27 +109,37 @@ class Layout:
         '''
         pass
 
+    @abstractmethod
     def layout(self):
         '''Forces this Layout Object to create all of its layout children'''
 
         pass 
     
-    def paint(self):
+    @abstractmethod
+    def paint(self): #TODO:Should this be abstract or can we make this generic? 
         '''Populates the draw commands in the display list necessary for this element to render its content on a canvas'''
 
         pass
 
+    @abstractmethod
     def getDisplayList(self):
         '''Returns the display list for this object'''
 
         pass
 
+    @abstractmethod
     def getLayoutMode(self):
         '''Returns this objects CSS display property'''
         pass 
 
 
 class DocumentLayout: #edge case that doesn't need to inherit everything from Layout
+    '''The root element of all HTMLElement trees
+    
+    There should be exactly one such element in every tree. It's responsibility is simply
+    to kick off the process of laying out child elements.
+    '''
+    
     def __init__(self, node, max_width):
         self.node = node
         self.parent = None
