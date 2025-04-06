@@ -599,6 +599,19 @@ Once I am done with this refactor I should make a method for extracting lengths/
 
 So now we just have to fix the bugs that have come about as a result of the refactor. Now would be a good time to write unit tests and use those to ensure we don't introduct more bugs later. 
 
+Its the same issue I had last time when calculating the height for inline elephants! Because many elements within an inline block will be on the same line, we mustn't count those one's twice! we must only count the non-overlapping pieces.
+
+There is probs a cool answer to this, but I guess the easiest way to do this is to get the minimum y value of the children and the max y_value + self.height of the children. The diff gives our height. 
+But wait, didn't we already try this???? meow??? 
+
+Something is still wrong with my logic. What is happening is each block layout is having double the height of that before it, which is just a tad problematic. 
+
+So my logic with respect go getting the height of a block element was correct, the issue I had was the y start for inline elements. Still, this thing is a buggy mess but we are getting somewhere.
+
+I need to some test cases. that is what I really need. Minimal reproductions of bugs to fix later. 
+
+Someone please explain to me why superscript is still working even though when I comment out the code I put in for it there is literally no change?? I am confused. 
+
 6.4 -> In progress
 
 # Exercizes 

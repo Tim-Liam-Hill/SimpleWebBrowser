@@ -11,16 +11,16 @@ SELF_CLOSING_TAGS = [
 ]
 
 #TODO: because I was already using the textbook's 'add_tag' and 'add_text' methods
-# the DFA has the weird behaviour of ignoring some chars/checking for trailing tags. 
+# the DFA has the weird behaviour of ignoring some chars/checking for trailing tags.
 #changing the aformentioned methods would mean we wouldn't need to do this (I think).
 #if a state has an 'accept' flag, we don't consume current char and instead
 #push the type of element determined by the accept flag, then transition as normal
 #if state has a 'trailing_tag' flag, the following happens when accept:
-#- there is a trailing </script or </style (or whatever tag name) tag appended to the data that should be 
+#- there is a trailing </script or </style (or whatever tag name) tag appended to the data that should be
 #- broken into a closing tag
 #- only ever trailing_tag flag if accept state set to data (but not always present if this is the case)
 # IE: because we go straight from a script or style tag into the data state, we may run into a case where
-# we would start closing a tag when in reality we shouldn't be so we explictly check for cases where there is 
+# we would start closing a tag when in reality we shouldn't be so we explictly check for cases where there is
 #no content between opening and closing script/style tags (TODO: is this truly necessary? I sorta get for script but for style?)
 #NOTE: technically a tag such as <scri' > will be accepted (and the quote won't be interpreted as creating a string)
 #this could be catered for but I highly doubt we need this at present. Can add it if I really want
@@ -39,7 +39,7 @@ DFA = {
         "style2":{"y":{"next":"style3"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
         "style3":{"l":{"next":"style4"},"**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
         "style4":{"e":{"next":"style_tag_body"}, "**": {"next":"in_tag"} ,">":{"accept":"tag", "next":"data"}},
-        "style_tag_body":{">":{"accept":"tag","next":"style_body"},"'":{"next":"style_tag_quote1"},"\"":{"next":"style_tag_quote2"},"**":{"next":"style_tag_body"}}, 
+        "style_tag_body":{">":{"accept":"tag","next":"style_body"},"'":{"next":"style_tag_quote1"},"\"":{"next":"style_tag_quote2"},"**":{"next":"style_tag_body"}},
         "style_tag_quote1":{"'":{"next":"style_tag_body"},"**":{"next":"style_tag_quote1"}},
         "style_tag_quote2":{"\"":{"next":"style_tag_body"},"**":{"next":"style_tag_quote2"}},
         "style_body":{"<":{"next":"style_close1"}, "'":{"next":"style_quote1"},"\"":{"next":"style_quote2"}, "**":{"next":"style_body"}},
@@ -78,7 +78,7 @@ DFA = {
     }
 }
 
-@dataclass 
+@dataclass
 class Text:
     def __init__(self, text, parent):
         self.text = text
@@ -88,7 +88,7 @@ class Text:
 
     def __repr__(self):
         return repr(self.text)
-    
+
     def __str__(self):
         return self.text
 
@@ -100,14 +100,14 @@ class Element: #ELEMENTS HAVE A STYLE ATTRIBUTE!!!
         self.children = []
         self.parent = parent
         self.style = {}
-    
+
     def __repr__(self):
         return "<" + self.tag + ">"
-    
+
     def __str__(self):
         return "<" + self.tag + ">"
 
-#TODO: mayhaps do this as a separate project at somepoint? 
+#TODO: mayhaps do this as a separate project at somepoint?
 #TODO: There is definitely a better/more elegant way to implement a lexer
 #TODO: this works well when HTML is well formatted (which it normally would be) but this should handle more malformed HTML
 class HTMLParser:
@@ -139,17 +139,17 @@ class HTMLParser:
                     text = ""
                 elif "accept" in DFA["states"][state][i] and DFA["states"][state][i]["accept"] == "data":
                     possible_tag = ""
-                    
+
                     if "trailing_tag" in DFA["states"][state][i]:
                         possible_tag_len = len(DFA["states"][state][i]["trailing_tag"]) #excludes implicit </
                         if len(text) >= possible_tag_len + 2 and text[-possible_tag_len-2:] == "</" + DFA["states"][state][i]["trailing_tag"]: #use I know, verbose if statements are gross
                             possible_tag = "/" + DFA["states"][state][i]["trailing_tag"]
                             text = text[0:len(text)-possible_tag_len-2]
-                        else: 
+                        else:
                             logger.error("This state should never be reached. We have a DFA state that should only be closed when it encounters the trailing tag yet the trailing tag cannot be extracted")
                             logger.error("String is: %s", text)
                             logger.error("Trailing tag is %s", "</" + DFA["states"][state][i]["trailing_tag"])
-                            
+
                     self.add_text(text)
                     self.add_tag(possible_tag) #if tag == "" then it will be ignored
                     text = ""
@@ -157,11 +157,11 @@ class HTMLParser:
                 state = DFA["states"][state][i]["next"]
                 logger.debug(state)
             else:
-                text += i 
+                text += i
                 state = DFA["states"][state]["**"]["next"]
                 logger.debug(state)
 
-            
+
 
         if state == "data" and text != "":
             self.add_text(text)
@@ -174,7 +174,7 @@ class HTMLParser:
         AMP_REMAPS = { #TODO: there is almost certainly a better way of doing this that is more performant (eh)
             "&quot;": "\"", #it would use a DFA that iterates through and replaces as strings are encountered
             "&copy;":"©",   #actually somewhat trivial to implement, will get to it when the need for performance arises
-            "&ndash;":"-", 
+            "&ndash;":"-",
             "&amp;":"@",
             "&lt;":"<",
             "&gt;":">",
@@ -185,7 +185,7 @@ class HTMLParser:
             "&#x2F;": "/",
             "&raquo;": "»"
         }
-        
+
         for key, value in AMP_REMAPS.items(): #there is a more efficient way of doing this but its fine
             text = text.replace(key, value)
 
@@ -194,10 +194,10 @@ class HTMLParser:
         parent.children.append(node)
 
     def add_tag(self, tag):
-        
-        if tag.startswith("!") or tag=="": return #we realistically shouldn't encounter empty tags, and technically I don't think we need to remove them 
+
+        if tag.startswith("!") or tag=="": return #we realistically shouldn't encounter empty tags, and technically I don't think we need to remove them
         self.implicit_tags(tag)
-        logger.debug("Adding tag: %s", tag)       
+        logger.debug("Adding tag: %s", tag)
 
         if tag.startswith("/"):
             if tag == "/html":
@@ -213,7 +213,7 @@ class HTMLParser:
             if tag[1:] in self.NO_NEST_TAGS and self.unfinished[-1].tag != tag[1:]:
                 return
 
-            #correction algorithm: 
+            #correction algorithm:
             #we make sure the currnet closing tag matches the top tag on the stack
             #if it doesn't, pop current top of stack and save it for later (essentially closing it)
             #do this until we find a matching tag or error. Once done, add back deep copies of popped off tags
@@ -228,7 +228,7 @@ class HTMLParser:
                 parent = self.unfinished[-1]
                 parent.children.append(node)
 
-            
+
             node = self.unfinished.pop()
             parent = self.unfinished[-1]
             parent.children.append(node)
@@ -241,7 +241,7 @@ class HTMLParser:
             node = Element(tag, attributes, parent)
             parent.children.append(node)
         else:
-            if tag in self.NO_NEST_TAGS and self.unfinished[-1].tag == tag: 
+            if tag in self.NO_NEST_TAGS and self.unfinished[-1].tag == tag:
                 self.add_tag("/" + tag)
 
             parent = self.unfinished[-1] if self.unfinished else None
@@ -252,14 +252,14 @@ class HTMLParser:
     def finish(self):
         if not self.unfinished:
             self.implicit_tags(None)
-    
+
         while len(self.unfinished) > 1:
             node = self.unfinished.pop()
             parent = self.unfinished[-1]
             parent.children.append(node)
             #print_tree(self.unfinished[0])
         return self.unfinished.pop()
-    
+
     def implicit_tags(self, tag):
         while True:
             open_tags = [node.tag for node in self.unfinished]
@@ -270,23 +270,23 @@ class HTMLParser:
                     self.add_tag("head")
                 else:
                     self.add_tag("body")
-            else: 
+            else:
                 break
-            
-    
-    #obtuse but it works 
+
+
+    #obtuse but it works
     #TODO: actually test it more but yeah, for now let's just assume it works :3
     def get_attributes(self,text):
         text = text.lstrip()
         parts = text.split()
         tag = parts[0] #.casefold() -> casefolding here causes bugs since closing tag later won't match the opening tag if the tag has any capital letters
-        in_key = True 
+        in_key = True
         key = ""
         val = ""
         attributes = {}
         i = 0
         while i < len(text):
-            if in_key: 
+            if in_key:
                 if text[i] == "=":
                     in_key = False
                 elif text[i] == " ":
@@ -304,20 +304,20 @@ class HTMLParser:
                     stop = "'"
                     i += 1
                 while i < len(text) and text[i] != stop:
-                    val += text[i] 
-                    i+= 1 
+                    val += text[i]
+                    i+= 1
                 i += 1
-                attributes[key] = val 
-                key = "" 
+                attributes[key] = val
+                key = ""
                 val = ""
-                in_key = True 
+                in_key = True
         attributes[key] = val
-                
+
         return tag, attributes
 
 def print_tree(node, indent=0):
     if(isinstance(node, Text)):
-        return 
+        return
     print(" " * indent, node)
     for child in node.children:
         print_tree(child, indent + 2)

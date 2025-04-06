@@ -92,7 +92,7 @@ class InlineLayout(Layout):
         if self.previous:
             self.y = self.previous.getYStart() #TODO: here aswell
         else: 
-            self.y = self.parent.getYStart() #TODO: same here
+            self.y = self.parent.getY() #TODO: same here
         
         self.content_width = self.calculateContentWidth()
 
@@ -144,9 +144,11 @@ class InlineLayout(Layout):
         vert_align = 1
         match node.style.get('vertical-align', ""):
             case "super":
-                vert_align = 1.8
+                vert_align = 1.5
             case "sub":
-                vert_align = -1.8
+                vert_align = -1.5
+            case _:
+                vert_align = 1
         
         css_props = {
             "vert_align": vert_align,
@@ -180,7 +182,7 @@ class InlineLayout(Layout):
 
         for rel_x, word, font, css_props in self.line:
             x = self.x + rel_x
-            y =  self.y + baseline - css_props["vert_align"] * font.metrics("ascent")
+            y =  self.y + baseline - (css_props["vert_align"] * font.metrics("ascent"))
             text_display_list.append(InlineTextInfo(x, y, word, font,css_props["color"]))
         max_descent = max([metric["descent"] for metric in metrics])
         
@@ -201,4 +203,13 @@ class InlineLayout(Layout):
         return LayoutTypes.Inline
 
     def __repr__(self):
-        return "InlineLayout: x={} y={} width={} height={}".format(self.x, self.y, self.width,self.getHeight())
+        text = ""
+        if isinstance(self.node, Text):
+            text = self.node.text 
+        else:
+            text = self.node.children[0].text
+        arr = text.split(" ")
+        if len(arr) > 6:
+            arr = arr[:6]
+        text = " ".join(arr)
+        return "InlineLayout: x={} y={} width={} height={} text={}".format(self.x, self.y, self.width,self.getHeight(),text)

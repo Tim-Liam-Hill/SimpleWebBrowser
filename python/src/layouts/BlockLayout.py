@@ -29,9 +29,8 @@ class BlockLayout(Layout):
     
     def getHeight(self):
         '''The height of a block element is dependant on the height of its children'''
-        
-        height = sum([child.getHeight() for child in self.children]) 
-
+        height = max([child.getHeight() + child.getY() for child in self.children] + [0]) #TODO: should this ever be 0??? 
+        height -= self.y
         #TODO: add our own borders and padding
 
         return height

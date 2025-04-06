@@ -352,7 +352,7 @@ class URLHandler:
         match method:
             case 'gzip':
                 return gzip.decompress(body).decode('utf-8') #TODO: this won't only be utf-8
-            case default:
+            case _:
                 err = "Unknown content-encoding in response header: " + method
                 raise ValueError(err)
 
