@@ -1,7 +1,6 @@
-'''BlockLayout'''
-
-from Layout import Layout
-import LayoutConstants as LayoutConstants
+from layouts.Layout import Layout
+from layouts.LayoutConstants import LayoutTypes, DrawRect, VSTEP
+from layouts.InlineLayout import InlineLayout
 
 class BlockLayout(Layout):
     '''The implementation for "block" css display property'''
@@ -32,7 +31,7 @@ class BlockLayout(Layout):
         
         height = sum([child.getHeight() for child in self.children]) 
         if self.node.tag == "p": 
-            height += LayoutConstants.VSTEP
+            height += VSTEP
 
         #TODO: add our own borders and padding
 
@@ -84,7 +83,7 @@ class BlockLayout(Layout):
                                       "transparent")
         if bgcolor != "transparent":
             x2, y2 = self.x + self.width, self.y + self.height
-            rect = LayoutConstants.DrawRect(self.x, self.y, x2, y2, bgcolor)
+            rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
             cmds.append(rect)
         
         return cmds
@@ -92,4 +91,14 @@ class BlockLayout(Layout):
 
     def getLayoutMode(self):
         
-        return LayoutConstants.Block
+        return LayoutTypes.Block
+
+    def createChild(self, node, previous):
+        """Creates and returns a new node based on its display property. Default is InlineLayout if no display property"""
+
+        if "display" in node.style and self.node.style.get("display") in ["block", "inline"]:
+            match node.style.get("display"):
+                case "block": return BlockLayout(node, self, previous)
+                case "inline": return InlineLayout(node, self, previous)
+        else: 
+            return InlineLayout(node, self, previous)

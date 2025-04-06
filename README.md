@@ -77,6 +77,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Block layout into different classes since I think it is doing a bit much. 
 * Support basic translation?? that would be cool
 * generate documentation for the code (Doxygen is an option but let's use something new).
+* [Understand and cleanup imports](https://towardsdatascience.com/how-to-fix-modulenotfounderror-and-importerror-248ce5b69b1c/)
 
 # BUGS
 

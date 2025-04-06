@@ -1,6 +1,6 @@
 import tkinter
 import tkinter.font
-from Layout import DocumentLayout, paint_tree, style
+from HTMLLayout import paint_tree, style
 from URLHandler import URLHandler
 from HTMLParser import Element, HTMLParser, print_tree
 import sys
@@ -8,6 +8,7 @@ from CSS.CSSParser import CSSParser, cascade_priority
 import logging
 import os 
 from Utils import tree_to_list
+from layouts.DocumentLayout import DocumentLayout
 logger = logging.getLogger(__name__)
 
 INIT_WIDTH, INIT_HEIGHT = 800, 600

@@ -1,6 +1,8 @@
 """Defines layout types and constants needed for display classes"""
 
 from enum import Enum, unique
+import math
+import tkinter
 
 @unique
 class LayoutTypes(Enum):
@@ -16,6 +18,17 @@ DEFAULT_LEADING = 1.25 #do we need different leadings? TODO: later on might get 
 
 """Font Cache"""
 FONTS = {}
+
+#TODO: support more fonts. Also set up a more sophisticated cache at some point??
+"""Used to access fonts in the font cache"""
+def get_font(size, weight, style, family):
+    key = (size, weight, style)
+    if key not in FONTS:
+        font = tkinter.font.Font(size=math.floor(size), weight=weight,
+            slant=style, family=family)
+        label = tkinter.Label(font=font)
+        FONTS[key] = (font, label)
+    return FONTS[key][0]
 
 SELF_CLOSING_TAGS = [
     "area", "base", "br", "col", "embed", "hr", "img", "input",

@@ -376,53 +376,10 @@ class URLHandler:
 
         return body
 
-@dataclass
-class Text:
-    def __init__(self, text):
-        self.text = text
-
-@dataclass
-class Tag:
-    def __init__(self, tag):
-        self.tag = tag
-
-def lex(body, viewSource):
-
-    if viewSource:
-            return [Text(body)] #TODO: test that viewsource still works. 
-
-    out = []
-    buffer = ""
-    in_tag = False
-    for c in body:
-        if c == "<":
-            in_tag = True
-            if buffer: out.append(Text(buffer))
-            buffer = ""
-        elif c == ">":
-            in_tag = False
-            out.append(Tag(buffer))
-            buffer = ""
-        else:
-            buffer += c
-    if not in_tag and buffer:
-        out.append(Text(buffer))
-    return out
-        
-def load(url):
-    u = URL()
-    if url == "":
-        body = u.request()
-    else: body = u.request(url)
-    body = u.request('https://www.google.com')
-    if url == "":
-        body = u.request()
-    else: body = u.request(url)
-    print(lex(body, u.viewSource))
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    if len(sys.argv) < 2:
-        load("")
-    else: load(sys.argv[1])
+    #TODO: reimplement this. Had to delete default implementation due to overlapping class names
+    # if len(sys.argv) < 2:
+    #     load("")
+    # else: load(sys.argv[1])
     

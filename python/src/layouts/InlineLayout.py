@@ -1,9 +1,10 @@
 import tkinter
-from URLHandler import Text
+from HTMLParser import Text
 import tkinter.font
 import logging
 from dataclasses import dataclass
-import LayoutConstants
+from layouts.LayoutConstants import LayoutTypes, DrawRect, DrawText, VSTEP, HSTEP, get_font,DEFAULT_LEADING
+from layouts.Layout import Layout
 logger = logging.getLogger(__name__)
 
 @dataclass 
@@ -25,7 +26,7 @@ class InlineRectInfo:
         self.y2 = y2
 
 
-def InlineLayout():
+class InlineLayout(Layout):
     '''The implementation for "block" css display property'''
     
     def __init__(self, node,parent,previous):
@@ -116,18 +117,20 @@ def InlineLayout():
         
         for elem in self.display_list:
             if isinstance(elem, InlineTextInfo):
-                cmds.append(LayoutConstants.DrawText(elem.x, elem.y, elem.word, elem.font, elem.color))
+                cmds.append(DrawText(elem.x, elem.y, elem.word, elem.font, elem.color))
             elif isinstance(elem, InlineRectInfo):
-                cmds.append(LayoutConstants.DrawRect(elem.x,elem.y,elem.x2,elem.y2,elem.background_color))
+                cmds.append(DrawRect(elem.x,elem.y,elem.x2,elem.y2,elem.background_color))
 
         return cmds
 
     def recurse(self, node):
 
+        print(node)
+        print(type(node))
         if isinstance(node, Text):
             for word in node.text.split():
                 self.word(word, node)
-        elif node.tag not in ["script","style", "head"]: #TODO: make this a global var somewhere
+        elif node.tag not in ["script","style", "head", "meta"]: #TODO: make this a global var somewhere
             for child in node.children:
                 self.recurse(child)
 
@@ -135,7 +138,7 @@ def InlineLayout():
 
         font = self.getFont(word, node)
         w = font.measure(word)
-        if self.cursor_x + w >= self.width - LayoutConstants.HSTEP: #TODO: what if overflow set?
+        if self.cursor_x + w >= self.width - HSTEP: #TODO: what if overflow set?
             self.flush()
             
         vert_align = 0
@@ -166,13 +169,13 @@ def InlineLayout():
         if node.style.get('font-size', " ")[-1] == "%": #TODO: expand and ensure this works. 
             size *= 1/float(node.style.get('font-size'))
 
-        return LayoutConstants.get_font(size, weight, style, family)
+        return get_font(size, weight, style, family)
 
     def flush(self):
         if not self.line: return
         metrics = [font.metrics() for x, word, font, css_props in self.line] #like this
         max_ascent = max([metric["ascent"] for metric in metrics])
-        baseline = self.cursor_y +  LayoutConstants.leading * max_ascent
+        baseline = self.cursor_y +  DEFAULT_LEADING * max_ascent
         text_display_list = []
 
         for rel_x, word, font, css_props in self.line:
@@ -181,8 +184,8 @@ def InlineLayout():
             text_display_list.append(InlineTextInfo(x, y, word, font,css_props["color"]))
         max_descent = max([metric["descent"] for metric in metrics])
         
-        if self.node.style.get("background-color") != "transparent": 
-            self.display_list.append(InlineRectInfo(self.x+self.min_cursor_x, self.y + self.cursor_y, self.cursor_x, self.y + self.cursor_y + 1.25*max_descent +  max_ascent,self.node.style.get("background-color")))
+        if self.node.style.get("background-color") != "transparent": #TODO: adjust offsets once we have padding etc
+            self.display_list.append(InlineRectInfo(self.x+self.x, self.y + self.cursor_y, self.cursor_x, self.y + self.cursor_y + 1.25*max_descent +  max_ascent,self.node.style.get("background-color")))
 
         #Rects must be rendered before text otherwise text gets covered 
         self.display_list = self.display_list + text_display_list
@@ -195,4 +198,4 @@ def InlineLayout():
 
     def getLayoutMode(self):
 
-        return LayoutConstants.Inline
+        return LayoutTypes.Inline
