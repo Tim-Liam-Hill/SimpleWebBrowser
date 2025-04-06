@@ -128,12 +128,8 @@ class InlineLayout(Layout):
     def recurse(self, node):
 
         if isinstance(node, Text):
-            arr = node.text.split()
-            
-            for i in range(len(arr)):
-                if i == len(arr) -1:
-                    self.word(arr[i], node)
-                else: self.word("{} ".format(arr[i]),node)
+            for word in node.text.split(): #TODO: to stop trailing space isn't as simple as I thought: i need to know if we have a a next after us
+                self.word(word, node)
         elif node.tag not in ["script","style", "head", "meta"]: #TODO: make this a global var somewhere
             for child in node.children:
                 self.recurse(child)
@@ -158,7 +154,7 @@ class InlineLayout(Layout):
         }
             
         self.line.append((self.cursor_x, word, font, css_props))
-        self.cursor_x += w #+ font.measure(" ")
+        self.cursor_x += w + font.measure(" ")
 
     def getFont(self, word, node):
         '''Used to create the font needed to render text, taking into account css properties'''
@@ -205,4 +201,4 @@ class InlineLayout(Layout):
         return LayoutTypes.Inline
 
     def __repr__(self):
-        return "InlineLayout: x={} y={} width={} height={} text={}".format(self.x, self.y, self.width,self.getHeight(), self.node)
+        return "InlineLayout: x={} y={} width={} height={}".format(self.x, self.y, self.width,self.getHeight())

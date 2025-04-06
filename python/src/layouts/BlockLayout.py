@@ -31,8 +31,6 @@ class BlockLayout(Layout):
         '''The height of a block element is dependant on the height of its children'''
         
         height = sum([child.getHeight() for child in self.children]) 
-        if self.node.tag == "p": 
-            height += VSTEP
 
         #TODO: add our own borders and padding
 
@@ -53,7 +51,12 @@ class BlockLayout(Layout):
     #TODO: padding and margin?? 
     def getYStart(self):
 
-        return self.y + self.getHeight()
+        initial = self.y + self.getHeight()
+
+        if self.node.tag == "p": 
+            initial += VSTEP
+
+        return initial
 
     #TODO: content width calcs and width calcs are confusing me rn.
     def layout(self):
