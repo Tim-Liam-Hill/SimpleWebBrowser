@@ -1,6 +1,7 @@
 from layouts.Layout import Layout
 from layouts.LayoutConstants import LayoutTypes, DrawRect, VSTEP
 from layouts.InlineLayout import InlineLayout
+from HTMLParser import Element
 
 class BlockLayout(Layout):
     '''The implementation for "block" css display property'''
@@ -52,7 +53,7 @@ class BlockLayout(Layout):
     #TODO: padding and margin?? 
     def getYStart(self):
 
-        return self.y
+        return self.y + self.getHeight()
 
     #TODO: content width calcs and width calcs are confusing me rn.
     def layout(self):
@@ -61,7 +62,10 @@ class BlockLayout(Layout):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
         
         if self.previous:
-            self.y = self.previous.getYStart() #TODO: here aswell
+            if self.previous.getLayoutMode().value == LayoutTypes.Inline.value:
+                self.y = self.previous.getHeight() + self.previous.getY() #TODO: this logic may need to change.
+            else: 
+                self.y = self.previous.getYStart() #TODO: here aswell
         else: 
             self.y = self.parent.getYStart() #TODO: same here
         self.width = self.calculateWidth()
@@ -69,6 +73,8 @@ class BlockLayout(Layout):
 
         prev = None
         for child in self.node.children:
+            if isinstance(child, Element) and child.tag in ["head"]:
+                continue
             next = self.createChild(child,prev)
             self.children.append(next)
             prev = next
@@ -82,7 +88,7 @@ class BlockLayout(Layout):
         bgcolor = self.node.style.get("background-color",
                                       "transparent")
         if bgcolor != "transparent":
-            x2, y2 = self.x + self.width, self.y + self.height
+            x2, y2 = self.x + self.width, self.y + self.getHeight()
             rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
             cmds.append(rect)
         
@@ -102,3 +108,6 @@ class BlockLayout(Layout):
                 case "inline": return InlineLayout(node, self, previous)
         else: 
             return InlineLayout(node, self, previous)
+
+    def __repr__(self):
+        return "BlockLayout: tag={} x={} y={} width={} height={}".format(self.node.tag, self.x, self.y, self.width,self.getHeight())

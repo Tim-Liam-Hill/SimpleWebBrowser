@@ -38,6 +38,7 @@ class InlineLayout(Layout):
         self.cont_y = 0
 
         self.line = []
+        self.line_start_x = 0
     
     def getWidth(self):
 
@@ -61,7 +62,7 @@ class InlineLayout(Layout):
     #TODO: implement CSS
     def getHeight(self):
 
-        return self.y + self.cursor_y
+        return self.cursor_y
     
     def getX(self):
 
@@ -98,6 +99,7 @@ class InlineLayout(Layout):
         if self.previous:
             self.cursor_x = self.previous.getXContinue()
         else: self.cursor_x = self.parent.getXContinue()
+        self.line_start_x = self.cursor_x #so we can draw a rect at the correct starting position if this is a follow on element
 
         self.recurse(self.node)
         self.cont_x = self.cursor_x 
@@ -125,11 +127,13 @@ class InlineLayout(Layout):
 
     def recurse(self, node):
 
-        print(node)
-        print(type(node))
         if isinstance(node, Text):
-            for word in node.text.split():
-                self.word(word, node)
+            arr = node.text.split()
+            
+            for i in range(len(arr)):
+                if i == len(arr) -1:
+                    self.word(arr[i], node)
+                else: self.word("{} ".format(arr[i]),node)
         elif node.tag not in ["script","style", "head", "meta"]: #TODO: make this a global var somewhere
             for child in node.children:
                 self.recurse(child)
@@ -138,10 +142,10 @@ class InlineLayout(Layout):
 
         font = self.getFont(word, node)
         w = font.measure(word)
-        if self.cursor_x + w >= self.width - HSTEP: #TODO: what if overflow set?
+        if self.cursor_x + w >= self.getContentWidth() - HSTEP: #TODO: what if overflow set?
             self.flush()
             
-        vert_align = 0
+        vert_align = 1
         match node.style.get('vertical-align', ""):
             case "super":
                 vert_align = 1.8
@@ -154,7 +158,7 @@ class InlineLayout(Layout):
         }
             
         self.line.append((self.cursor_x, word, font, css_props))
-        self.cursor_x += w + font.measure(" ")
+        self.cursor_x += w #+ font.measure(" ")
 
     def getFont(self, word, node):
         '''Used to create the font needed to render text, taking into account css properties'''
@@ -185,17 +189,20 @@ class InlineLayout(Layout):
         max_descent = max([metric["descent"] for metric in metrics])
         
         if self.node.style.get("background-color") != "transparent": #TODO: adjust offsets once we have padding etc
-            self.display_list.append(InlineRectInfo(self.x+self.x, self.y + self.cursor_y, self.cursor_x, self.y + self.cursor_y + 1.25*max_descent +  max_ascent,self.node.style.get("background-color")))
+            self.display_list.append(InlineRectInfo(self.line_start_x, self.y + self.cursor_y,  self.cursor_x, self.y + self.cursor_y + 1.25*max_descent +  max_ascent,self.node.style.get("background-color")))
 
         #Rects must be rendered before text otherwise text gets covered 
         self.display_list = self.display_list + text_display_list
 
         self.cursor_y = baseline + 1.25 * max_descent #TODO: remind me what that 1.25 is for again?
         self.cursor_x = 0
-        self.min_cursor_x = 0
+        self.line_start_x = self.x 
 
         self.line = []
 
     def getLayoutMode(self):
 
         return LayoutTypes.Inline
+
+    def __repr__(self):
+        return "InlineLayout: x={} y={} width={} height={} text={}".format(self.x, self.y, self.width,self.getHeight(), self.node)

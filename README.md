@@ -597,6 +597,8 @@ I can replace the layoutprops I was using with inherited css props. Which I shou
 
 Once I am done with this refactor I should make a method for extracting lengths/numbers etc for css props somehow. 
 
+So now we just have to fix the bugs that have come about as a result of the refactor. Now would be a good time to write unit tests and use those to ensure we don't introduct more bugs later. 
+
 6.4 -> In progress
 
 # Exercizes 
