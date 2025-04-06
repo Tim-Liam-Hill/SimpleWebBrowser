@@ -28,8 +28,7 @@ INHERITED_PROPERTIES = {
     "font-weight": "normal",
     "color": "black",
     "font-family": 'Times',
-    #"background-color": "transparent" # text book doesn't have this as inherited but I believe it should be based on what my browser does
-    #having this inherited caused problems so oops
+    "super_script":""
 }
 
 class DrawText:

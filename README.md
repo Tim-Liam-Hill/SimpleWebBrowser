@@ -589,6 +589,13 @@ Just because I was confused: [default layout value is inline](https://developer.
 
 After some consideration, I am not going to model all HTML elements per the spec: I think that will take things outside of the scope I am willing to do. If I really want to later I can rework it in but for now I will do things based on the display property. The nice part about this is that later on I can reuse display logic if I rework things. 
 
+Good news! - my rework is confusing me and there will undoubtably be bugs. Yay!!! 
+I think the issue is I am thinking about implementing padding, margin and such before I need to. I should get the basics to work then try and tackle those. Writing unit tests would also definitely help. 
+
+I can replace the layoutprops I was using with inherited css props. Which I should do. Meow. Need to remember to propagate those somehow though...
+
+Once I am done with this refactor I should make a method for extracting lengths/numbers etc for css props somehow. 
+
 6.4 -> In progress
 
 # Exercizes 

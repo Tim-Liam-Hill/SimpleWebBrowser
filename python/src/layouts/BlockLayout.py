@@ -13,14 +13,19 @@ class BlockLayout(Layout):
 
         return self.width
 
-    def calculateContentWidth(self): #TODO: implement
+    def getContentWidth(self):
 
-        return self.parent.getWidth()
+        return self.content_width
 
-    #TODO: implement
+    #TODO: implement CSS
+    def calculateContentWidth(self): 
+
+        return self.parent.getContentWidth()
+
+    #TODO: implement CSS
     def calculateWidth(self):
 
-        return self.parent.getWidth()
+        return self.parent.getContentWidth()
     
     def getHeight(self):
         '''The height of a block element is dependant on the height of its children'''
@@ -50,11 +55,16 @@ class BlockLayout(Layout):
 
         return self.y
 
+    #TODO: content width calcs and width calcs are confusing me rn.
     def layout(self):
         '''Forces this Layout Object to create all of its layout children'''
 
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
-        self.y = self.parent.getYStart() #TODO: same here
+        
+        if self.previous:
+            self.y = self.previous.getYStart() #TODO: here aswell
+        else: 
+            self.y = self.parent.getYStart() #TODO: same here
         self.width = self.calculateWidth()
         self.content_width = self.calculateContentWidth()
 
@@ -79,12 +89,7 @@ class BlockLayout(Layout):
         
         return cmds
 
-    def getDisplayList(self):
-        '''Returns the display list for this object'''
-
-        return self.display_list
 
     def getLayoutMode(self):
-        '''Returns this objects CSS display property'''
         
         return LayoutConstants.Block

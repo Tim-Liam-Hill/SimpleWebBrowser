@@ -8,12 +8,22 @@ abbr {
     font-size: 70%;
     font-weight: bold;
 }
-sup {font-size: 50%;}
+sup {
+    font-size: 50%;
+    vertical-align: super;
+}
+sub {
+    font-size: 50%;
+    vertical-align: sub;
+}
 code {font-family: "Courier";}
 
 
 html { display: block; }
-body { display: block; }
+body { 
+    display: block;
+    margin: 8px;
+}
 article { display: block; }
 section {display: block;}
 nav {display: block;}

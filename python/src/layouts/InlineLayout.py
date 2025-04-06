@@ -1,11 +1,9 @@
 import tkinter
+from URLHandler import Text
 import tkinter.font
-from URLHandler import URLHandler, Text
-from HTMLParser import Text, Element
-from CSS.CSSParser import CSSParser
-import math
 import logging
 from dataclasses import dataclass
+import LayoutConstants
 logger = logging.getLogger(__name__)
 
 @dataclass 
@@ -26,12 +24,175 @@ class InlineRectInfo:
         self.x2 = x2 
         self.y2 = y2
 
+
 def InlineLayout():
+    '''The implementation for "block" css display property'''
     
-    def __init__():
-        pass
+    def __init__(self, node,parent,previous):
+        super().__init__(node,parent,previous)
+        self.cursor_x = 0
+        self.cursor_y = 0
+        
+        self.cont_x = 0
+        self.cont_y = 0
 
+        self.line = []
+    
+    def getWidth(self):
 
-def __init__():
+        return self.width
 
-    pass 
+    
+    def getContentWidth(self):
+
+        return self.content_width
+
+    
+    def calculateContentWidth(self):
+
+        return self.parent.getContentWidth()
+
+    
+    def calculateWidth(self):
+
+        return self.parent.getContentWidth()
+    
+    #TODO: implement CSS
+    def getHeight(self):
+
+        return self.y + self.cursor_y
+    
+    def getX(self):
+
+        return self.x
+
+    
+    def getY(self):
+
+        return self.y
+    
+    
+    def getXStart(self):
+
+        return self.cont_x
+    
+    
+    def getYStart(self):
+
+        return self.cont_y
+
+    #TODO: css to change initial values
+        #TODO: content width calcs and width calcs are confusing me rn.
+
+    def layout(self):
+        
+        self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
+        if self.previous:
+            self.y = self.previous.getYStart() #TODO: here aswell
+        else: 
+            self.y = self.parent.getYStart() #TODO: same here
+        
+        self.content_width = self.calculateContentWidth()
+
+        if self.previous:
+            self.cursor_x = self.previous.getXContinue()
+        else: self.cursor_x = self.parent.getXContinue()
+
+        self.recurse(self.node)
+        self.cont_x = self.cursor_x 
+        self.cont_y = self.cursor_y + self.y
+
+        self.flush()
+
+        for child in self.children:
+            child.layout()
+    
+    def getXContinue(self):
+
+        return self.cont_x
+    
+    def paint(self): #TODO:Should this be abstract or can we make this generic? 
+        cmds = []
+        
+        for elem in self.display_list:
+            if isinstance(elem, InlineTextInfo):
+                cmds.append(LayoutConstants.DrawText(elem.x, elem.y, elem.word, elem.font, elem.color))
+            elif isinstance(elem, InlineRectInfo):
+                cmds.append(LayoutConstants.DrawRect(elem.x,elem.y,elem.x2,elem.y2,elem.background_color))
+
+        return cmds
+
+    def recurse(self, node):
+
+        if isinstance(node, Text):
+            for word in node.text.split():
+                self.word(word, node)
+        elif node.tag not in ["script","style", "head"]: #TODO: make this a global var somewhere
+            for child in node.children:
+                self.recurse(child)
+
+    def word(self, word, node):
+
+        font = self.getFont(word, node)
+        w = font.measure(word)
+        if self.cursor_x + w >= self.width - LayoutConstants.HSTEP: #TODO: what if overflow set?
+            self.flush()
+            
+        vert_align = 0
+        match node.style.get('vertical-align', ""):
+            case "super":
+                vert_align = 1.8
+            case "sub":
+                vert_align = -1.8
+        
+        css_props = {
+            "vert_align": vert_align,
+            "color": node.style["color"]
+        }
+            
+        self.line.append((self.cursor_x, word, font, css_props))
+        self.cursor_x += w + font.measure(" ")
+
+    def getFont(self, word, node):
+        '''Used to create the font needed to render text, taking into account css properties'''
+
+        weight = node.style["font-weight"]
+        style = node.style["font-style"]
+        family = node.style["font-family"]
+        color = node.style["color"]
+        if style == "normal": style = "roman"
+        size = int(float(node.style["font-size"][:-2]) * .75)
+
+        if node.style.get('font-size', " ")[-1] == "%": #TODO: expand and ensure this works. 
+            size *= 1/float(node.style.get('font-size'))
+
+        return LayoutConstants.get_font(size, weight, style, family)
+
+    def flush(self):
+        if not self.line: return
+        metrics = [font.metrics() for x, word, font, css_props in self.line] #like this
+        max_ascent = max([metric["ascent"] for metric in metrics])
+        baseline = self.cursor_y +  LayoutConstants.leading * max_ascent
+        text_display_list = []
+
+        for rel_x, word, font, css_props in self.line:
+            x = self.x + rel_x
+            y =  self.y + baseline - css_props["vert_align"] * font.metrics("ascent")
+            text_display_list.append(InlineTextInfo(x, y, word, font,css_props["color"]))
+        max_descent = max([metric["descent"] for metric in metrics])
+        
+        if self.node.style.get("background-color") != "transparent": 
+            self.display_list.append(InlineRectInfo(self.x+self.min_cursor_x, self.y + self.cursor_y, self.cursor_x, self.y + self.cursor_y + 1.25*max_descent +  max_ascent,self.node.style.get("background-color")))
+
+        #Rects must be rendered before text otherwise text gets covered 
+        self.display_list = self.display_list + text_display_list
+
+        self.cursor_y = baseline + 1.25 * max_descent #TODO: remind me what that 1.25 is for again?
+        self.cursor_x = 0
+        self.min_cursor_x = 0
+
+        self.line = []
+
+    def getLayoutMode(self):
+
+        return LayoutConstants.Inline
