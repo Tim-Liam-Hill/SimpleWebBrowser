@@ -84,7 +84,10 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * seems like the bottom text of the page gets cut off in some sites
 * HTML parser seems like it is struggling on url https://javascript.info/currying-partials 
 * I have assumed you can't have tags inside of li elements. You can, and when this happens I render extra bullet points. The solution is to prepend an extra text element to a li when we encounter it to handle the bullet point. Need to be sure to check that there isn't already a bullet point there though (maybe a specialized class for this).
-* for inline elements, the width we draw the rect is just marginally too long
+* for inline elements, the width we draw the rect is just marginally too long (because of trailing space)
+* bug in HTML parser when extracting inner attributes. If an attribute starts on a new line we don't get rid of the newline and the attribute will start with a "\n"
+* don't just fail if we can't fetch a stylesheet
+
 
 
 
@@ -615,6 +618,10 @@ Someone please explain to me why superscript is still working even though when I
 Also interesting: my text also gets cut off a bit on the right hand side. 
 
 Hmm... I am tired and not really getting much done now. 
+
+Fixed one or two small things now, moving onto the real issue of overlapping text when I render the https://browser.engineering site. Seems like the issue relates to BlockLayouts not getting the correct starting y position from parents. Yep, found a minimal reproduction.
+
+
 
 6.4 -> In progress
 

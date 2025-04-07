@@ -27,7 +27,7 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
     def getXStart(self):
         return 0
 
-    def getYStart(self):
+    def getY(self):
         return 0
 
     def getContentWidth(self):

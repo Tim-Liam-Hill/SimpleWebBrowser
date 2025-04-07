@@ -307,11 +307,11 @@ class HTMLParser:
                     val += text[i]
                     i+= 1
                 i += 1
-                attributes[key] = val
+                attributes[key.strip()] = val
                 key = ""
                 val = ""
                 in_key = True
-        attributes[key] = val
+        attributes[key.strip()] = val #need to get rid of potential leading newline character
 
         return tag, attributes
 

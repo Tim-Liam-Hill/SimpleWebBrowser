@@ -33,3 +33,27 @@ class TestHTMLParser(unittest.TestCase):
         '''Tests whether width values for children are computed correctly based on parents and CSS'''
 
         pass
+
+#Adding some test cases here for later:
+'''
+<!DOCTYPE html>
+<html lang="en-US" xml:lang="en-US">
+<head>
+
+</head>
+
+<body class="main">
+
+<p>Web browsers are ubiquitous, but how do they work? This book
+explains, building a basic but complete web browser, from networking to
+JavaScript, in a couple thousand lines of Python.</p>
+<div class="wide-ad">
+<div>First div inside div</div>
+<span>Second span inside div</span>
+</div>
+</body>
+</html>
+
+The above should ensure that the first child of the second div (which itself is also a blocklayout object) inherits the correct starting point
+
+'''

@@ -213,10 +213,12 @@ class InlineLayout(Layout):
         text = ""
         if isinstance(self.node, Text):
             text = self.node.text 
-        else:
-            text = self.node.children[0].text
+        elif "alt" in self.node.attributes: #for img tags
+            text = "ALT:{}".format(self.node.attributes["alt"])
+        else: 
+            text = "NO_TEXT"
         arr = text.split(" ")
         if len(arr) > 6:
             arr = arr[:6]
-        text = " ".join(arr)
+        text = " ".join(arr).strip()
         return "InlineLayout: x={} y={} width={} height={} text={}".format(self.x, self.y, self.width,self.getHeight(),text)

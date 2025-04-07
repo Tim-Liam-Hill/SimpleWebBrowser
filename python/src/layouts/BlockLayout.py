@@ -69,7 +69,7 @@ class BlockLayout(Layout):
             else: 
                 self.y = self.previous.getYStart() #TODO: here aswell
         else: 
-            self.y = self.parent.getYStart() #TODO: same here
+            self.y = self.parent.getY() #TODO: same here. also, NOT Y start here. if we are a block element and our parent was a block element and no previous then we start at their start
         self.width = self.calculateWidth()
         self.content_width = self.calculateContentWidth()
 

@@ -61,7 +61,7 @@ class URLHandler:
         self.redirectCount = 0
         self.requestHeaders = [
             ["Connection", "Keep-alive"],
-            ["User-Agent","Meow-Meow-Browser24"],
+            ["User-Agent","Meow-Meow-Browser"],
             ["Accept-Encoding","gzip"]
         ]
         self.connections = {}
