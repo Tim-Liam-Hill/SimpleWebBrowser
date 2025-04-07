@@ -612,6 +612,10 @@ I need to some test cases. that is what I really need. Minimal reproductions of 
 
 Someone please explain to me why superscript is still working even though when I comment out the code I put in for it there is literally no change?? I am confused. 
 
+Also interesting: my text also gets cut off a bit on the right hand side. 
+
+Hmm... I am tired and not really getting much done now. 
+
 6.4 -> In progress
 
 # Exercizes 

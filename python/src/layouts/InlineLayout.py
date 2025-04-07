@@ -138,8 +138,15 @@ class InlineLayout(Layout):
 
         font = self.getFont(word, node)
         w = font.measure(word)
-        if self.cursor_x + w >= self.getContentWidth() - HSTEP: #TODO: what if overflow set?
-            self.flush()
+        if self.cursor_x + w >= self.getContentWidth(): #TODO: what if overflow set? Also: do we still need HSTEP?
+            if not self.line and self.previous: 
+                #this will only happen if we are a span following on another span
+                #unless browser page is far too small in which case oops
+                self.y = self.previous.getY() + self.previous.getHeight()
+                self.cursor_y = 0
+                self.cursor_x = 0
+            else: 
+                self.flush()
             
         vert_align = 1
         match node.style.get('vertical-align', ""):
@@ -187,12 +194,12 @@ class InlineLayout(Layout):
         max_descent = max([metric["descent"] for metric in metrics])
         
         if self.node.style.get("background-color") != "transparent": #TODO: adjust offsets once we have padding etc
-            self.display_list.append(InlineRectInfo(self.line_start_x, self.y + self.cursor_y,  self.cursor_x, self.y + self.cursor_y + 1.25*max_descent +  max_ascent,self.node.style.get("background-color")))
+            self.display_list.append(InlineRectInfo(self.line_start_x, self.y + self.cursor_y,  self.cursor_x, self.y + self.cursor_y + DEFAULT_LEADING*max_descent +  max_ascent,self.node.style.get("background-color")))
 
         #Rects must be rendered before text otherwise text gets covered 
         self.display_list = self.display_list + text_display_list
 
-        self.cursor_y = baseline + 1.25 * max_descent #TODO: remind me what that 1.25 is for again?
+        self.cursor_y = baseline + DEFAULT_LEADING * max_descent
         self.cursor_x = 0
         self.line_start_x = self.x 
 
