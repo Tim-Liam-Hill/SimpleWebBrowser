@@ -71,7 +71,7 @@ class Browser:
         rules = self.getCSSRules(self.root_node,url)
         style(self.root_node, sorted(rules, key=cascade_priority))
         self.createLayout()
-        print_tree(self.document)
+        #print_tree(self.document)
         #print(self.display_list)
   
         self.draw()
@@ -105,11 +105,10 @@ class Browser:
                        if isinstance(n, Element) and n.tag == "style"]
         
         for node in style_nodes:
-            if len(node.children) == 1: #just a sanity check, it is possible there are no children. Should never be more than one
+            if len(node.children) == 1: #just a sanity check, it is possible there are no children (empty style tag). Should never be more than one
+                print(CSSParser(node.children[0].text).parse())
                 rules.extend(CSSParser(node.children[0].text).parse())
 
-        logger.debug(self.defaultCSS.copy())
-        logger.debug(rules)
         return rules
 
     def createLayout(self):
@@ -182,7 +181,7 @@ class Browser:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     b = Browser()
 
     if(len(sys.argv) != 2):

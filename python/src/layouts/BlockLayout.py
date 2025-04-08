@@ -108,6 +108,7 @@ class BlockLayout(Layout):
             match node.style.get("display"):
                 case "block": return BlockLayout(node, self, previous)
                 case "inline": return InlineLayout(node, self, previous)
+                case _: return InlineLayout(node, self, previous)
         else: 
             return InlineLayout(node, self, previous)
 

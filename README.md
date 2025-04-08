@@ -78,6 +78,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Support basic translation?? that would be cool
 * generate documentation for the code (Doxygen is an option but let's use something new).
 * [Understand and cleanup imports](https://towardsdatascience.com/how-to-fix-modulenotfounderror-and-importerror-248ce5b69b1c/)
+* [Join the discussion](https://github.com/browserengineering/book/discussions)
 
 # BUGS
 
@@ -621,7 +622,30 @@ Hmm... I am tired and not really getting much done now.
 
 Fixed one or two small things now, moving onto the real issue of overlapping text when I render the https://browser.engineering site. Seems like the issue relates to BlockLayouts not getting the correct starting y position from parents. Yep, found a minimal reproduction.
 
+FIXED IT BY THE GODS HE HAS DONE IT!!!!!!!!!! MEOWOWOWOWOWOOWWO.
 
+Now the fun/interesting part starts. We need to beef up our CSS parsing engine and start implementing functions to turn em, % and px values into actual usable values
+
+So we gots to think of what needs to be added to our css parser. ID and class selector definitely. Also worthwhile making sure our Descendant selector works.
+Descendant selector is not getting parsed correctly. Going to refer back to textbook to see if I missed something, but either way I think it will get fixed in rework
+
+For the CSS rework, I think I will add:
+* ID selector
+* Class selector
+* GroupSelector
+* CombinationSelector
+* Universal selector
+
+The first two are self explanatory. The third will be a collection of selectors for rules that could match one or more bois. I may need a fourth that will match only a specific combination though... so yeah, combination selector (basically the books ex 6-8). Also universal selector is needed.
+
+One thing we could consider is moving to a map of rules as opposed to a list of rules. Linear lookup of matching rules for each element is fairly slow so performance can definitely be improved (I think the textbook mentioned bloom filters?).
+
+I JUST REALIZED HOW I CAN IMPLEMENT LISTS PROPERLY OH MY WORD LOL. Literally just use descendant selectors. Wow, that is so cool. 
+Borrow from https://chromium.googlesource.com/chromium/blink/+/master/Source/core/css/html.css.
+
+I might have to think about how I handle priorities as I change things up...
+
+TODO: implement width correctly (will be needed for margin/border etc)
 
 6.4 -> In progress
 

@@ -3,17 +3,12 @@ logger = logging.getLogger(__name__)
 from HTMLParser import Element
 
 class CSSParser:
+    '''Parses CSS rules from an input stylesheet string'''
+
     def __init__(self, s):
         self.s = s
         self.i = 0
-        #we can do a couple of different things here.
-        #we can pass in the links for stylesheets to download
-        #or let the browser handle that and just pass in the raw text of the downloaded files
-        #we might also find utility in an 'add' function that just adds a new file
-        #without having to recompute the whole css contents (just the new one)
-        #I say let's try and keep this simple: just pass in the text needed for the CSS parser to function
-        #handle downloading and such elsewhere. This should make testing easier (if I ever get around to that lol)
-    
+
     def whitespace(self):
         while self.i < len(self.s) and self.s[self.i].isspace():
             self.i += 1
@@ -114,6 +109,12 @@ class TagSelector:
     def __repr__(self):
         return "TagSelector: {}".format(self.tag)
     
+    def __eq__(self, value):
+        if not isinstance(value, TagSelector):
+            return False 
+        return self.tag == value.tag and self.priority == value.priority
+            
+    
 class DescendantSelector:
     def __init__(self, ancestor, descendant):
         self.ancestor = ancestor
@@ -128,6 +129,11 @@ class DescendantSelector:
     
     def __repr__(self):
         return "DescendantSelector"
+    
+    def __eq__(self, value):
+        if not isinstance(value, DescendantSelector):
+            return False 
+        return self.ancestor == value.ancestor and self.descendant == value.descendant and self.priority == value.priority
 
 #TODO: class selectors and ID selectors 
 
