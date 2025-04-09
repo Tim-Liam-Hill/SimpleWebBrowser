@@ -667,6 +667,11 @@ Before getting into that, I want to fix a guick bug with frogfind that suggests 
 
 I am making a br a block element because that feels most natural. 
 
+Fun fact: a spelling mistake was the reason my descendant selector class was not working. Now that it is working I can re-implement bullet points. Yay!!
+
+For bullet points, it seems like there is a specific 'list-item' display type. I suppose I can implement that. It would basically just be a small wrapper around a (or maybe literally just a block item that inserts content based on its level and adjusts content width?). The question here is do I want to implement another layout class? 
+
+I have it the wrong way around, I think I will do what chrome does. Basically: we have ul and ol being block display but the children they create are list-display elements. List-display elements will function mostly like inline-display elements unless the previous/next was/is a list-display element, in which case it will function as block. Duplicated code I guess but it is what it is. I don't think I will use psuedo elements (maybe I should though).
 
 TODO: implement width correctly (will be needed for margin/border etc)
 
