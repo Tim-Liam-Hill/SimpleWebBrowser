@@ -71,7 +71,7 @@ class Browser:
         rules = self.getCSSRules(self.root_node,url)
         style(self.root_node, sorted(rules, key=cascade_priority))
         self.createLayout()
-        #print_tree(self.document)
+        print_tree(self.document)
         #print(self.display_list)
   
         self.draw()
@@ -181,7 +181,7 @@ class Browser:
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     b = Browser()
 
     if(len(sys.argv) != 2):

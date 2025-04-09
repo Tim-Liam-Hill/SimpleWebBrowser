@@ -29,6 +29,10 @@ class BlockLayout(Layout):
     
     def getHeight(self):
         '''The height of a block element is dependant on the height of its children'''
+
+        if self.node.tag in ["br", "hr"]:
+            return VSTEP
+
         height = max([child.getHeight() + child.getY() for child in self.children] + [0]) #TODO: should this ever be 0??? 
         height -= self.y
         #TODO: add our own borders and padding
@@ -52,7 +56,7 @@ class BlockLayout(Layout):
 
         initial = self.y + self.getHeight()
 
-        if self.node.tag == "p": 
+        if self.node.tag in ["p"]: 
             initial += VSTEP
 
         return initial

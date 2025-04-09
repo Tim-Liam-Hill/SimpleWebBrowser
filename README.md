@@ -645,9 +645,34 @@ Borrow from https://chromium.googlesource.com/chromium/blink/+/master/Source/cor
 
 I might have to think about how I handle priorities as I change things up...
 
+So, if I want to parse CSS nicely I will have to look more at its specifications, and [damn if it aint lengthy](https://www.w3.org/TR/css/).
+
+The simplest place to start is to separate css into the following:
+* The selector portion (up till first {)
+* everything in the body of a specific selector (between the {})
+* inside the body, we process using 2 states: the property name and property value [see here](https://www.w3.org/TR/css-cascade-5/#intro)
+
+so let's have a 2 step parsing approach: we first separate based on selectors and the set of rules making up the body of the selector (property name and value). Once we have finalized a specific body we can look at expanding the short hand properties and priority. We may need to look at priority on a per value level as opposed to per selector level, what does the book say?? 
+
+So let's get this idea down for tag classes:
+
+* We will have a separate map for each Selector type
+* We can map from a selector value (eg: 'div' tag) immediately to the array of selectors that would accept this (in many cases)
+* selector rules are basically just a set of simpler rules with adjusted priorities
+* descendant selector we will use a different approach: probably simpler
+* has selector: no clue just yet what we will do. We can potentially use a bloomfilter or just store a list of tags/classes/ids
+* priorities will be stored as a pair of file priority then rule priority.
+
+Before getting into that, I want to fix a guick bug with frogfind that suggests my rework still has some issues. The issue seems to relate to ```br``` and ```hr``` tags so it shouldn't be too difficult to fix. The former we can just adjust its getYStart, the latter can be done with css only but will need border margin and padding to be implemented. For now I suppose I can just do the same for it as for ```br```
+
+I am making a br a block element because that feels most natural. 
+
+
 TODO: implement width correctly (will be needed for margin/border etc)
 
 6.4 -> In progress
+
+Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!
 
 # Exercizes 
 

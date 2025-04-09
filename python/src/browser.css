@@ -2,8 +2,8 @@ a { color: blue; }
 i { font-style: italic; }
 b { font-weight: bold; }
 strong {font-weight: bold; }
-small { font-size: 90%;  }
-big { font-size: 110%; }
+small { font-size: 80%;  }
+big { font-size: 120%; }
 abbr { 
     font-family: "Courier";
     font-size: 70%;
@@ -29,12 +29,36 @@ article { display: block; }
 section {display: block;}
 nav {display: block;}
 aside {display: block;}
-h1 {display: block;}
-h2 {display: block;}
-h3 {display: block;}
-h4 {display: block;}
-h5 {display: block;}
-h6 {display: block;}
+h1 {
+    display: block;
+    font-size: 160%;
+    font-weight: bold;
+}
+h2 {
+    display: block;
+    font-size: 150%;
+    font-weight: bold;
+}
+h3 {
+    display: block;
+    font-size: 140%;
+    font-weight: bold;
+}
+h4 {
+    display: block;
+    font-size: 130%;
+    font-weight: bold;
+}
+h5 {
+    display: block;
+    font-size: 120%;
+    font-weight: bold;
+}
+h6 {
+    display: block;
+    font-size: 110%;
+    font-weight: bold;
+}
 hgroup {display: block;}
 header {display: block;}
 footer {display: block;}
@@ -60,3 +84,5 @@ fieldset {display: block;}
 legend {display: block;}
 details {display: block;}
 summary {display: block;}
+br {display:block;}
+hr {display:block;}

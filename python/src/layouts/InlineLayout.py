@@ -1,5 +1,5 @@
 import tkinter
-from HTMLParser import Text
+from HTMLParser import Element, Text
 import tkinter.font
 import logging
 from dataclasses import dataclass
