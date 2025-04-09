@@ -88,8 +88,9 @@ class CSSParser:
                 body = self.body()
                 self.literal("}")
                 rules.append((selector, body))
-            except Exception:
-                logger.debug("An exception occurred when parsing a selector")
+            except Exception as e:
+                logger.info("An exception occurred when parsing a selector, skipping")
+                logger.info(e)
                 why = self.ignore_until(["}"])
                 if why == "}":
                     self.literal("}")
@@ -119,7 +120,7 @@ class DescendantSelector:
     def __init__(self, ancestor, descendant):
         self.ancestor = ancestor
         self.descendant = descendant
-        self.priority = ancestor.priotity + descendant.priority
+        self.priority = ancestor.priority + descendant.priority
 
     def matches(self, node):
         if not self.descendant.matches(node): return False
