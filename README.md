@@ -79,6 +79,8 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * generate documentation for the code (Doxygen is an option but let's use something new).
 * [Understand and cleanup imports](https://towardsdatascience.com/how-to-fix-modulenotfounderror-and-importerror-248ce5b69b1c/)
 * [Join the discussion](https://github.com/browserengineering/book/discussions)
+* center tag and center text
+* Preformatted tags.
 
 # BUGS
 

@@ -579,6 +579,10 @@ Initially I thought to reconsider our approach with layout trees: I really shoul
 TODO: implement width correctly (will be needed for margin/border etc)
 
 side quest: we are having an error parsing the html for frogfind.com. Let's figure out why.
+-> the issue is their html is malformed. Interesting... 
+Thankfully we can still access the about page.
+
+Time to make a DFA for the new parser. 
 
 6.4 -> In progress
 

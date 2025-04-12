@@ -1,6 +1,64 @@
 import logging
 logger = logging.getLogger(__name__)
 from HTMLParser import Element
+from enum import Enum, unique
+
+@unique
+class States(Enum):
+    '''Represents all valid state transitions for the parser DFA
+    
+    States are given concrete values to aid in debugging. 
+    '''
+
+    #Maybe it would be better to separate states for transition and states for accept?
+
+    OPEN = "open"
+    DISCARD = "discard"
+    COMMENT_START = "comment_start"
+    COMMENT_BODY = "comment_body"
+    COMMENT_END = "comment_end"
+    SELECTOR = "selector"
+    PROPERTY = "property"
+    VALUE = "value"
+    RULE = "rule"
+    VALUE_RULE = "value_rule" #handles the case where a value is followed by closing brace with no semi-colon
+
+DEFAULT_TRANSITION = "default"
+ACCEPT ="accept"
+NEXT = "next"
+
+'''Describes the dfa used to parse CSS strings
+
+It consists of the following main parts:
+- open: process whitespace and comments till we get to a tag start
+- selector: get contents of selector until we hit the opening brace
+- body: inside the body of a selector, whitespace until start rule
+- prop_name: processing the name of a pair until :
+- prop_value: processing the value of a pair until ; or }
+- open_comment: we hit a \ and need to check if in comment
+- close_comment:
+and a bunch of error handling. 
+
+If we accept a 'discard' value that means we literally just discard what we encountered since we have no clue how to process it.
+
+This dfa is relatively flexible with respect to what it allows. Further checks will be done at a later stage eg: the DFA
+will assume that "8qw.$" is a valid selector value but the later function that determines selector type will reject this.
+'''
+DFA = {
+    "start": States.OPEN,
+    "states": {
+        States.OPEN: {"\t":{NEXT:States.OPEN},"\n":{NEXT:States.OPEN}," ":{NEXT:States.OPEN}, 
+                 "\\":{ACCEPT:States.DISCARD,NEXT:States.COMMENT_START},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.SELECTOR}},
+        States.COMMENT_START: {"*":{NEXT:States.COMMENT_BODY},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.OPEN}},
+        States.COMMENT_BODY: {"*":{NEXT:States.COMMENT_END}, DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
+        States.COMMENT_END: {"\\":{ACCEPT:States.DISCARD, NEXT:States.OPEN},DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
+        States.SELECTOR: {"{": {ACCEPT: States.SELECTOR,NEXT:States.PROPERTY}, DEFAULT_TRANSITION: {NEXT: States.SELECTOR}},
+        States.PROPERTY: {";":{ACCEPT: States.DISCARD, NEXT: States.PROPERTY}, ":":{ACCEPT:States.PROPERTY,NEXT:States.VALUE},
+                          "}":{ACCEPT:States.RULE,NEXT: States.OPEN},  DEFAULT_TRANSITION:{NEXT:States.PROPERTY}},
+        States.VALUE: {";":{ACCEPT: States.VALUE, NEXT: States.PROPERTY},"}":{ACCEPT:States.VALUE_RULE, NEXT: States.OPEN}, 
+                       DEFAULT_TRANSITION: {NEXT:States.VALUE}}
+    }
+}
 
 class CSSParser:
     '''Parses CSS rules from an input stylesheet string'''
@@ -78,6 +136,13 @@ class CSSParser:
         return out
     
     def parse(self):
+        '''Uses a custom DFA to parse CSS into selectors and property-value pairs'''
+
+        rules = []
+
+        return rules 
+
+    def parse2(self):
         rules = []
         while self.i < len(self.s):
             try:

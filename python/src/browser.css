@@ -86,3 +86,8 @@ details {display: block;}
 summary {display: block;}
 br {display:block;}
 hr {display:block;}
+
+center {
+    display: block;
+    text-align: center;
+}

@@ -25,18 +25,24 @@ class TestCSSParser(unittest.TestCase):
         css_rules = [(TagSelector("body"), {})]
         self.assertEqual(CSSParser(css).parse(), css_rules)
         
-        
         #Simple Tag Selector
         css = "div {width: 100px;}"
         css_rules = [(TagSelector("div"), {'width':'100px'})]
         self.assertEqual(CSSParser(css).parse(), css_rules)
 
-
-
         #Rule not ending in a semicolon
         css = "div {width: 100px}"
         css_rules = [(TagSelector("div"), {'width':'100px'})]
         self.assertEqual(CSSParser(css).parse(), css_rules)
+
+        #CSS comments shouldn't impact code
+        css = "div {width: 100px}\n\\*I am a comment*\\ p {background-color: red}"
+        css_rules = [(TagSelector("div"), {'width':'100px'}), (TagSelector("p"),{'background-color':'red'})]
+        self.assertEqual(CSSParser(css).parse(), css_rules)
+
+        #Consecutive semicolons
+        css = "div {;;;;}"
+        self.assertEqual(CSSParser(css).parse(), [(TagSelector("div"), {})])
 
 
     
