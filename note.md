@@ -606,6 +606,14 @@ I think the best way to handle this is recursively.
 * attribute selectors (base selector followed by [])
 * combinator selectors ()
 
+Algorithm to work as follows: 
+* We have our little DFA go through the string 
+* we use this DFA to parse base selectors, pseudo-elements, pseudo-classes and attribute combinators
+* we tally up the priority using an array [id count, class count,tag count]
+* once we hit a space, we are in territory of the combinators so we parse that recursively
+* anytime we come back from a recursive call, we are done and we tally up priorities accordingly
+* for combinators with children, only the parent priority needs to be correct so that is pretty cool. We could even make that a method...  
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!
