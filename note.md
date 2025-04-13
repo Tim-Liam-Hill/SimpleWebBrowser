@@ -584,6 +584,14 @@ Thankfully we can still access the about page.
 
 Time to make a DFA for the new parser. 
 
+So we need to give rules priorities instead of the selectors. this is because we can have important rules that override other rules (and also rules that are more important even if their file ordering is less important.)
+
+Let's do a little bit of reading. 
+
+Thought: we don't have to specify a priority for every individual property value pair in a Selector class but we should include priorities when we add the values to a node (in case we override them later).  
+
+Will use [this](https://www.smashingmagazine.com/2007/07/css-specificity-things-you-should-know/) article as basis for calculating priorities.
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!

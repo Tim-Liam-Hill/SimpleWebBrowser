@@ -143,12 +143,32 @@ class CSSParser:
         rules = []
         text = "" 
         state = DFA["start"]
-
+        curr_selector = None
+        curr_property = None
+        curr_rule = None
 
         for char in s: 
             if char in DFA["states"][state]:
                 if ACCEPT in DFA["states"][state][char]:
-                    self.accept(text,DFA["states"][state][char][ACCEPT])
+                    accept_type = DFA["states"][state][char][ACCEPT]
+                    logger.debug("Accepting str: '{}' type: '{}'".format(text.strip(), accept_type))
+
+                    match accept_type: #wanted this to be its own function but it was getting messy
+                        case States.SELECTOR: 
+                            curr_selector = text.strip() #there will almost certainly be leading/trailing whitespace
+                            curr_rule = {}
+                        case States.PROPERTY:
+                            curr_property = text.strip()
+                            curr_rule[curr_property] = ""
+                        case States.VALUE:
+                            curr_rule[curr_property] = text.strip()
+                            curr_property = None
+                        case States.RULE:
+                            self.acceptRule(curr_selector,curr_rule)
+                            curr_selector = None 
+                            curr_rule = None
+                        case _: #discard by default
+                            pass #we don't reset any vars here: we might just be ignoring a single property. 
                     text = ""
                 else: 
                     text += char 
@@ -159,9 +179,8 @@ class CSSParser:
 
         return rules 
 
-    def accept(self, str, acceptType):
-        '''Given a string and acceptType, processes the string according to what should be accepted (selector, value etc)'''
-        logger.debug("Accepting str: {} type: {}".format(str, acceptType))
+    def acceptRule(self, selector, rule):
+        logger.debug("Processing selector: {} with rule: {}".format(selector, rule))
         pass
 
     def parse(self):
@@ -187,9 +206,9 @@ class CSSParser:
         return rules
 
 class TagSelector:
-    def __init__(self, tag):
+    def __init__(self, tag, prio=1):
         self.tag = tag
-        self.priority = 1
+        self.priority = prio
 
     def matches(self, node):
         return isinstance(node, Element) and self.tag == node.tag
@@ -221,6 +240,19 @@ class DescendantSelector:
         if not isinstance(value, DescendantSelector):
             return False 
         return self.ancestor == value.ancestor and self.descendant == value.descendant and self.priority == value.priority
+
+class ClassSelector:
+    def __init__(self,val, prio):
+        self.val = val 
+        self.prio = prio 
+    
+    def matches(self,node):
+        if isinstance(node,Element):
+            if 'class' in node.attributes:
+                arr = [val.strip() for val in node.attributes["class"].strip().split(" ")]
+                return self.val in arr
+        
+        return False
 
 #TODO: class selectors and ID selectors 
 
