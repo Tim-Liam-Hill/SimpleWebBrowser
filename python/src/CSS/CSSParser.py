@@ -253,6 +253,38 @@ class ClassSelector:
                 return self.val in arr
         
         return False
+    
+    def __repr__(self):
+        return "ClassSelector: {}".format(self.val)
+    
+    def __eq__(self, value):
+        if not isinstance(value, ClassSelector):
+            return False 
+        return self.val == value.val and self.priority == value.priority
+
+class IDSelector:
+
+    def __init__(self, val, prio):
+        self.val = val 
+        self.prio = prio
+
+    def matches(self, node): #Case sensitive match per https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors
+        if isinstance(node,Element):
+            if 'id' in node.attributes:
+                return node.attributes['id'] == self.val
+        
+        return False
+
+        return False 
+    
+    def __repr__(self):
+        return "IDSelector: {}".format(self.val)
+    
+    def __eq__(self, value):
+        if not isinstance(value, IDSelector):
+            return False 
+        return self.val == value.val and self.priority == value.priority
+    
 
 #TODO: class selectors and ID selectors 
 

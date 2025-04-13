@@ -1,4 +1,4 @@
-from src.CSS.CSSParser import CSSParser, TagSelector, ClassSelector
+from src.CSS.CSSParser import CSSParser, TagSelector, ClassSelector, IDSelector
 from src.HTMLParser import Element
 import unittest
 
@@ -66,31 +66,51 @@ class TestCSSParser(unittest.TestCase):
         '''Ensure that a class selector matches nodes correctly'''
 
         #no class attribute
-        self.assertFalse(ClassSelector("myClass", 1).matches(Element("",{},None)))
+        self.assertFalse(ClassSelector("myClass", []).matches(Element("",{},None)))
 
         #class attribute not matching 
-        self.assertFalse(ClassSelector("myClass", 1).matches(Element("",{"class":"notMyClass"},None)))
+        self.assertFalse(ClassSelector("myClass", []).matches(Element("",{"class":"notMyClass"},None)))
 
         #class attribute matching
-        self.assertTrue(ClassSelector("myClass", 1).matches(Element("",{"class":"myClass"},None)))
+        self.assertTrue(ClassSelector("myClass", []).matches(Element("",{"class":"myClass"},None)))
 
         #many classes none matching 
-        self.assertFalse(ClassSelector("myClass", 1).matches(Element("",{"class":"beans toast coffee"},None)))
+        self.assertFalse(ClassSelector("myClass", []).matches(Element("",{"class":"beans toast coffee"},None)))
 
         #many classes 1 matching
-        self.assertTrue(ClassSelector("myClass", 1).matches(Element("",{"class":"beans myClass coffee"},None)))
+        self.assertTrue(ClassSelector("myClass", []).matches(Element("",{"class":"beans myClass coffee"},None)))
 
         #many classes, ensure substring does not match
-        self.assertFalse(ClassSelector("myClass", 1).matches(Element("",{"class":"beans myClassLonger coffee"},None)))
+        self.assertFalse(ClassSelector("myClass", []).matches(Element("",{"class":"beans myClassLonger coffee"},None)))
 
         #test whitespaces don't cause non-matching
-        self.assertTrue(ClassSelector("myClass", 1).matches(Element("",{"class":" \n beans \n  myClass  \t coffee"},None)))
+        self.assertTrue(ClassSelector("myClass", []).matches(Element("",{"class":" \n beans \n  myClass  \t coffee"},None)))
 
     def test_tagSelector(self):
         pass 
 
     def test_IDSelector(self):
-        pass 
+        
+        #test no id
+        self.assertFalse(IDSelector("myID",[]).matches(Element("",{},None)))
+
+        #test id no matches 
+        self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"meow"},None)))
+
+        #test id exact match 
+        self.assertTrue(IDSelector("myID",[]).matches(Element("",{"id":"myID"},None)))
+
+        #test id doesn't match due to case 
+        self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"MyID"},None)))
+
+        #test id doesn't match due to substring 
+        self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"NOTmyID"},None)))
+
+        #test id does not match when trailing/leading whitespace
+        self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"\nmyID"},None)))
+        self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":" myID"},None)))
+        self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"myID\t"},None)))
+
 
     def test_universalSelector(self):
         pass 
