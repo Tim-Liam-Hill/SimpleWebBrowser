@@ -75,13 +75,14 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * decide if/how to support external fonts (if that is in scope). It may be possible to create custom fonts dynamically??? 
 * tool that analyzes code base for code smells and such
 * display: none
-* Block layout into different classes since I think it is doing a bit much. 
+* Block layout into different classes since I think it is doing a bit much. (done)
 * Support basic translation?? that would be cool
-* generate documentation for the code (Doxygen is an option but let's use something new).
+* generate documentation for the code (Doxygen is an option but let's use something new) (done)
 * [Understand and cleanup imports](https://towardsdatascience.com/how-to-fix-modulenotfounderror-and-importerror-248ce5b69b1c/)
 * [Join the discussion](https://github.com/browserengineering/book/discussions)
 * center tag and center text
 * Preformatted tags.
+* Nested CSS selector
 
 # BUGS
 

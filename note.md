@@ -592,6 +592,20 @@ Thought: we don't have to specify a priority for every individual property value
 
 Will use [this](https://www.smashingmagazine.com/2007/07/css-specificity-things-you-should-know/) article as basis for calculating priorities.
 
+Eugh, there is something I didn't think about: nested selectors. Parsing those is doable but I don't really want to think about that right now. Definitely would be interesting to do it at some point: I think the simplest way to do it is to parse recursively then turn recursed rules into combined rules. Will add it to the wishlist/TODO list.
+
+There are a lot of Combinators/pseudo classes and pseudo-elements that can be matched. I think I will implement them minimally and get back to them later if they are something I actually want to implement (eg: on hover for links).
+
+Per [W3 Schools](https://learn.shayhowe.com/advanced-html-css/complex-selectors/#child-selectors) we need to allow for direct descendants. Hmmmm ........ We should also really make our Descendant Selector more optimal but that is already an exercise we will do later. 
+
+I think the best way to handle this is recursively. 
+
+* Base selectors (tag,id,class, universal)
+* pseudo-class (base selector followed by single :)
+* pseudo-element (base selector followed by double ::)
+* attribute selectors (base selector followed by [])
+* combinator selectors ()
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!

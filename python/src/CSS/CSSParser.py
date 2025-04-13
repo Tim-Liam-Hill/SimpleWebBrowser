@@ -179,9 +179,11 @@ class CSSParser:
 
         return rules 
 
-    def acceptRule(self, selector, rule):
-        logger.debug("Processing selector: {} with rule: {}".format(selector, rule))
-        pass
+    def parseSelector(self, selector):
+        '''Given a string that represents 1 or more selectors, creates a list of Selector objects for a rule will apply.
+    
+        If the selector cannot be parsed, we will throw and error and discard the rule to which is belongs. 
+        '''
 
     def parse(self):
         rules = []
@@ -205,6 +207,8 @@ class CSSParser:
                     break
         return rules
 
+# Simple Selectors
+
 class TagSelector:
     def __init__(self, tag, prio=1):
         self.tag = tag
@@ -220,26 +224,6 @@ class TagSelector:
         if not isinstance(value, TagSelector):
             return False 
         return self.tag == value.tag and self.priority == value.priority
-             
-class DescendantSelector:
-    def __init__(self, ancestor, descendant):
-        self.ancestor = ancestor
-        self.descendant = descendant
-        self.priority = ancestor.priority + descendant.priority
-
-    def matches(self, node):
-        if not self.descendant.matches(node): return False
-        while node.parent:
-            if self.ancestor.matches(node.parent): return True
-            node = node.parent
-    
-    def __repr__(self):
-        return "DescendantSelector"
-    
-    def __eq__(self, value):
-        if not isinstance(value, DescendantSelector):
-            return False 
-        return self.ancestor == value.ancestor and self.descendant == value.descendant and self.priority == value.priority
 
 class ClassSelector:
     def __init__(self,val, prio):
@@ -274,8 +258,6 @@ class IDSelector:
                 return node.attributes['id'] == self.val
         
         return False
-
-        return False 
     
     def __repr__(self):
         return "IDSelector: {}".format(self.val)
@@ -284,9 +266,127 @@ class IDSelector:
         if not isinstance(value, IDSelector):
             return False 
         return self.val == value.val and self.priority == value.priority
-    
 
-#TODO: class selectors and ID selectors 
+class UniversalSelector:
+
+    def __init__(self,  prio):
+        self.val = "*"
+        self.prio = prio
+
+    def matches(self, node): 
+        return True
+    
+    def __repr__(self):
+        return "Universal Seletor"
+    
+    def __eq__(self, value):
+        if not isinstance(value, UniversalSelector):
+            return False 
+        return self.prio == value.prio
+
+# Combinator Selectors
+
+class DescendantSelector:
+    def __init__(self, ancestor, descendant):
+        self.ancestor = ancestor
+        self.descendant = descendant
+        self.priority = ancestor.priority + descendant.priority
+
+    def matches(self, node): #
+        if not self.descendant.matches(node): return False
+        while node.parent:
+            if self.ancestor.matches(node.parent): return True
+            node = node.parent
+        return False
+    
+    def __repr__(self):
+        return "DescendantSelector with descendant: {}".format(self.descendant)
+    
+    def __eq__(self, value):
+        if not isinstance(value, DescendantSelector):
+            return False 
+        return self.ancestor == value.ancestor and self.descendant == value.descendant and self.priority == value.priority
+
+class DirectDescendantSelector: 
+    def __init__(self, ancestor, descendant, prio):
+        pass 
+
+    def matches(self,node):
+        return False
+    
+    def __repre__(self):
+        return "DirectDescendantSelector: to be implemented"
+    
+    def __eq__(self, value):
+        return isinstance(value, DirectDescendantSelector)
+
+class SequenceSelector: #TODO: test me
+    '''Represents a sequence of selectors not separated by any whitespace.'''
+
+    def __init__(self, selectors, priority):
+        self.selectors = []
+        self.priority = []
+    
+    def __matches__(self, val):
+
+        return False
+    
+    def __repr__(self):
+        return "SequenceSelector: {}".format(self.selectors)
+    
+    def __eq__(self, value):
+        if not isinstance(value, SequenceSelector):
+            return False 
+        if not len(self.selectors) == value.selectors:
+            return False
+        
+        for i in range(len(self.selectors)):
+            if not self.selectors[i] == value.selectors[i]:
+                return False
+
+        return True
+
+#Maybe we will support the below. Putting them in so that we can better parse CSS but
+#actual implementation will only be later if ever.
+
+class PsuedoClassSelector: 
+    def __init__(self, val, prio):
+        pass 
+
+    def matches(self, node):
+        return isinstance(node, PsuedoClassSelector)
+    
+    def __repr__(self):
+        return "PsuedoClassSelector"
+    
+    def __eq__(self, value):
+        return isinstance(value, PsuedoClassSelector)
+
+class PsuedoElementSelector:
+    def __init__(self, val, prio):
+        pass 
+
+    def matches(self, node):
+        return isinstance(node, PsuedoElementSelector)
+    
+    def __repr__(self):
+        return "PsuedoElementSelector"
+    
+    def __eq__(self, value):
+        return isinstance(value, PsuedoElementSelector)
+
+class AttributeSelector: 
+    def __init__(self, val, prio):
+        pass 
+
+    def matches(self,node):
+        return False 
+    
+    def __repr__(self):
+        return "AttributeSelector"
+    
+    def __eq__(self, value):
+        return isinstance(value, AttributeSelector)
 
 def cascade_priority(rule):
     selector, body = rule 
