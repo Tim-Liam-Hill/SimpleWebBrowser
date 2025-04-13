@@ -614,6 +614,26 @@ Algorithm to work as follows:
 * anytime we come back from a recursive call, we are done and we tally up priorities accordingly
 * for combinators with children, only the parent priority needs to be correct so that is pretty cool. We could even make that a method...  
 
+Turns out [pseudo compound selectors are a thing](https://drafts.csswg.org/selectors/#compound). Not sure what I am going to do with this information, probably just focus on handling one level of pseudo elements (that is to say, if we come accross a value like 'div::before::marker' then we will just have a single pseudo elements with value 'before::marker').
+
+
+## CSS SPECIFIC NOTES
+
+Parsing css could be weird so for the cases I am not too sure about I'll just see what chrome does and try mimic that. 
+
+```
+div>div {...} -> this is a valid direct ancestor boi
+```
+
+IDEA: only base selectors have to store prio, the rest can just work their prio out based on their base selectors. Magnificent!!!
+
+Ah, slight confusion: what will we do for prio of pseudo and attribute selectors??? I think I can rethink how they work.
+
+The pseudo/attribute classes will basically always have a base class of sorts (so they will always belong to an ID or class selector etc). Treat these bois as the same level as class selectors I guess. 
+
+
+----
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!

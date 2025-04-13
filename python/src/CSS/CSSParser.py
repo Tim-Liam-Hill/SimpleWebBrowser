@@ -9,7 +9,7 @@ import os
 class States(Enum):
     '''Represents all valid state transitions for the parser DFA
     
-    States are given concrete values to aid in debugging. 
+    States are given concrete values to aid in debugging. Note that this enum.
     '''
 
     #Maybe it would be better to separate states for transition and states for accept?
@@ -61,6 +61,28 @@ DFA = {
                        DEFAULT_TRANSITION: {NEXT:States.VALUE}}
     }
 }
+
+@unique
+class S_States(Enum):
+    '''Represents all valid states for DFA of selector parser'''
+
+    START = "start"
+    BASE = "base"
+    BAD_START = "bad start symbol"
+    DESCENDANT = "descendant"
+    CHILD = "child"
+
+
+SelectorDFA = {
+    "start": S_States.START,
+    "states": {
+        S_States.START: { "@":{ACCEPT:S_States.BAD_START}, ":":{ACCEPT:S_States.BAD_START}, ">":{ACCEPT:S_States.BAD_START},
+                         "+":{ACCEPT:S_States.BAD_START}, "~":{ACCEPT:S_States.BAD_START}, DEFAULT_TRANSITION:{NEXT:S_States.BASE}}, #we want rules to be at least 1 char in length
+        S_States.BASE: {DEFAULT_TRANSITION:{NEXT:S_States.BASE}, " ": {ACCEPT:S_States.BASE, NEXT: S_States.DESCENDANT},
+                        },
+    }
+}   
+
 
 class CSSParser:
     '''Parses CSS rules from an input stylesheet string'''
@@ -153,7 +175,7 @@ class CSSParser:
                     accept_type = DFA["states"][state][char][ACCEPT]
                     logger.debug("Accepting str: '{}' type: '{}'".format(text.strip(), accept_type))
 
-                    match accept_type: #wanted this to be its own function but it was getting messy
+                    match accept_type: #wanted this to be its own function but it was getting complicated
                         case States.SELECTOR: 
                             curr_selector = text.strip() #there will almost certainly be leading/trailing whitespace
                             curr_rule = {}
@@ -179,12 +201,46 @@ class CSSParser:
 
         return rules 
 
-    def parseSelector(self, selector):
+    def acceptRule(self, selectorString, rule):
+        '''Given a selector string, creates an array of SelectorObject RuleObject pairs (ruleobject is just a dict)'''
+        rules = []
+        try:
+            selectors = self.parseSelectorString(selectorString, 0)
+        except Exception as e:
+            logger.info("Error when parsing selector {}".format(selectorString))
+            logger.debug(e)
+            logger.info("Excluding its rule")
+
+
+        return rules
+
+
+    def parseSelectorString(self, selectorString, i):
         '''Given a string that represents 1 or more selectors, creates a list of Selector objects for a rule will apply.
     
-        If the selector cannot be parsed, we will throw and error and discard the rule to which is belongs. 
+        If the selector cannot be parsed, we will throw and error and discard the rule to which is belongs. Will return an array of Selectors (which will
+        be potentially empty if an error is thrown)
         '''
 
+        # Steps:
+        #1. Start parsing our value 
+        #2. If we hit a :, get current value as tag/class etc, and go onto parsing our pseudo
+        #   2.1 We won't parse multiple pseudo class/things to keep things simple.
+        #3. If we hit a . or a # we will create the current tag and recurse as a SequenceSelector
+        #4. If we hit any of the combinator values we will recurse and handle the child/parent relationshipt
+        #based on array of returned values (if , then just flat array I suppose).
+
+        value = ""
+
+        while i < len(selectorString):
+            pass
+        #if no action for the state we are accepting then assume it is an error message and throw it :3
+        #remember for sequence selector to consume any spaces before or after the ,
+        # remember to check if a descendant selector is actually a different type of selector (like child)
+
+    
+
+    #Book's method which can now be considered legacy code. 
     def parse(self):
         rules = []
         while self.i < len(self.s):
@@ -274,7 +330,7 @@ class UniversalSelector:
         self.prio = prio
 
     def matches(self, node): 
-        return True
+        return isinstance(node,Element)
     
     def __repr__(self):
         return "Universal Seletor"
@@ -307,8 +363,8 @@ class DescendantSelector:
             return False 
         return self.ancestor == value.ancestor and self.descendant == value.descendant and self.priority == value.priority
 
-class DirectDescendantSelector: 
-    def __init__(self, ancestor, descendant, prio):
+class ChildSelector: 
+    def __init__(self, ancestor, descendant):
         pass 
 
     def matches(self,node):
@@ -323,13 +379,17 @@ class DirectDescendantSelector:
 class SequenceSelector: #TODO: test me
     '''Represents a sequence of selectors not separated by any whitespace.'''
 
-    def __init__(self, selectors, priority):
-        self.selectors = []
-        self.priority = []
-    
-    def __matches__(self, val):
+    def __init__(self, selectors):
+        self.selectors = selectors
 
-        return False
+    
+    def __matches__(self, node):
+        if not isinstance(node,Element):
+            return False
+        for selector in self.selectors:
+            if not selector.matches(node):
+                return False
+        return True
     
     def __repr__(self):
         return "SequenceSelector: {}".format(self.selectors)
@@ -346,15 +406,23 @@ class SequenceSelector: #TODO: test me
 
         return True
 
+class NextSiblingSelector:
+    def __init__(self):
+        pass 
+
+class SubsequentSiblingSelector:
+    def __init__(self):
+        pass 
+
 #Maybe we will support the below. Putting them in so that we can better parse CSS but
 #actual implementation will only be later if ever.
 
-class PsuedoClassSelector: 
-    def __init__(self, val, prio):
+class PseudoClassSelector: 
+    def __init__(self, val):
         pass 
 
     def matches(self, node):
-        return isinstance(node, PsuedoClassSelector)
+        return isinstance(node, PseudoClassSelector)
     
     def __repr__(self):
         return "PsuedoClassSelector"
@@ -362,12 +430,12 @@ class PsuedoClassSelector:
     def __eq__(self, value):
         return isinstance(value, PsuedoClassSelector)
 
-class PsuedoElementSelector:
+class PseudoElementSelector:
     def __init__(self, val, prio):
         pass 
 
     def matches(self, node):
-        return isinstance(node, PsuedoElementSelector)
+        return isinstance(node, PseudoElementSelector)
     
     def __repr__(self):
         return "PsuedoElementSelector"
@@ -376,7 +444,7 @@ class PsuedoElementSelector:
         return isinstance(value, PsuedoElementSelector)
 
 class AttributeSelector: 
-    def __init__(self, val, prio):
+    def __init__(self, val):
         pass 
 
     def matches(self,node):
