@@ -20,6 +20,7 @@ deactivate
 Not entirely sure if I have done things correctly :/ we will find out at some point I suppose. 
 Why did I create the virtual environment in the root and not in the python folder????????
 
+To run an individual module: ```python3 -m src.CSS.CSSParser``` (from the python directory)
 
 # lessons learned
 

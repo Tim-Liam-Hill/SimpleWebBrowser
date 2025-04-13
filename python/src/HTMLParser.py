@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from URLHandler import URLHandler
+from src.URLHandler import URLHandler
 import logging
 import os
 CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))

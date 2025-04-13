@@ -1,7 +1,9 @@
 import logging
 logger = logging.getLogger(__name__)
-from HTMLParser import Element
+from src.HTMLParser import Element
 from enum import Enum, unique
+import sys
+import os
 
 @unique
 class States(Enum):
@@ -35,7 +37,7 @@ It consists of the following main parts:
 - body: inside the body of a selector, whitespace until start rule
 - prop_name: processing the name of a pair until :
 - prop_value: processing the value of a pair until ; or }
-- open_comment: we hit a \ and need to check if in comment
+- open_comment: we hit a \\ and need to check if in comment
 - close_comment:
 and a bunch of error handling. 
 
@@ -48,10 +50,10 @@ DFA = {
     "start": States.OPEN,
     "states": {
         States.OPEN: {"\t":{NEXT:States.OPEN},"\n":{NEXT:States.OPEN}," ":{NEXT:States.OPEN}, 
-                 "\\":{ACCEPT:States.DISCARD,NEXT:States.COMMENT_START},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.SELECTOR}},
+                 "/":{ACCEPT:States.DISCARD,NEXT:States.COMMENT_START},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.SELECTOR}},
         States.COMMENT_START: {"*":{NEXT:States.COMMENT_BODY},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.OPEN}},
         States.COMMENT_BODY: {"*":{NEXT:States.COMMENT_END}, DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
-        States.COMMENT_END: {"\\":{ACCEPT:States.DISCARD, NEXT:States.OPEN},DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
+        States.COMMENT_END: {"/":{ACCEPT:States.DISCARD, NEXT:States.OPEN},DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
         States.SELECTOR: {"{": {ACCEPT: States.SELECTOR,NEXT:States.PROPERTY}, DEFAULT_TRANSITION: {NEXT: States.SELECTOR}},
         States.PROPERTY: {";":{ACCEPT: States.DISCARD, NEXT: States.PROPERTY}, ":":{ACCEPT:States.PROPERTY,NEXT:States.VALUE},
                           "}":{ACCEPT:States.RULE,NEXT: States.OPEN},  DEFAULT_TRANSITION:{NEXT:States.PROPERTY}},
@@ -135,14 +137,34 @@ class CSSParser:
             self.whitespace()
         return out
     
-    def parse(self):
+    def parse2(self, s):
         '''Uses a custom DFA to parse CSS into selectors and property-value pairs'''
 
         rules = []
+        text = "" 
+        state = DFA["start"]
+
+
+        for char in s: 
+            if char in DFA["states"][state]:
+                if ACCEPT in DFA["states"][state][char]:
+                    self.accept(text,DFA["states"][state][char][ACCEPT])
+                    text = ""
+                else: 
+                    text += char 
+                state = DFA["states"][state][char][NEXT]
+            else: 
+                text += char 
+                state = DFA["states"][state][DEFAULT_TRANSITION][NEXT]
 
         return rules 
 
-    def parse2(self):
+    def accept(self, str, acceptType):
+        '''Given a string and acceptType, processes the string according to what should be accepted (selector, value etc)'''
+        logger.debug("Accepting str: {} type: {}".format(str, acceptType))
+        pass
+
+    def parse(self):
         rules = []
         while self.i < len(self.s):
             try:
@@ -179,8 +201,7 @@ class TagSelector:
         if not isinstance(value, TagSelector):
             return False 
         return self.tag == value.tag and self.priority == value.priority
-            
-    
+             
 class DescendantSelector:
     def __init__(self, ancestor, descendant):
         self.ancestor = ancestor
@@ -208,5 +229,15 @@ def cascade_priority(rule):
     return selector.priority
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    
+    logging.basicConfig(level=logging.DEBUG)
+
+    parser = CSSParser("")
+    path = ""
+
+    if(len(sys.argv) != 2):
+        path = "{}/../browser.css".format(os.path.dirname(os.path.abspath(__file__)))
+    else: 
+        path = sys.argv[1]
+
+    with open(path, "r") as f:
+        parser.parse2(f.read())
