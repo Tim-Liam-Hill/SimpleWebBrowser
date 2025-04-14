@@ -13,7 +13,7 @@ class TestCSSParser(unittest.TestCase):
 
         #TESTS RELATED TO CSS PARSING/EXTRACTING
 
-    def test_extract(self):
+    def test_extractBasic(self):
         '''Tests whether the CSSParser can extract the expected set of rules for various selectors'''
 
         # #Empty Stylesheet
@@ -45,6 +45,29 @@ class TestCSSParser(unittest.TestCase):
         # css = "div {;;;;}"
         # self.assertEqual(CSSParser(css).parse(), [(TagSelector("div"), {})])
 
+    def test_extractDescendants(self):
+        '''Ensures that chains of various descendant selectors are extracted correctly'''
+
+        pass 
+
+    def test_extractSequence(self):
+        '''Ensures sequences of various tags can be extracted correctly'''
+
+        pass 
+
+    def test_extracPseudoSelectors(self):
+        '''Ensures the subset of PseudoSelectors supported are extracted correctly.'''
+
+        pass
+
+    def test_extractAttribute(self):
+        pass 
+
+    def test_complexCases(self):
+        '''Cases with multiple selectors used together'''
+
+        #div[value='arg'].class::after#id:hover > span {background-color: brown;}
+
     def test_malformed(self):
         '''Tests whether the CSSParser can function if given malformed input'''
 
@@ -57,6 +80,8 @@ class TestCSSParser(unittest.TestCase):
         css = "div width: 100px;}"
         css_rules = []
         self.assertEqual(CSSParser(css).parse(), css_rules)
+
+        #TODO: test with > followed by , (same for other non-space combinator symbols)
 
 
 
@@ -117,8 +142,8 @@ class TestCSSParser(unittest.TestCase):
 
     def test_descendantSelector(self):
         pass
+    
+    def test_attributeSelector(self):
+        pass 
 
-    #TESTS RELATED TO PRIORITIES
-
-
-        pass
+    #TESTS RELATED TO PRIORITIES (TODO: populate)

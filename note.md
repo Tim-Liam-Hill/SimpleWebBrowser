@@ -631,6 +631,34 @@ Ah, slight confusion: what will we do for prio of pseudo and attribute selectors
 
 The pseudo/attribute classes will basically always have a base class of sorts (so they will always belong to an ID or class selector etc). Treat these bois as the same level as class selectors I guess. 
 
+Something that could be an issue is the following:
+```
+div > span, h1 {...}
+```
+In the above, how does the precedence work? I imagine it would be a list of 2 different selectors [Child, Tag], but mein code might not parse things like that. Mine would go the other way around (or throw an error I guess).
+
+What we could do is use more states instead of recursion. That is to say: for each of the descendant-type selectors we have additional states that signify we are getting the 'chain of selectors' and that only ends if and when we hit a , (or come to the end). Then we can use an array as a stack to get everything in the right order. I guess this can work, it just makes things a tad more complex. We would need 2 arrs: one for any sequences and another for the current chain of descendants. 
+
+Do we even need the additional states? I don't think so really. 
+
+This is getting complicated. Meow. We may need an additional var to handle the sequence boi. 
+
+```div[value='arg'].class::after#id:hover > span {background-color: brown;}```
+To parse the above:
+1. Extract the div attribute pair, make an attribute selector. Put this in the 'finish' arr
+2. we see the . so we know we are in a sequence selector. Create it, put the attribute selector in the sequence selector (IE: take from the finish arr) and add sequence selector to finish arr. Transition to sequence selector state.
+3. We parse the .class::after till we reach the #. We accept this as a pseudo element tag and add it to sequence selector 
+4. Repeat above for id:hover
+5. We just saw a space so we leave sequence selector state (leave it on the finish arr)
+6. We see the space so we know that we will be in a descendant mode (we ensure that the selector is stripped beforehand). Don't create any tags just yet
+7. We see the arrow, we know the type of descendant tag this is. Take top of finish arr, create the descendant tag using that push back onto finish arr. 
+8. Consume whitespace till start of next rule 
+9. Consume span, add it to the descendant tag 
+10. Return. 
+
+This is doable it seems. I think can actually just use a single array/stack var since descendants only ever deal with the last tag (we are guaranteed to have at least 1 non-multiselect type of tag on top of the stack in well formed css so we can preserve comma separated rules using a single stack, but I should check this). I will need to double check the logic of the various combinators (eg: which tag is ancestor and which is predecessor). 
+
+This CSS parser will need a lot of test cases, thankfully we have a testing framework set up already. 
 
 ----
 

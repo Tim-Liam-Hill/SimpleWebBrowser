@@ -5,6 +5,8 @@ from enum import Enum, unique
 import sys
 import os
 
+#TODO: might be worthwhile spliting things up into more classes (eg: one specifically for selectors). 
+
 @unique
 class States(Enum):
     '''Represents all valid state transitions for the parser DFA
@@ -69,17 +71,51 @@ class S_States(Enum):
     START = "start"
     BASE = "base"
     BAD_START = "bad start symbol"
-    DESCENDANT = "descendant"
+    DESCENDANT = "descendant" #if we see a space, we assume descendant until proven otherwise
     CHILD = "child"
+    NEXT_SIBLING = "sibling"
+    SUB_SIBLING = "sub_sibling"
+    MULTI_TAGS = "multiple_tags"
+
+    SEQUENCE = "sequence" 
+    SEQUENCE_BASE = "sequence_base"
+
+    PSEUDO_CLASS_START = "pseudo_class_start"
+    PSEUDO_CLASS = "pseudo_class"
+    PSEUDO_ELEMENT = "pseudo_element" #pseudo_elephant lol
+
+    ATTRIBUTE = "attribute" #not sure to what extent I will support these but will throw them in anyway
+    ATTRIBUTE_QUOTE1 = "attribute_quote1"
+    ATTRIBUTE_QUOTE2 = "attribute_quote2"
+    ATTRIBUTE_AFTER = "after_attribute" #needed since attribute selector doesn't immediately know which transition to make
+    BAD_ATTRIBUTE_AFTER = "bad symbol after attribute selector"
 
 
 SelectorDFA = {
     "start": S_States.START,
     "states": {
         S_States.START: { "@":{ACCEPT:S_States.BAD_START}, ":":{ACCEPT:S_States.BAD_START}, ">":{ACCEPT:S_States.BAD_START},
-                         "+":{ACCEPT:S_States.BAD_START}, "~":{ACCEPT:S_States.BAD_START}, DEFAULT_TRANSITION:{NEXT:S_States.BASE}}, #we want rules to be at least 1 char in length
-        S_States.BASE: {DEFAULT_TRANSITION:{NEXT:S_States.BASE}, " ": {ACCEPT:S_States.BASE, NEXT: S_States.DESCENDANT},
-                        },
+                         "+":{ACCEPT:S_States.BAD_START}, "~":{ACCEPT:S_States.BAD_START}, ",":{ACCEPT:S_States.BAD_START},
+                         "[": {NEXT: S_States.ATTRIBUTE}, DEFAULT_TRANSITION:{NEXT:S_States.BASE}}, #we want rules to be at least 1 char in length, hence why we have bad start condition
+        S_States.BASE: {DEFAULT_TRANSITION:{NEXT:S_States.BASE}, " ": {ACCEPT:S_States.BASE, NEXT: S_States.DESCENDANT}, ",": {ACCEPT: S_States.BASE, NEXT: S_States.MULTI_TAGS},
+                        ">":{ACCEPT:S_States.BASE,NEXT:S_States.CHILD},"+":{ACCEPT:S_States.BASE,NEXT:S_States.NEXT_SIBLING},"~":{ACCEPT:S_States.BASE,NEXT:S_States.SUB_SIBLING},
+                        ":":{NEXT:S_States.PSEUDO_CLASS_START},"[": {NEXT: S_States.ATTRIBUTE}, ".": {ACCEPT: S_States.SEQUENCE, NEXT: S_States.SEQUENCE}}, 
+                        "#": {ACCEPT: S_States.SEQUENCE, NEXT: S_States.SEQUENCE}},
+        S_States.DESCENDANT: {},
+
+        S_States.PSEUDO_CLASS_START:{},
+        S_States.PSEUDO_CLASS: {},
+        S_States.PSEUDO_ELEMENT: {},
+
+        S_States.SEQUENCE: {DEFAULT_TRANSITION:{NEXT: S_States.SEQUENCE}, ".":{ACCEPT:S_States.SEQUENCE_BASE, NEXT: S_States.SEQUENCE}, "#":{ACCEPT:S_States.SEQUENCE_BASE, NEXT: S_States.SEQUENCE}
+                            ""},
+
+        S_States.ATTRIBUTE: {"]": {ACCEPT: S_States.ATTRIBUTE, NEXT: S_States.ATTRIBUTE_AFTER},"\"":{NEXT:S_States.ATTRIBUTE_QUOTE1}, "'":{NEXT:S_States.ATTRIBUTE_QUOTE2},
+                             DEFAULT_TRANSITION: {NEXT: S_States.ATTRIBUTE}},
+        S_States.ATTRIBUTE_QUOTE1: {"\"": {NEXT: S_States.ATTRIBUTE}, DEFAULT_TRANSITION: {NEXT: S_States.ATTRIBUTE_QUOTE1}},
+        S_States.ATTRIBUTE_QUOTE2: {"'": {NEXT: S_States.ATTRIBUTE}, DEFAULT_TRANSITION: {NEXT: S_States.ATTRIBUTE_QUOTE2}},
+        S_States.ATTRIBUTE_AFTER: {DEFAULT_TRANSITION: {}}
+    
     }
 }   
 
@@ -230,6 +266,8 @@ class CSSParser:
         #4. If we hit any of the combinator values we will recurse and handle the child/parent relationshipt
         #based on array of returned values (if , then just flat array I suppose).
 
+        selectors = []
+        descendant_type_selectors = []
         value = ""
 
         while i < len(selectorString):
@@ -237,7 +275,11 @@ class CSSParser:
         #if no action for the state we are accepting then assume it is an error message and throw it :3
         #remember for sequence selector to consume any spaces before or after the ,
         # remember to check if a descendant selector is actually a different type of selector (like child)
+        # for pseudo selectors, we will only get the selector at the end (once we have parsed the portion to the right of : or ::)
+        # same thing for attributes
+        # Which states will we still allow once we reach the end of the string? 
 
+        return selectors
     
 
     #Book's method which can now be considered legacy code. 
