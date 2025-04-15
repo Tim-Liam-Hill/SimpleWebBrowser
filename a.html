@@ -6,11 +6,11 @@
 <head>
 	<title>FrogFind!</title>
     <style>
-        div>div, p{background-color:aquamarine;}
+        /*div>div, p{background-color:aquamarine;}
         div.class#id:hover{color:red}
         div > span, h1 {background-color: yellow;}
-        a[value='asdf'] {background-size: auto;}
-        div[value='arg'].class::after#id:hover > span {background-color: brown;}
+        a[value='asdf'] {background-size: auto;}*/
+        div[mood$='happy'].class:hover#id > span {background-color: brown;}
     </style>
 </head>
 <body>
@@ -23,5 +23,11 @@
         Woof
     </div>
     <p>should be colored</p>
+    <div mood="very happy" class="class" ::after id="id" :hover>
+        The div
+        <span>
+            the span
+        </span>
+    </div>
 </body>
 </html>

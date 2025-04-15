@@ -660,6 +660,20 @@ This is doable it seems. I think can actually just use a single array/stack var 
 
 This CSS parser will need a lot of test cases, thankfully we have a testing framework set up already. 
 
+So here's the thing: we can either make our DFA verbose or we can keep it simple but have the function that uses the DFA be verbose. That is to say: if we have our states representing the descendant selector, those states also need to keep track of psuedo-elements, psuedo-class and attributes. This is true for all combinators and this ends up creating a fair few number of states (which is par for the course for DFA's I suppose). 
+
+I think I will stick with this approach since 1. it is more theoretical and 2. I think its okay. 
+
+[ # . > , " " ~ : + @
+
+I think there is a way to simplyfy things actually. What is the solution you ask? Why, its use ANOTHER PARSER!!!!
+
+Each combinator is basically going to be extracting 'base' tags and these base tags can have attributes, pseudo elements and pseudo classes. Why not bundle that into a new parser? this means that we only have to write the parsing states for 'base' tags once instead of for each combinator.
+
+Sometimes it is difficult being so smart. Naming things is still hard, but that is difficult regardless of how smart you are. 
+
+While we are at this, we can make a base class for all selectors to implement since that feels really obvious to do. 
+
 ----
 
 6.4 -> In progress

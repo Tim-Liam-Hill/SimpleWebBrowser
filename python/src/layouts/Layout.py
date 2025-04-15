@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 class Layout(ABC):
-    '''The base class that all LayoutTypes inherit from'''
+    '''The base class that all LayoutTypes inherit'''
 
     def __init__(self, node, parent, previous):
         self.node = node 

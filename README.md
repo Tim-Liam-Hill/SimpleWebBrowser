@@ -83,6 +83,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * center tag and center text
 * Preformatted tags.
 * Nested CSS selector
+* Move Element and Text classes into a different folder.
 
 # BUGS
 
