@@ -1,5 +1,63 @@
 from abc import ABC, abstractmethod
 from src.HTMLParser import Element
+from enum import Enum, unique
+
+@unique
+class States(Enum):
+    '''Represents all valid states for DFA of selector parser'''
+
+    START = "start"
+    BAD_START = "bad start symbol"
+
+    BASE = "base"
+
+    UNIVERSAL = "universal"
+
+    ATTRIBUTE = "attribute" #not sure to what extent I will support these but will throw them in anyway
+    ATTRIBUTE_QUOTE1 = "attribute_quote1"
+    ATTRIBUTE_QUOTE2 = "attribute_quote2"
+    ATTRIBUTE_AFTER = "attribute_after"
+
+    PSEUDO_CLASS_START = "pseudo_class_start"
+    PSEUDO_CLASS = "pseudo_class"
+    PSEUDO_ELEMENT_START = "pseudo_element_start"
+    PSEUDO_ELEMENT = "pseudo_element" #pseudo_elephant lol
+
+    PSEUDO_BAD_BRACKET = "Cannot have [ immediately after :"
+    PSEUDO_ELEMENT_EXTRA_COLON = "Cannot have a sequence of 3 colons"
+
+
+DEFAULT_TRANSITION = "default"
+ACCEPT ="accept"
+NEXT = "next"
+
+DFA = {
+    "start": States.START,
+    "states": {
+        States.START: { "@":{ACCEPT:States.BAD_START}, ":":{ACCEPT:States.BAD_START}, 
+                "[": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION:{NEXT:States.BASE},
+                "*": {NEXT: States.UNIVERSAL}
+                }, #we want rules to be at least 1 char in length, hence why we have bad start condition
+
+        States.UNIVERSAL:{}, #TODO: accept universal, make sure through errors if we can't
+
+        States.BASE: {DEFAULT_TRANSITION:{NEXT:States.BASE}, ":":{NEXT:States.PSEUDO_CLASS_START},"[": {NEXT: States.ATTRIBUTE}},
+    
+        States.ATTRIBUTE: {"]": {ACCEPT: States.ATTRIBUTE, NEXT: States.ATTRIBUTE_AFTER},"\"":{NEXT:States.ATTRIBUTE_QUOTE1}, "'":{NEXT:States.ATTRIBUTE_QUOTE2},
+                             DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE}},
+        States.ATTRIBUTE_QUOTE1: {"\"": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE_QUOTE1}},
+        States.ATTRIBUTE_QUOTE2: {"'": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE_QUOTE2}},
+    
+        States.PSEUDO_CLASS_START:{":":{NEXT: States.PSEUDO_ELEMENT_START},DEFAULT_TRANSITION:{NEXT:States.PSEUDO_CLASS}, "]": {ACCEPT: States.PSEUDO_BAD_BRACKET}},
+        States.PSEUDO_CLASS: {":":{ACCEPT: States.PSEUDO_CLASS, NEXT: States.PSEUDO_CLASS_START},"[":{ACCEPT: States.PSEUDO_CLASS,NEXT:States.ATTRIBUTE},
+                              DEFAULT_TRANSITION: {NEXT:States.PSEUDO_CLASS}},
+        States.PSEUDO_ELEMENT_START: {":":{ACCEPT: States.PSEUDO_ELEMENT_EXTRA_COLON},"[":{ACCEPT: States.PSEUDO_BAD_BRACKET},DEFAULT_TRANSITION: {States.PSEUDO_ELEMENT}},
+        States.PSEUDO_ELEMENT: {":":{ACCEPT: States.PSEUDO_ELEMENT, NEXT: States.PSEUDO_CLASS_START},"[":{ACCEPT: States.PSEUDO_ELEMENT,NEXT:States.ATTRIBUTE},
+                                DEFAULT_TRANSITION: {NEXT: States.PSEUDO_CLASS}},
+
+        
+    }
+}
 
 class SelectorParser:
     '''Parses a string representing one selector (that could have attributes/pseudo elements or pseudo classes)'''
@@ -8,6 +66,13 @@ class SelectorParser:
         pass 
 
     def parse(self,s):
+        '''Given a string representing a single selector, parses the selector an array of selectors as needed.
+        
+        If the selector is invalid, a ValueError will be thrown to be handled higher up. Only case where multiple selectors are returned is when we have multiple pseudo
+        rules
+        '''
+
+        #TODO: how will we handle Pseudo rules?
         pass 
 
 class Selector(ABC):

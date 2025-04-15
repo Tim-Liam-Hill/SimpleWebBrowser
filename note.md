@@ -674,6 +674,14 @@ Sometimes it is difficult being so smart. Naming things is still hard, but that 
 
 While we are at this, we can make a base class for all selectors to implement since that feels really obvious to do. 
 
+We will need to think about how we handle multiple Pseudo Elements/Pseudo classes. They should each create a new selector as opposed to being nested inside one another (like an attribute would be). 
+
+QUESTION: can pseudo classes have attributes? Seems like I need to read some documentation: https://drafts.csswg.org/selectors/#relative
+
+I think I have a problem in my approach when looking at [this](https://drafts.csswg.org/selectors/#example-3e6d4159) example. I may need to handle multiple selector thingies in my SelectorParser class. ACTUALLY: I should be able to manage with my current approach. 
+
+I should really read through the docs. 
+
 ----
 
 6.4 -> In progress
