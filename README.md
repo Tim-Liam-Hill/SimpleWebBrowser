@@ -102,3 +102,4 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * support some basic svg
 * Basic animations (which might end up being doable Interestingly enough)
 * gifs 
+* Parse selectors [according to their official grammar](https://drafts.csswg.org/selectors/#grammar)

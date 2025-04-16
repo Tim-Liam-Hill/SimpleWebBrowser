@@ -682,6 +682,26 @@ I think I have a problem in my approach when looking at [this](https://drafts.cs
 
 I should really read through the docs. 
 
+We are not [implementing namespaces](https://drafts.csswg.org/selectors/#type-nmsp), that is out of scope. 
+
+I may need to elaborate on the pseudo-class section to handle quotes within a bracket.
+
+Okay, so the updates will be:
+* allow for pseudo-class elephants to have quotes in a bracket
+* explicitly handle sequence selectors first??? 
+
+So reading the docs is always a good idea, I just found [the grammar](https://drafts.csswg.org/selectors/#grammar)! The docs also include [further info for parsing stylesheets](https://drafts.csswg.org/css-syntax-3/#css-parse-something-according-to-a-css-grammar).
+
+So for time constraints and my own sanity, I dont think I will implement the full grammar above (at least, definitely not now. Maybe later I'll think about it). I already have a way of generating an SLR table from a grammar (because that was a project I have done before yay) but I am already spending a lot of time on this chapter and want to move on. 
+
+So, I will restrict the CSS that I am willing to select. It shall look like the following:
+
+* Any number of base classes ```div.class.class2#ID...```
+* The base classes themselves can have any number of attributes eg: ```div[value="1"].class[meow][meowmeow].class2#ID```
+* Pseudo classes will never be followed by a base element or attribute and can only be followed by pseudo elements 
+* nothing can follow a pseudo element
+
+
 ----
 
 6.4 -> In progress
