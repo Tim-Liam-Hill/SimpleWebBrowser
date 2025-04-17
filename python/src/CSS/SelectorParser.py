@@ -12,11 +12,11 @@ class States(Enum):
     BASE = "base"
 
     UNIVERSAL = "universal"
+    UNIVERSAL_BAD_FOLLOW = "universal element should only be 1 char long"
 
     ATTRIBUTE = "attribute" #not sure to what extent I will support these but will throw them in anyway
     ATTRIBUTE_QUOTE1 = "attribute_quote1"
     ATTRIBUTE_QUOTE2 = "attribute_quote2"
-    ATTRIBUTE_AFTER = "attribute_after"
 
     PSEUDO_CLASS_START = "pseudo_class_start"
     PSEUDO_CLASS = "pseudo_class"
@@ -34,28 +34,27 @@ NEXT = "next"
 DFA = {
     "start": States.START,
     "states": {
-        States.START: { "@":{ACCEPT:States.BAD_START}, ":":{ACCEPT:States.BAD_START}, 
+        States.START: { "@":{ACCEPT:States.BAD_START}, ":":{ACCEPT:States.PSEUDO_CLASS_START}, 
                 "[": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION:{NEXT:States.BASE},
-                "*": {NEXT: States.UNIVERSAL}
-                }, #we want rules to be at least 1 char in length, hence why we have bad start condition
+                "]": {ACCEPT: States.BAD_START}, "*": {NEXT: States.UNIVERSAL}
+                }, 
 
-        States.UNIVERSAL:{}, #TODO: accept universal, make sure through errors if we can't
+        States.UNIVERSAL:{ ".": {ACCEPT: States.UNIVERSAL, NEXT: States.BASE}, "#":{ACCEPT: States.UNIVERSAL, NEXT: States.BASE}, "[": {ACCEPT: States.UNIVERSAL, NEXT: States.ATTRIBUTE},
+            ":": {ACCEPT: States.UNIVERSAL,NEXT: States.PSEUDO_CLASS_START}, DEFAULT_TRANSITION: {ACCEPT: States.UNIVERSAL_BAD_FOLLOW}, },
 
         States.BASE: {DEFAULT_TRANSITION:{NEXT:States.BASE}, ":":{NEXT:States.PSEUDO_CLASS_START},"[": {NEXT: States.ATTRIBUTE}},
     
-        States.ATTRIBUTE: {"]": {ACCEPT: States.ATTRIBUTE, NEXT: States.ATTRIBUTE_AFTER},"\"":{NEXT:States.ATTRIBUTE_QUOTE1}, "'":{NEXT:States.ATTRIBUTE_QUOTE2},
+        States.ATTRIBUTE: {"]": {ACCEPT: States.ATTRIBUTE, NEXT: States.START},"\"":{NEXT:States.ATTRIBUTE_QUOTE1}, "'":{NEXT:States.ATTRIBUTE_QUOTE2},
                              DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE}},
         States.ATTRIBUTE_QUOTE1: {"\"": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE_QUOTE1}},
         States.ATTRIBUTE_QUOTE2: {"'": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE_QUOTE2}},
     
         States.PSEUDO_CLASS_START:{":":{NEXT: States.PSEUDO_ELEMENT_START},DEFAULT_TRANSITION:{NEXT:States.PSEUDO_CLASS}, "]": {ACCEPT: States.PSEUDO_BAD_BRACKET}},
         States.PSEUDO_CLASS: {":":{ACCEPT: States.PSEUDO_CLASS, NEXT: States.PSEUDO_CLASS_START},"[":{ACCEPT: States.PSEUDO_CLASS,NEXT:States.ATTRIBUTE},
-                              DEFAULT_TRANSITION: {NEXT:States.PSEUDO_CLASS}},
+                              DEFAULT_TRANSITION: {NEXT:States.PSEUDO_CLASS}, ".":{ACCEPT:States.PSEUDO_CLASS, NEXT: States.BASE},"#":{ACCEPT:States.PSEUDO_CLASS, NEXT: States.BASE}},
         States.PSEUDO_ELEMENT_START: {":":{ACCEPT: States.PSEUDO_ELEMENT_EXTRA_COLON},"[":{ACCEPT: States.PSEUDO_BAD_BRACKET},DEFAULT_TRANSITION: {States.PSEUDO_ELEMENT}},
         States.PSEUDO_ELEMENT: {":":{ACCEPT: States.PSEUDO_ELEMENT, NEXT: States.PSEUDO_CLASS_START},"[":{ACCEPT: States.PSEUDO_ELEMENT,NEXT:States.ATTRIBUTE},
-                                DEFAULT_TRANSITION: {NEXT: States.PSEUDO_CLASS}},
-
-        
+                                DEFAULT_TRANSITION: {NEXT: States.PSEUDO_ELEMENT},".":{ACCEPT:States.PSEUDO_ELEMENT, NEXT: States.BASE},"#":{ACCEPT:States.PSEUDO_ELEMENT, NEXT: States.BASE}},
     }
 }
 
@@ -66,13 +65,41 @@ class SelectorParser:
         pass 
 
     def parse(self,s):
-        '''Given a string representing a single selector, parses the selector an array of selectors as needed.
+        '''Given a string representing a single selector, parses the selector and returns the non-None selector.
         
-        If the selector is invalid, a ValueError will be thrown to be handled higher up. Only case where multiple selectors are returned is when we have multiple pseudo
-        rules
+        If the selector is invalid, a ValueError will be thrown to be handled higher up. If multiple selectors present it will reselt in a Linked-List like structure.
+        '''
+        text = ""
+        elem = None
+        state = DFA["start"]
+        states = DFA["states"] #less typing needed when doing this
+
+        for char in s: 
+            if char in states[state]:
+                if ACCEPT in states[state][char]:
+                    elem = self.handleAccept(text, states[state][char][ACCEPT], elem)
+                text += char 
+                state = states[state][char][NEXT]
+            else: 
+                text += char 
+                states = states[state][DEFAULT_TRANSITION][NEXT]
+
+        
+        #Accept one last time to ensure we don't 'lose' a selector. Also helps throw additional errors as needed
+        #if the state we end on doesn't have an Accept state then that is a sign something has gone wrong. 
+        return self.handleAccept(text, state, elem)
+
+    def getBase(self,text):
+        '''Given a string representing some simple selector, determines if this selector is a tag, class or ID selector and returns an object of the appropriate class'''
+
+        pass 
+
+    def handleAccept(self,text, state, elem):
+        '''Given the state to be accepted, returns the new node to be created or throws the appropriate error message
+        
+        The created node will have its child elem set correctly already.
         '''
 
-        #TODO: how will we handle Pseudo rules?
         pass 
 
 class Selector(ABC):
@@ -113,79 +140,93 @@ class Selector(ABC):
 # Simple Selectors
 
 class TagSelector(Selector):
-    def __init__(self, tag, prio=1):
+    def __init__(self, tag, child):
         self.tag = tag
-        self.priority = prio
+        self.child = child
 
     def matches(self, node):
-        return isinstance(node, Element) and self.tag == node.tag
+
+        if(isinstance(node, Element) and self.tag == node.tag):
+            if(self.child != None):
+                return self.child.matches(node)
+            else: 
+                return True 
+        return False
     
     def __repr__(self):
-        return "TagSelector: {}".format(self.tag)
+        return "TagSelector: {} Child: {}".format(self.tag, self.child)
     
     def __eq__(self, value):
         if not isinstance(value, TagSelector):
             return False 
-        return self.tag == value.tag and self.priority == value.priority
+        return self.tag == value.tag and self.priority == value.priority and self.child == value.child
 
 class ClassSelector(Selector):
-    def __init__(self,val, prio):
+    def __init__(self,val, child):
         self.val = val 
-        self.prio = prio 
-    
-    def matches(self,node):
+        self.child = child
+
+    def matches(self,node): #ugly nesting I know
         if isinstance(node,Element):
             if 'class' in node.attributes:
                 arr = [val.strip() for val in node.attributes["class"].strip().split(" ")]
-                return self.val in arr
+                if(self.val in arr):
+                    if(self.child != None):
+                        return self.child.matches(node)
+                    else: 
+                        return True
         
         return False
     
     def __repr__(self):
-        return "ClassSelector: {}".format(self.val)
+        return "ClassSelector: {} Child: {}".format(self.val, self.child)
     
     def __eq__(self, value):
         if not isinstance(value, ClassSelector):
             return False 
-        return self.val == value.val and self.priority == value.priority
+        return self.val == value.val and self.priority == value.priority and self.child == value.child
 
 class IDSelector(Selector):
 
-    def __init__(self, val, prio):
+    def __init__(self, val, child):
         self.val = val 
-        self.prio = prio
+        self.child = child
 
     def matches(self, node): #Case sensitive match per https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors
         if isinstance(node,Element):
             if 'id' in node.attributes:
-                return node.attributes['id'] == self.val
+                if(self.child != None):
+                    return node.attributes['id'] == self.val and self.child.matches(node)
+                else: 
+                    return node.attributes['id'] == self.val
         
         return False
     
     def __repr__(self):
-        return "IDSelector: {}".format(self.val)
+        return "IDSelector: {} Child: {}".format(self.val, self.child)
     
     def __eq__(self, value):
         if not isinstance(value, IDSelector):
             return False 
-        return self.val == value.val and self.priority == value.priority
+        return self.val == value.val and self.child == value.child
 
 class UniversalSelector(Selector):
 
-    def __init__(self,  prio):
+    def __init__(self,  child):
         self.val = "*"
-        self.prio = prio
+        self.child = child
 
     def matches(self, node): 
+        if(self.child != None):
+            return isinstance(node,Element) and self.child.matches(node)
         return isinstance(node,Element)
     
     def __repr__(self):
-        return "Universal Seletor"
+        return "Universal Seletor Child: {}".format(self.child)
     
     def __eq__(self, value):
-        if not isinstance(value, UniversalSelector):
-            return False 
-        return self.prio == value.prio
+        return isinstance(value, UniversalSelector) and self.child == value.child
+
 
 # Combinator Selectors
 
@@ -222,36 +263,6 @@ class ChildSelector(Selector):
     
     def __eq__(self, value):
         return isinstance(value, ChildSelector)
-
-class SequenceSelector(Selector): #TODO: test me
-    '''Represents a sequence of selectors not separated by any whitespace.'''
-
-    def __init__(self, selectors):
-        self.selectors = selectors
-
-    
-    def __matches__(self, node):
-        if not isinstance(node,Element):
-            return False
-        for selector in self.selectors:
-            if not selector.matches(node):
-                return False
-        return True
-    
-    def __repr__(self):
-        return "SequenceSelector: {}".format(self.selectors)
-    
-    def __eq__(self, value):
-        if not isinstance(value, SequenceSelector):
-            return False 
-        if not len(self.selectors) == value.selectors:
-            return False
-        
-        for i in range(len(self.selectors)):
-            if not self.selectors[i] == value.selectors[i]:
-                return False
-
-        return True
 
 class NextSiblingSelector(Selector):
     def __init__(self):

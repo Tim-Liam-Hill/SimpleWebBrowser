@@ -701,6 +701,21 @@ So, I will restrict the CSS that I am willing to select. It shall look like the 
 * Pseudo classes will never be followed by a base element or attribute and can only be followed by pseudo elements 
 * nothing can follow a pseudo element
 
+But now we have a shmall problem: how are we going to end up applying the pseudo-element and pseudo-class styles? For now we could just make them not match by default. Otherwise we need to have a way of keeping track of these things in nodes and not reapplying stylesheet on every event on the canvas
+
+"All pseudo-classes behave in this same kind of way. They target some bit of your document that is in a certain state, behaving as if you had added a class into your HTML. " -? [MDN](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Pseudo_classes_and_elements).
+
+For a number of pseudo classes it is actually sufficient to apply them 'statically' when we first apply css rules. EG: :first-child. It is the [user-action pseudo-classes](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics/Pseudo_classes_and_elements#user-action_pseudo_classes) that really give hassle. 
+
+So I suppose what we could do is catagorize our pseudo-classes by whether or not they are user actions. Then we can keep track of those separately and apply them needed. 
+
+I am getting ahead of myself though. Let's get the parser working and advance till we stop using tkinter and change to the other rendering library. That is when it makes more sense to implement more CSS features. For now, Pseudo-elements and Pseudo-classes will never match. 
+
+QUESTION: if we have ```div.class[attr][attr2]``` do the attributes apply to .class only or to the combined boi? I guess it doesn't really make a difference since all the attribute selectors will do is test the presence of the attributes, and this won't affect 
+
+Imagine being the smartest person in the world (ie: me) and simultaenously being the stinkiest, silliest boi in existence (also me). THE ORDER DOESN'T MATTER MY CHILD!!! We don't have to worry to which base selector something applies, the matching of sub-components is NOT order dependent. THis makes things a whole lot easier for me. 
+
+I think I will get rid of my selector Sequence and make my Base Selector fulfill the same role. This will make things a bit easier. 
 
 ----
 

@@ -10,14 +10,15 @@
         div.class#id:hover{color:red}
         div > span, h1 {background-color: yellow;}
         a[value='asdf'] {background-size: auto;}*/
-        div[mood$='happy'].class:hover#id > span {background-color: brown;}
+        div[mood$='happy'].class#id:hover > span {background-color: brown;}
         div[value="1"].class[meow][meowmeow].class2#ID {background-color: antiquewhite;}
+        span#ME[attr][value="2"] {color: red; border: 1em solid red;}
     </style>
 </head>
 <body>
 
     <div>
-        <span></span>
+        <span attr value="2" id="ME">Should be red text</span>
         <div>
             MeowMeow
         </div>
