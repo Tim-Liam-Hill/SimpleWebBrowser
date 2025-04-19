@@ -147,7 +147,6 @@ class Selector(ABC):
 
     def __init__(self):
         '''Base constructor doesn't need anything'''
-
         pass 
 
     @abstractmethod
@@ -289,46 +288,135 @@ class UniversalSelector(Selector):
 # Combinator Selectors
 
 class DescendantSelector(Selector):
-    def __init__(self, ancestor, descendant):
-        self.ancestor = ancestor
-        self.descendant = descendant
-        self.priority = ancestor.priority + descendant.priority
+    def __init__(self, parent, child):
+        '''Child represents a non-combinator selector. Parent should never be none'''
 
-    def matches(self, node): #
-        if not self.descendant.matches(node): return False
+        self.parent = parent
+        self.child = child
+
+    def matches(self, node): 
+        if not self.child.matches(node): return False
         while node.parent:
-            if self.ancestor.matches(node.parent): return True
+            if self.parent.matches(node.parent): return True
             node = node.parent
         return False
     
     def __repr__(self):
-        return "DescendantSelector with descendant: {}".format(self.descendant)
+        return "DescendantSelector Parent: {} Child: {}".format(self.parent,self.child)
     
     def __eq__(self, value):
         if not isinstance(value, DescendantSelector):
             return False 
-        return self.ancestor == value.ancestor and self.descendant == value.descendant and self.priority == value.priority
+        return self.parent == value.parent and self.child == value.child and self.getPrio() == value.getPrio()
+
+    def getPrio(self):
+        l1 = list(self.parent.getPrio())
+        l2 = list(self.child.getPrio())
+        return tuple([l1[i] + l2[i] for i in range(len(l2))])
 
 class ChildSelector(Selector): 
-    def __init__(self, ancestor, descendant):
-        pass 
+    '''Child represents a non-combinator selector. Parent should never be none'''
+
+    def __init__(self, parent, child):
+        self.parent = parent 
+        self.child = child 
 
     def matches(self,node):
+        if not self.child.matches(node): 
+            return False
+        if node.parent and self.parent.matches(node.parent): 
+            return True
         return False
     
     def __repr__(self):
-        return "ChildSelector: to be implemented"
+        return "ChildSelector Parent: {} Child: {}".format(self.parent, self.child)
     
     def __eq__(self, value):
-        return isinstance(value, ChildSelector)
+        if not isinstance(value,ChildSelector):
+            return False 
+        return self.parent == value.parent and self.child == value.child and self.getPrio() == value.getPrio()
+    
+    def getPrio(self):
+        l1 = list(self.parent.getPrio())
+        l2 = list(self.child.getPrio())
+        return tuple([l1[i] + l2[i] for i in range(len(l2))])
 
 class NextSiblingSelector(Selector):
-    def __init__(self):
-        pass 
+    '''Child represents a non-combinator selector. Parent should never be none'''
+
+    def __init__(self, parent, child):
+        self.parent = parent 
+        self.child = child  
+
+    def matches(self, node):
+        if not self.child.matches(node):
+            return False
+        
+        prev = None 
+        c = node.parent.children 
+        if c == None or len(c) == 0:
+            return False 
+        
+        for child in c:
+            if child is node:
+                break 
+            else:
+                prev = child 
+
+        if prev == None:
+            return False
+
+        return self.parent.matches(prev)
+
+    def __eq__(self, value):
+        if not isinstance(value,NextSiblingSelector):
+            return False 
+        return self.parent == value.parent and self.child == value.child and self.getPrio() == value.getPrio()
+
+    def __repr__(self):
+        return "NextSiblingSelector Parent: {} Child: {}".format(self.parent, self.child)
+
+    def getPrio(self):
+        l1 = list(self.parent.getPrio())
+        l2 = list(self.child.getPrio())
+        return tuple([l1[i] + l2[i] for i in range(len(l2))])
 
 class SubsequentSiblingSelector(Selector):
-    def __init__(self):
-        pass 
+    '''Child represents a non-combinator selector. Parent should never be none'''
+
+    def __init__(self, parent, child):
+        self.parent = parent
+        self.child = child
+
+    def matches(self, node):
+        if not self.child.matches(node):
+            return False
+        
+        c = node.parent.children 
+        if c == None:
+            return False 
+        
+        for child in c:
+            if child is node:
+                break 
+            elif self.parent.matches(child):
+                return True
+
+
+        return False
+
+    def __eq__(self, value):
+        if not isinstance(value,SubsequentSiblingSelector):
+            return False 
+        return self.parent == value.parent and self.child == value.child and self.getPrio() == value.getPrio()
+    
+    def __repr__(self):
+        return "SubsequentSiblingSelector Parent: {} Child: {}".format(self.parent, self.child)
+
+    def getPrio(self):
+        l1 = list(self.parent.getPrio())
+        l2 = list(self.child.getPrio())
+        return tuple([l1[i] + l2[i] for i in range(len(l2))])
 
 #Maybe we will support the below. Putting them in so that we can better parse CSS but
 #actual implementation will only be later if ever.
@@ -395,4 +483,4 @@ class AttributeSelector(Selector):
 if __name__=="__main__":
     logging.basicConfig(level=logging.DEBUG)
     sp = SelectorParser()
-    print(sp.parse("div:hover.class[attr]::first-line"))
+    #print(sp.parse("div:hover.class[attr]::first-line"))

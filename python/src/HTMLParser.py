@@ -93,7 +93,7 @@ class Text:
         return self.text
 
 @dataclass
-class Element: #ELEMENTS HAVE A STYLE ATTRIBUTE!!!
+class Element: 
     def __init__(self, tag, attributes, parent):
         self.tag = tag
         self.attributes = attributes
