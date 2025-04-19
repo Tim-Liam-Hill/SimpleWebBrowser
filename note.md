@@ -717,6 +717,16 @@ Imagine being the smartest person in the world (ie: me) and simultaenously being
 
 I think I will get rid of my selector Sequence and make my Base Selector fulfill the same role. This will make things a bit easier. 
 
+IT IS TIME!! Long weekend which means I can smash out the rest of the things I want to do for chapter 6. This means:
+
+* Finish selector parser
+* Test new selectors
+* Finish CSS parser
+* Test CSS extraction and application
+* Do exercises
+
+Gonna make prio tuples of length 4 just in case we want to explicitly put file order and inline style values in the prio
+
 ----
 
 6.4 -> In progress

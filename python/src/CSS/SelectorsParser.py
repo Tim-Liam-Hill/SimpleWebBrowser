@@ -19,10 +19,6 @@ class States(Enum):
     SEQUENCE_PSEUDO_CLASS_START = "sequence_pseduo_class_start"
     SEQUENCE_PSEUDO_CLASS = "sequence_pseduo_class"
 
-
-
-    
-
     UNSUPPORTED_SYMBOL = "unsupported symbol"
 
 DEFAULT_TRANSITION = "default"

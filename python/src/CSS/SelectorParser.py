@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from src.HTMLParser import Element
 from enum import Enum, unique
+import logging
+logger = logging.getLogger(__name__)
 
 @unique
 class States(Enum):
@@ -91,8 +93,20 @@ class SelectorParser:
 
     def getBase(self,text):
         '''Given a string representing some simple selector, determines if this selector is a tag, class or ID selector and returns an object of the appropriate class'''
+        logger.debug("Creating base case from string {}".format(text))
 
-        pass 
+        if len(text) == 0:
+            raise ValueError("Cannot have an empty string for base selector")
+        
+        match text[0]:
+            case "*":
+                return UniversalSelector(None)
+            case "#":
+                return IDSelector(text[1:], None)
+            case ".":
+                return ClassSelector(text[1:], None)
+            case _:
+                return TagSelector(text,None)
 
     def handleAccept(self,text, state, elem):
         '''Given the state to be accepted, returns the new node to be created or throws the appropriate error message
@@ -159,11 +173,16 @@ class TagSelector(Selector):
     def __eq__(self, value):
         if not isinstance(value, TagSelector):
             return False 
-        return self.tag == value.tag and self.priority == value.priority and self.child == value.child
+        return self.tag == value.tag and self.getPrio() == value.getPrio() and self.child == value.child
+
+    def getPrio(self):
+        t = list(self.child.getPrio() if self.child != None else (0,0,0,0))
+        t[3] += 1
+        return tuple(t)
 
 class ClassSelector(Selector):
     def __init__(self,val, child):
-        self.val = val 
+        self.val = val[1:] if val[0] == "." else val 
         self.child = child
 
     def matches(self,node): #ugly nesting I know
@@ -184,12 +203,17 @@ class ClassSelector(Selector):
     def __eq__(self, value):
         if not isinstance(value, ClassSelector):
             return False 
-        return self.val == value.val and self.priority == value.priority and self.child == value.child
+        return self.val == value.val and self.getPrio() == value.getPrio() and self.child == value.child
+
+    def getPrio(self):
+        t = list(self.child.getPrio() if self.child != None else (0,0,0,0))
+        t[2] += 1
+        return tuple(t)
 
 class IDSelector(Selector):
 
     def __init__(self, val, child):
-        self.val = val 
+        self.val = val[1:] if val[0] == "#" else val 
         self.child = child
 
     def matches(self, node): #Case sensitive match per https://developer.mozilla.org/en-US/docs/Web/CSS/ID_selectors
@@ -208,8 +232,12 @@ class IDSelector(Selector):
     def __eq__(self, value):
         if not isinstance(value, IDSelector):
             return False 
-        return self.val == value.val and self.child == value.child
+        return self.val == value.val and self.child == value.child and self.getPrio() == value.getPrio()
 
+    def getPrio(self):
+        t = list(self.child.getPrio() if self.child != None else (0,0,0,0))
+        t[1] += 1
+        return tuple(t)
 class UniversalSelector(Selector):
 
     def __init__(self,  child):
@@ -225,7 +253,11 @@ class UniversalSelector(Selector):
         return "Universal Seletor Child: {}".format(self.child)
     
     def __eq__(self, value):
-        return isinstance(value, UniversalSelector) and self.child == value.child
+        return isinstance(value, UniversalSelector) and self.child == value.child and self.getPrio() == value.getPrio()
+
+    def getPrio(self):
+        return self.child.getPrio() if self.child != None else (0,0,0,0)
+
 
 
 # Combinator Selectors
@@ -313,3 +345,7 @@ class AttributeSelector(Selector):
     
     def __eq__(self, value):
         return isinstance(value, AttributeSelector)
+
+
+if __name__=="__main__":
+    logging.basicConfig(level=logging.DEBUG)

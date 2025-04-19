@@ -263,5 +263,5 @@ def style(node, rules):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     window = tkinter.Tk()
-    url = URLHandler()
+    #TODO: implement stup
 
