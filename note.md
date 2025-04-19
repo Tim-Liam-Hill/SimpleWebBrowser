@@ -725,8 +725,41 @@ IT IS TIME!! Long weekend which means I can smash out the rest of the things I w
 * Test CSS extraction and application
 * Do exercises
 
-Gonna make prio tuples of length 4 just in case we want to explicitly put file order and inline style values in the prio
+So I do need to think about how I will implement the combinators. Not going to worry about efficiency right now, just want it to be correct. Once unit tests are up and running maybe I'll return when performance is needed. 
 
+Gonna make prio tuples of length 4 just in case we want to explicitly put file order and inline style values in the prio.
+
+So for base selectors, the order in which they actually appear in the linked list is reversed. That is to say, ```div.class#id``` would actually give a list like (ID) => (Class) => (Div). I think the same thing actually works here since when we get a node we will test first if it matches us, THEN we go up a level and test whether our parent matches the expected parent. 
+
+I should probably try and avoid leaving rude comments in my code but then again, it is MY code.
+
+Here is an interesting algorithm for the Selectors parser:
+
+* We get everything that will be in a selector (ie: go until we hit space, >, ~, + or ,)
+* we push new selectors onto a queue
+* when we finish parsing OR when we hit a comma, we navigate the queue from right to left
+* we expect a pattern of 'base' 'combinator' 'base' 'combinator' 'base' ie: there must be exactly 1 more base than combinator
+* recursively do this: get one base. If beginning of array return it
+* if there is combinator, make base to right its child and call func with different index to get parent (which will be a base in the base case)
+
+does that make sense? No? Lemme do a diagram (on the off chance someone reads this or I need it later):
+
+```
+.class  span > #beans {}
+
+.class  span > #beans {}
+
+[Class, descendant, Tag, child, ID]
+[Class, descendant, Tag, child, ID]
+[Class, descendant, Tag, Child(parent=None,child=ID)]
+[Class, Descendant(parent=None,child=Tag),Child(parent=None,child=ID)]
+now the other way and add parents
+[Descendant(parent=Class,child=Tag),Child(parent=None,child=ID)]
+[Child(parent=Descendant(parent=Class,child=Tag),child=ID)]
+Which is as expected per unit tests
+```
+
+Not even sure I need a crazy DFA for this -> actually I do, just to make sure I make the right combinator class and handle errors. 
 ----
 
 6.4 -> In progress

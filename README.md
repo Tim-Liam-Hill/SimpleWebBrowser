@@ -81,9 +81,10 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * [Understand and cleanup imports](https://towardsdatascience.com/how-to-fix-modulenotfounderror-and-importerror-248ce5b69b1c/)
 * [Join the discussion](https://github.com/browserengineering/book/discussions)
 * center tag and center text
-* Preformatted tags.
+* Preformatted tags (doing)
 * Nested CSS selector
 * Move Element and Text classes into a different folder.
+* Make concrete class for DFAs
 
 # BUGS
 

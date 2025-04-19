@@ -183,6 +183,7 @@ class TestSelector(unittest.TestCase):
         self.assertTrue(NextSiblingSelector(ClassSelector("dull",None),ClassSelector("dark",None)).matches(pc4))
         self.assertTrue(NextSiblingSelector(ClassSelector("dark",None),ClassSelector("dull",None)).matches(pc3))
         self.assertTrue(NextSiblingSelector(NextSiblingSelector(ClassSelector("dark",None),ClassSelector("dull",None)),ClassSelector("dark",None)).matches(pc4))
+        self.assertTrue(NextSiblingSelector(NextSiblingSelector(NextSiblingSelector(ClassSelector("bright",None),ClassSelector("dark",None)),ClassSelector("dull",None)),ClassSelector("dark",None)).matches(pc4))
         self.assertTrue(DescendantSelector(NextSiblingSelector(ClassSelector("bright",None),ClassSelector("dark",None)),TagSelector("ul",None)).matches(pc2cc))
         self.assertFalse(ChildSelector(NextSiblingSelector(ClassSelector("bright",None),ClassSelector("dark",None)),TagSelector("ul",None)).matches(pc2cc))
         self.assertFalse(NextSiblingSelector(ClassSelector("dark",None),TagSelector("p",None)).matches(pc2c))

@@ -29,7 +29,6 @@ class States(Enum):
     PSEUDO_BAD_BRACKET = "Cannot have [ immediately after :"
     PSEUDO_ELEMENT_EXTRA_COLON = "Cannot have a sequence of 3 colons"
 
-
 DEFAULT_TRANSITION = "default"
 ACCEPT ="accept"
 NEXT = "next"
@@ -139,9 +138,6 @@ class SelectorParser:
             case _:
                 raise ValueError(state)
             
-
-        
-
 class Selector(ABC):
     '''The base class all Selectors inherit'''
 
@@ -263,6 +259,7 @@ class IDSelector(Selector):
         t = list(self.child.getPrio() if self.child != None else (0,0,0,0))
         t[1] += 1
         return tuple(t)
+
 class UniversalSelector(Selector):
 
     def __init__(self,  child):
@@ -282,8 +279,6 @@ class UniversalSelector(Selector):
 
     def getPrio(self):
         return self.child.getPrio() if self.child != None else (0,0,0,0)
-
-
 
 # Combinator Selectors
 
