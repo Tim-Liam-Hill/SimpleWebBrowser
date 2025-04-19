@@ -19,6 +19,7 @@ class States(Enum):
     ATTRIBUTE = "attribute" #not sure to what extent I will support these but will throw them in anyway
     ATTRIBUTE_QUOTE1 = "attribute_quote1"
     ATTRIBUTE_QUOTE2 = "attribute_quote2"
+    ATTRIBUTE_AFTER = "attribute_after"
 
     PSEUDO_CLASS_START = "pseudo_class_start"
     PSEUDO_CLASS = "pseudo_class"
@@ -36,7 +37,7 @@ NEXT = "next"
 DFA = {
     "start": States.START,
     "states": {
-        States.START: { "@":{ACCEPT:States.BAD_START}, ":":{ACCEPT:States.PSEUDO_CLASS_START}, 
+        States.START: { "@":{ACCEPT:States.BAD_START}, ":":{NEXT:States.PSEUDO_CLASS_START}, 
                 "[": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION:{NEXT:States.BASE},
                 "]": {ACCEPT: States.BAD_START}, "*": {NEXT: States.UNIVERSAL}
                 }, 
@@ -44,17 +45,21 @@ DFA = {
         States.UNIVERSAL:{ ".": {ACCEPT: States.UNIVERSAL, NEXT: States.BASE}, "#":{ACCEPT: States.UNIVERSAL, NEXT: States.BASE}, "[": {ACCEPT: States.UNIVERSAL, NEXT: States.ATTRIBUTE},
             ":": {ACCEPT: States.UNIVERSAL,NEXT: States.PSEUDO_CLASS_START}, DEFAULT_TRANSITION: {ACCEPT: States.UNIVERSAL_BAD_FOLLOW}, },
 
-        States.BASE: {DEFAULT_TRANSITION:{NEXT:States.BASE}, ":":{NEXT:States.PSEUDO_CLASS_START},"[": {NEXT: States.ATTRIBUTE}},
+        States.BASE: {".": {ACCEPT: States.BASE, NEXT: States.BASE}, "#": {ACCEPT: States.BASE, NEXT: States.BASE}, DEFAULT_TRANSITION:{NEXT:States.BASE}, ":":{ACCEPT: States.BASE,NEXT:States.PSEUDO_CLASS_START},"[": {ACCEPT: States.BASE,NEXT: States.ATTRIBUTE}},
     
-        States.ATTRIBUTE: {"]": {ACCEPT: States.ATTRIBUTE, NEXT: States.START},"\"":{NEXT:States.ATTRIBUTE_QUOTE1}, "'":{NEXT:States.ATTRIBUTE_QUOTE2},
+        States.ATTRIBUTE: {"]": {NEXT: States.ATTRIBUTE_AFTER},"\"":{NEXT:States.ATTRIBUTE_QUOTE1}, "'":{NEXT:States.ATTRIBUTE_QUOTE2},
                              DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE}},
+        States.ATTRIBUTE_AFTER: { "@":{ACCEPT:States.BAD_START}, ":":{ACCEPT:States.ATTRIBUTE_AFTER,NEXT:States.PSEUDO_CLASS_START}, 
+                "[": {ACCEPT:States.ATTRIBUTE_AFTER,NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION:{ACCEPT:States.ATTRIBUTE_AFTER,NEXT:States.BASE},
+                "]": {ACCEPT: States.BAD_START}, "*": {ACCEPT:States.ATTRIBUTE_AFTER,NEXT: States.UNIVERSAL}
+                },
         States.ATTRIBUTE_QUOTE1: {"\"": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE_QUOTE1}},
         States.ATTRIBUTE_QUOTE2: {"'": {NEXT: States.ATTRIBUTE}, DEFAULT_TRANSITION: {NEXT: States.ATTRIBUTE_QUOTE2}},
     
         States.PSEUDO_CLASS_START:{":":{NEXT: States.PSEUDO_ELEMENT_START},DEFAULT_TRANSITION:{NEXT:States.PSEUDO_CLASS}, "]": {ACCEPT: States.PSEUDO_BAD_BRACKET}},
         States.PSEUDO_CLASS: {":":{ACCEPT: States.PSEUDO_CLASS, NEXT: States.PSEUDO_CLASS_START},"[":{ACCEPT: States.PSEUDO_CLASS,NEXT:States.ATTRIBUTE},
                               DEFAULT_TRANSITION: {NEXT:States.PSEUDO_CLASS}, ".":{ACCEPT:States.PSEUDO_CLASS, NEXT: States.BASE},"#":{ACCEPT:States.PSEUDO_CLASS, NEXT: States.BASE}},
-        States.PSEUDO_ELEMENT_START: {":":{ACCEPT: States.PSEUDO_ELEMENT_EXTRA_COLON},"[":{ACCEPT: States.PSEUDO_BAD_BRACKET},DEFAULT_TRANSITION: {States.PSEUDO_ELEMENT}},
+        States.PSEUDO_ELEMENT_START: {":":{ACCEPT: States.PSEUDO_ELEMENT_EXTRA_COLON},"[":{ACCEPT: States.PSEUDO_BAD_BRACKET},DEFAULT_TRANSITION: {NEXT:States.PSEUDO_ELEMENT}},
         States.PSEUDO_ELEMENT: {":":{ACCEPT: States.PSEUDO_ELEMENT, NEXT: States.PSEUDO_CLASS_START},"[":{ACCEPT: States.PSEUDO_ELEMENT,NEXT:States.ATTRIBUTE},
                                 DEFAULT_TRANSITION: {NEXT: States.PSEUDO_ELEMENT},".":{ACCEPT:States.PSEUDO_ELEMENT, NEXT: States.BASE},"#":{ACCEPT:States.PSEUDO_ELEMENT, NEXT: States.BASE}},
     }
@@ -76,22 +81,27 @@ class SelectorParser:
         state = DFA["start"]
         states = DFA["states"] #less typing needed when doing this
 
+        if len(s) == 0:
+            raise ValueError("selector cannot have length 0")
+
         for char in s: 
             if char in states[state]:
                 if ACCEPT in states[state][char]:
-                    elem = self.handleAccept(text, states[state][char][ACCEPT], elem)
+                    elem= self.handleAccept(text, states[state][char][ACCEPT], elem)
+                    text = ""
                 text += char 
                 state = states[state][char][NEXT]
             else: 
                 text += char 
-                states = states[state][DEFAULT_TRANSITION][NEXT]
+                state = states[state][DEFAULT_TRANSITION][NEXT]
 
         
         #Accept one last time to ensure we don't 'lose' a selector. Also helps throw additional errors as needed
         #if the state we end on doesn't have an Accept state then that is a sign something has gone wrong. 
         return self.handleAccept(text, state, elem)
+    
 
-    def getBase(self,text):
+    def getBase(self,text, child):
         '''Given a string representing some simple selector, determines if this selector is a tag, class or ID selector and returns an object of the appropriate class'''
         logger.debug("Creating base case from string {}".format(text))
 
@@ -100,21 +110,37 @@ class SelectorParser:
         
         match text[0]:
             case "*":
-                return UniversalSelector(None)
+                return UniversalSelector(child)
             case "#":
-                return IDSelector(text[1:], None)
+                return IDSelector(text[1:], child)
             case ".":
-                return ClassSelector(text[1:], None)
+                return ClassSelector(text[1:], child)
             case _:
-                return TagSelector(text,None)
+                return TagSelector(text,child)
 
     def handleAccept(self,text, state, elem):
-        '''Given the state to be accepted, returns the new node to be created or throws the appropriate error message
+        '''Given the state to be accepted, returns the new node to be created and new text value or throws the appropriate error message
         
         The created node will have its child elem set correctly already.
         '''
 
-        pass 
+        logger.debug("Accepting state {} with text: {} and child: ".format(state,text, elem))
+
+
+        match state:
+            case States.UNIVERSAL | States.BASE:
+                return self.getBase(text, elem)
+            case States.ATTRIBUTE_AFTER: #if ending on attribute we would be in state attribute after, so need to accept that
+                return AttributeSelector(text[1:len(text)-1], elem)
+            case States.PSEUDO_CLASS:
+                return PseudoClassSelector(text[1:], elem)
+            case States.PSEUDO_ELEMENT:
+                return PseudoElementSelector(text[2:], elem)
+            case _:
+                raise ValueError(state)
+            
+
+        
 
 class Selector(ABC):
     '''The base class all Selectors inherit'''
@@ -168,7 +194,7 @@ class TagSelector(Selector):
         return False
     
     def __repr__(self):
-        return "TagSelector: {} Child: {}".format(self.tag, self.child)
+        return "TagSelector: {} Child ({})".format(self.tag, self.child)
     
     def __eq__(self, value):
         if not isinstance(value, TagSelector):
@@ -198,7 +224,7 @@ class ClassSelector(Selector):
         return False
     
     def __repr__(self):
-        return "ClassSelector: {} Child: {}".format(self.val, self.child)
+        return "ClassSelector: {} Child ({})".format(self.val, self.child)
     
     def __eq__(self, value):
         if not isinstance(value, ClassSelector):
@@ -227,7 +253,7 @@ class IDSelector(Selector):
         return False
     
     def __repr__(self):
-        return "IDSelector: {} Child: {}".format(self.val, self.child)
+        return "IDSelector: {} Child ({})".format(self.val, self.child)
     
     def __eq__(self, value):
         if not isinstance(value, IDSelector):
@@ -250,7 +276,7 @@ class UniversalSelector(Selector):
         return isinstance(node,Element)
     
     def __repr__(self):
-        return "Universal Seletor Child: {}".format(self.child)
+        return "Universal Seletor Child ({})".format(self.child)
     
     def __eq__(self, value):
         return isinstance(value, UniversalSelector) and self.child == value.child and self.getPrio() == value.getPrio()
@@ -308,44 +334,65 @@ class SubsequentSiblingSelector(Selector):
 #actual implementation will only be later if ever.
 
 class PseudoClassSelector(Selector): 
-    def __init__(self, val):
-        pass 
+    def __init__(self, val, child):
+        self.val = val 
+        self.child = child
 
     def matches(self, node):
-        return isinstance(node, PseudoClassSelector)
+        return False
     
     def __repr__(self):
-        return "PsuedoClassSelector"
+        return "PseudoClassSelector: {} Child: ({})".format(self.val, self.child)
     
     def __eq__(self, value):
-        return isinstance(value, PseudoClassSelector)
+        return isinstance(value, PseudoClassSelector) and self.val == value.val and self.getPrio() == value.getPrio()
+
+    def getPrio(self):
+        t = list(self.child.getPrio() if self.child != None else (0,0,0,0))
+        t[2] += 1
+        return tuple(t)
 
 class PseudoElementSelector(Selector):
-    def __init__(self, val, prio):
-        pass 
+    def __init__(self, val, child):
+        self.val = val 
+        self.child = child
 
     def matches(self, node):
-        return isinstance(node, PseudoElementSelector)
+        return False
     
     def __repr__(self):
-        return "PsuedoElementSelector"
+        return "PseudoElementSelector: {} Child: ({})".format(self.val, self.child)
     
     def __eq__(self, value):
-        return isinstance(value, PseudoElementSelector)
+        return isinstance(value, PseudoElementSelector) and self.val == value.val and self.getPrio() == value.getPrio()
+
+    def getPrio(self):
+        t = list(self.child.getPrio() if self.child != None else (0,0,0,0))
+        t[3] += 1
+        return tuple(t)
 
 class AttributeSelector(Selector): 
-    def __init__(self, val):
-        pass 
+    def __init__(self, val, child):
+        self.val = val 
+        self.child = child
 
     def matches(self,node):
+        #TODO: implement
         return False 
     
     def __repr__(self):
-        return "AttributeSelector"
+        return "AttributeSelector: {} Child ({})".format(self.val, self.child)
     
     def __eq__(self, value):
-        return isinstance(value, AttributeSelector)
+        return isinstance(value, AttributeSelector) and self.val == value.val and self.child == value.child
+    
+    def getPrio(self):
+        t = list(self.child.getPrio() if self.child != None else (0,0,0,0))
+        t[2] += 1
+        return tuple(t)
 
 
 if __name__=="__main__":
     logging.basicConfig(level=logging.DEBUG)
+    sp = SelectorParser()
+    print(sp.parse("div:hover.class[attr]::first-line"))

@@ -1,6 +1,7 @@
 from src.HTMLParser import HTMLParser
 import unittest
 
+print("Testing Layout functionality")
 
 class TestHTMLParser(unittest.TestCase):
     '''Tests the functionality of The various layout types implemented

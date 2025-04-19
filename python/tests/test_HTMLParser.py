@@ -2,6 +2,8 @@ from src.HTMLParser import HTMLParser
 import unittest
 import os
 
+print("Testing HTML Parsing")
+
 class TestHTMLParser(unittest.TestCase):
     HTML_RELATIVE_DIR = './htmlparser_test_cases'
 
@@ -13,7 +15,7 @@ class TestHTMLParser(unittest.TestCase):
 
         for file_name in file_list:
             file_path = os.path.join(test_dir, file_name)
-            print('Testing {}'.format(file_name))
+            #print('Testing {}'.format(file_name))
             with open(file_path, 'r') as file:
                 content = file.read()
                 HTMLParser(content).parse()

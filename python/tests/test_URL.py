@@ -1,6 +1,8 @@
 from src.URLHandler import URLHandler
 import unittest
 
+print("Testing URL extraction and validation")
+
 class TestURL(unittest.TestCase):
     
     def test_extractScheme(self):

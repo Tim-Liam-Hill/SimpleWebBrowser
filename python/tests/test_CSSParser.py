@@ -2,6 +2,7 @@
 # from src.HTMLParser import Element
 # import unittest
 
+print("Testing CSS Parsing")
 
 # class TestCSSParser(unittest.TestCase):
 #     '''Ensure that we parse CSS files correctly according to the subset of CSS we wish to support
