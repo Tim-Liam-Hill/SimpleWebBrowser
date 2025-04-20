@@ -759,7 +759,7 @@ now the other way and add parents
 Which is as expected per unit tests
 ```
 
-Not even sure I need a crazy DFA for this -> actually I do, just to make sure I make the right combinator class and handle errors. 
+Not even sure I need a DFA for this -> actually I do, just to make sure I make the right combinator class and handle errors. 
 ----
 
 6.4 -> In progress

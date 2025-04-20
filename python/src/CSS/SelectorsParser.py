@@ -18,7 +18,6 @@ class States(Enum):
 
     MULTI = "multi"
     MULTI_INVALID ="invalid ','"
-    POST_MULTI = "post multi"
 
 
 DEFAULT_TRANSITION = "default"
@@ -31,11 +30,11 @@ DFA = {
     "states": {
         States.SELECTOR: {DEFAULT_TRANSITION: {NEXT:States.SELECTOR}, " ":{ACCEPT:States.SELECTOR, NEXT:States.DESCENDANT},
                         ">":{ACCEPT:States.SELECTOR, NEXT:States.CHILD}, "~":{ACCEPT:States.SELECTOR, NEXT:States.SUBSEQUENT_SIB},
-                           "+":{ACCEPT:States.SELECTOR, NEXT:States.NEXT_SIB},",":{ACCEPT:States.MULTI, NEXT:States.POST_MULTI}},
-        States.POST_MULTI: {" ":{NEXT:States.POST_MULTI},">":{ACCEPT:States.CHILD_INVALID}, "~":{ACCEPT:States.SUBSEQUENT_SIB_INVALID},
-                           "+":{ACCEPT:States.NEXT_SIB_INVALID},",":{ACCEPT:States.MULTI_INVALID}, DEFAULT_TRANSITION: {ACCEPT: States.POST_MULTI, NEXT: States.SELECTOR}},
+                           "+":{ACCEPT:States.SELECTOR, NEXT:States.NEXT_SIB},",":{ACCEPT:States.SELECTOR, NEXT:States.MULTI}},
+        States.MULTI: {" ":{NEXT:States.MULTI},">":{ACCEPT:States.CHILD_INVALID}, "~":{ACCEPT:States.SUBSEQUENT_SIB_INVALID},
+                           "+":{ACCEPT:States.NEXT_SIB_INVALID},",":{ACCEPT:States.MULTI_INVALID}, DEFAULT_TRANSITION: {ACCEPT: States.MULTI, NEXT: States.SELECTOR}},
         States.DESCENDANT: {" ":{NEXT:States.DESCENDANT},">":{NEXT:States.CHILD}, "~":{NEXT:States.SUBSEQUENT_SIB},
-                           "+":{NEXT:States.NEXT_SIB},",":{ACCEPT:States.MULTI,NEXT:States.POST_MULTI}, DEFAULT_TRANSITION: {ACCEPT: States.DESCENDANT, NEXT: States.SELECTOR}},
+                           "+":{NEXT:States.NEXT_SIB},",":{NEXT:States.MULTI}, DEFAULT_TRANSITION: {ACCEPT: States.DESCENDANT, NEXT: States.SELECTOR}},
         States.CHILD: {" ":{NEXT:States.CHILD},">":{ACCEPT:States.CHILD_INVALID}, "~":{ACCEPT:States.SUBSEQUENT_SIB_INVALID},
                            "+":{ACCEPT:States.NEXT_SIB_INVALID},",":{ACCEPT:States.MULTI_INVALID}, DEFAULT_TRANSITION: {ACCEPT: States.CHILD, NEXT: States.SELECTOR}},
         States.NEXT_SIB: {" ":{NEXT:States.NEXT_SIB},">":{ACCEPT:States.CHILD_INVALID}, "~":{ACCEPT:States.SUBSEQUENT_SIB_INVALID},
@@ -150,4 +149,4 @@ class SelectorsParser:
 if __name__=="__main__":
     logging.basicConfig(level=logging.DEBUG)
     sp = SelectorsParser()
-    print(sp.parse("div.class > span#id"))
+    print(sp.parse("div.class > span#id, #id"))
