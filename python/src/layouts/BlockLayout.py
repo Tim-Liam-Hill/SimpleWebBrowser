@@ -1,7 +1,7 @@
-from layouts.Layout import Layout
-from layouts.LayoutConstants import LayoutTypes, DrawRect, VSTEP
-from layouts.InlineLayout import InlineLayout
-from HTMLParser import Element
+from src.layouts.Layout import Layout
+from src.layouts.LayoutConstants import LayoutTypes, DrawRect, VSTEP
+from src.layouts.InlineLayout import InlineLayout
+from src.HTMLParser import Element
 
 class BlockLayout(Layout):
     '''The implementation for "block" css display property'''

@@ -1,10 +1,10 @@
 import tkinter
-from HTMLParser import Element, Text
+from src.HTMLParser import Element, Text
 import tkinter.font
 import logging
 from dataclasses import dataclass
-from layouts.LayoutConstants import LayoutTypes, DrawRect, DrawText, VSTEP, HSTEP, get_font,DEFAULT_LEADING
-from layouts.Layout import Layout
+from src.layouts.LayoutConstants import LayoutTypes, DrawRect, DrawText, VSTEP, HSTEP, get_font,DEFAULT_LEADING
+from src.layouts.Layout import Layout
 logger = logging.getLogger(__name__)
 
 @dataclass 

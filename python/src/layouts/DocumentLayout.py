@@ -1,4 +1,4 @@
-from layouts.BlockLayout import BlockLayout
+from src.layouts.BlockLayout import BlockLayout
 
 
 class DocumentLayout: #edge case that doesn't need to inherit everything from Layout

@@ -1,14 +1,14 @@
 import tkinter
 import tkinter.font
-from HTMLLayout import paint_tree, style
-from URLHandler import URLHandler
-from HTMLParser import Element, HTMLParser, print_tree
+from src.HTMLLayout import paint_tree, style
+from src.URLHandler import URLHandler
+from src.HTMLParser import Element, HTMLParser, print_tree
 import sys
-from CSS.CSSParser import CSSParser, cascade_priority
+from src.CSS.CSSParser import CSSParser, cascade_priority
 import logging
 import os 
-from Utils import tree_to_list
-from layouts.DocumentLayout import DocumentLayout
+from src.Utils import tree_to_list
+from src.layouts.DocumentLayout import DocumentLayout
 logger = logging.getLogger(__name__)
 
 INIT_WIDTH, INIT_HEIGHT = 800, 600
@@ -43,7 +43,8 @@ class Browser:
         self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
         self.tokens = []
         self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
-        
+        self.css_parser = CSSParser()
+
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
         self.window.bind("<Up>", self.scrollup)
@@ -57,7 +58,7 @@ class Browser:
         logger.info("Loading default Browser CSS")
         
         try:
-            self.defaultCSS = CSSParser(open(f'{CURR_FILEPATH}/{DEFAULT_CSS_PATH}').read()).parse()
+            self.defaultCSS = self.css_parser.parse(open(f'{CURR_FILEPATH}/{DEFAULT_CSS_PATH}').read())
         except ValueError:
             logger.error("Could not open default browser css file")
         #--------------------------------------
@@ -98,7 +99,7 @@ class Browser:
                 logger.info(e)
                 logger.info("Skipping retrieving CSS for malformed URL")
                 continue
-            rules.extend(CSSParser(body).parse())
+            rules.extend(self.css_parser.parse(body))
 
         #Internal css
         style_nodes = [n for n in node_list 
@@ -106,8 +107,7 @@ class Browser:
         
         for node in style_nodes:
             if len(node.children) == 1: #just a sanity check, it is possible there are no children (empty style tag). Should never be more than one
-                print(CSSParser(node.children[0].text).parse())
-                rules.extend(CSSParser(node.children[0].text).parse())
+                rules.extend(self.css_parser.parse(node.children[0].text))
 
         return rules
 
