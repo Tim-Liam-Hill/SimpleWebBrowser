@@ -125,4 +125,14 @@ class TestCSSParser(unittest.TestCase):
     def test_parseStyleBody(self):
         '''Tests whether the 'style' attribute string of a node is parsed as expected'''
 
-        pass 
+        parser = CSSParser()
+
+        #empty body
+        self.assertEqual(parser.parseStyleBody(""), {})
+
+        #some values
+        self.assertEqual(parser.parseStyleBody("prop:val"),{"prop":"val"})
+        self.assertEqual(parser.parseStyleBody("prop:val;"),{"prop":"val"})
+        self.assertEqual(parser.parseStyleBody("prop:val;width:10px; height : 20em"),{"prop":"val","width":"10px","height":"20em"})
+
+        #don't care about the rest at present

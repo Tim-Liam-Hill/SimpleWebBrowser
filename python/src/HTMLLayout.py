@@ -26,7 +26,7 @@ def style(node, rules):
         for property, value in body.items():
             node.style[property] = value
     #style attributes should override stylesheets apparently
-    if isinstance(node, Element) and "style" in node.attributes and node.attributes["style"] != "":
+    if isinstance(node, Element) and "style" in node.attributes:
         parser = CSSParser()
         pairs = parser.parseStyleBody(node.attributes["style"])
         for property, value in pairs.items():

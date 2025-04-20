@@ -176,6 +176,9 @@ class CSSParser:
                 text += char 
                 state = DFA["states"][state][DEFAULT_TRANSITION][NEXT]
 
+        if curr_property != None:
+            rule[curr_property] = text.strip() #in case we don't end with a semi-colon
+
         return rule
 
 def cascade_priority(rule):

@@ -771,6 +771,8 @@ Let's write some test cases first to verify our new CSS engine produces expected
 
 So as I am testing my CSS parser I am coming back to a point I thought about a while ago, namely: I technically could mis-parse a value if that value is in the form func('}'). Still, There are very few functions that I can think of that would do this so I think I will only adjust the DFA if I come across enough instances that make it worth the time. 
 
+Goodness writing test cases takes time. Still, in the long run it is probably faster. One more set of tests to do then I can get back to exercises/functionality (as opposed to a rework).
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!
