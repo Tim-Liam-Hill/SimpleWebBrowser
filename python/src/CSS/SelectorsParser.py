@@ -100,7 +100,7 @@ class SelectorsParser:
                 queue.append(NextSiblingSelector(None,None))
                 return selectors, queue
             case States.SUBSEQUENT_SIB:
-                queue.append(NextSiblingSelector(None,None))
+                queue.append(SubsequentSiblingSelector(None,None))
                 return selectors, queue
             case States.MULTI:
                 selectors.append(self.squashCombinators(queue))

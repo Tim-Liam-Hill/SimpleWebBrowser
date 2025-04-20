@@ -4,7 +4,7 @@ import unittest
 
 print("Testing Selector Parsing")
 
-class TestSelector(unittest.TestCase):
+class TestSelectorParser(unittest.TestCase):
     '''Ensure that a sequence of one or more selectors not separated by whitespace is parsed correctly'''
 
 
