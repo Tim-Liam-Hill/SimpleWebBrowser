@@ -136,10 +136,11 @@ class CSSParser:
         The regular parse function expects a fully formatted css file ie: property-value pairs must only follow a valid 
         selector. This isn't the case for style attribute of a node so we handle that subset of parsing here. 
         '''
+        logger.info("Parsing explicit style attribute string {}".format(s))
         rule = {}
         text = "" 
         curr_property = None
-        state = DFA["start"]
+        state = States.PROPERTY
 
         for char in s: 
             if char in DFA["states"][state]:
@@ -154,8 +155,8 @@ class CSSParser:
                             rule[curr_property] = text.strip()
                             curr_property = None
                         case _: #Here I think we should be throwing errors.
-                            logger.debug("Unexpected accept state: only expected property value pairs")
-                            logger.debug("skipping parsing this rule")
+                            logger.warning("Unexpected accept state: only expected property value pairs")
+                            logger.warning("skipping parsing this rule")
                             return rule
                     text = ""
                 else: 
