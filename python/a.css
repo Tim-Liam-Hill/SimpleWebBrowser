@@ -1,9 +1,18 @@
-div {
+div{
     background-color: aqua;
-}
+}span{color:red;}
 
 /* A comment */
 
 #meow {
     font: 1em sans-serif;
+    border: 1em solid black;
+    font-size: large;
+}
+
+div[attr] > p::after, .container {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap-reverse;
+    justify-content: center;
 }

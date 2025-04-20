@@ -28,6 +28,9 @@ class States(Enum):
     RULE = "rule"
     VALUE_RULE = "value_rule" #handles the case where a value is followed by closing brace with no semi-colon
 
+    INVALID_BRACE_OPEN = "invalid opening brace"
+    INVALID_BRACE_CLOSE = "invalid closing brace"
+
 DEFAULT_TRANSITION = "default"
 ACCEPT ="accept"
 NEXT = "next"
@@ -53,11 +56,12 @@ DFA = {
     "start": States.OPEN,
     "states": {
         States.OPEN: {"\t":{NEXT:States.OPEN},"\n":{NEXT:States.OPEN}," ":{NEXT:States.OPEN}, 
-                 "/":{ACCEPT:States.DISCARD,NEXT:States.COMMENT_START},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.SELECTOR}},
+                 "/":{ACCEPT:States.DISCARD,NEXT:States.COMMENT_START},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.SELECTOR},
+                "{":{ACCEPT:States.INVALID_BRACE_OPEN, NEXT: States.OPEN},"}":{ACCEPT:States.INVALID_BRACE_CLOSE, NEXT: States.OPEN}},
         States.COMMENT_START: {"*":{NEXT:States.COMMENT_BODY},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.OPEN}},
         States.COMMENT_BODY: {"*":{NEXT:States.COMMENT_END}, DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
         States.COMMENT_END: {"/":{ACCEPT:States.DISCARD, NEXT:States.OPEN},DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
-        States.SELECTOR: {"{": {ACCEPT: States.SELECTOR,NEXT:States.PROPERTY}, DEFAULT_TRANSITION: {NEXT: States.SELECTOR}},
+        States.SELECTOR: {"{": {ACCEPT: States.SELECTOR,NEXT:States.PROPERTY}, "}":{ACCEPT:States.INVALID_BRACE_CLOSE, NEXT: States.OPEN}, DEFAULT_TRANSITION: {NEXT: States.SELECTOR}},
         States.PROPERTY: {";":{ACCEPT: States.DISCARD, NEXT: States.PROPERTY}, ":":{ACCEPT:States.PROPERTY,NEXT:States.VALUE},
                           "}":{ACCEPT:States.RULE,NEXT: States.OPEN},  DEFAULT_TRANSITION:{NEXT:States.PROPERTY}},
         States.VALUE: {";":{ACCEPT: States.VALUE, NEXT: States.PROPERTY},"}":{ACCEPT:States.VALUE_RULE, NEXT: States.OPEN}, 
@@ -100,6 +104,12 @@ class CSSParser:
                             curr_rule[curr_property] = text.strip()
                             curr_property = None
                         case States.RULE:
+                            rules += self.acceptRule(curr_selector,curr_rule)
+                            curr_selector = None 
+                            curr_rule = None
+                        case States.VALUE_RULE: 
+                            curr_rule[curr_property] = text.strip()
+                            curr_property = None
                             rules += self.acceptRule(curr_selector,curr_rule)
                             curr_selector = None 
                             curr_rule = None
@@ -177,6 +187,8 @@ if __name__ == "__main__":
 
     parser = CSSParser()
     path = ""
+
+    #print(parser.parse("div {width: 100px}\n/*I am a comment*/ p {background-color: red}"))
 
     if(len(sys.argv) != 2):
         path = "{}/../browser.css".format(os.path.dirname(os.path.abspath(__file__)))

@@ -69,7 +69,6 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * heading tags!!!!! REEEEEEEEEEE (just all the tags in general)
 * Currently the browser runs the HTML parser twice on first startup (not the http request because that is cached) likely due to the first tkinter config event. Make sure this doesn't happen when we switch libraries.
 * TODO: nice syntax highlighting for view source.
-* TODO: create new Tag for Script elements and handle them differently. Use similar handling for pre and code tags 
 * gitignore should ignore pycache (done)
 * env file for debugging (allow for debugging individual modules would be cool: this is what Hadoop/Spark/Hive/HBase do)
 * decide if/how to support external fonts (if that is in scope). It may be possible to create custom fonts dynamically??? 
@@ -82,9 +81,10 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * [Join the discussion](https://github.com/browserengineering/book/discussions)
 * center tag and center text
 * Preformatted tags (doing)
-* Nested CSS selector
+* Nested CSS selector (done)
 * Move Element and Text classes into a different folder.
 * Make concrete class for DFAs
+* make HTML parser handle errors more gracefully. Maybe rework the DFA there entirely at some point
 
 # BUGS
 

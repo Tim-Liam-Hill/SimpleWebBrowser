@@ -759,8 +759,17 @@ now the other way and add parents
 Which is as expected per unit tests
 ```
 
-Not even sure I need a DFA for this -> actually I do, just to make sure I make the right combinator class and handle errors. 
+Not even sure I need a DFA for this -> actually I do, just to make sure I make the right combinator class and handle errors.
+
+So I have done a lot of work on the CSS side of things. Before I get to finishing the CSS parser tests I am going to rework the new CSS engine into the existing code (which is more fun). in doing this I have realized I don't know all that much about python modules/scripts and how I am running my code is probably a bit weird. Teehee ~
 ----
+
+I NEED TO TEST INLINE STYLE ATTRIBUTE?!?!?! As in, our node has a 'style' attribute. I think this already works but still. SO something like: ```<div style="background-color: red">```
+
+I need to make sure whenever I use my new CSS parser I actually handle errors (instead of completely dying). 
+Let's write some test cases first to verify our new CSS engine produces expected results, THEN I can go about adding the other features. 
+
+So as I am testing my CSS parser I am coming back to a point I thought about a while ago, namely: I technically could mis-parse a value if that value is in the form func('}'). Still, There are very few functions that I can think of that would do this so I think I will only adjust the DFA if I come across enough instances that make it worth the time. 
 
 6.4 -> In progress
 

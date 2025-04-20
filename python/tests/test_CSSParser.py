@@ -1,150 +1,128 @@
 from src.CSS.CSSParser import CSSParser
 from src.CSS.SelectorParser import * 
-from src.HTMLParser import Element
+import os
 import unittest
 
 print("Testing CSS Parsing")
 
-# class TestCSSParser(unittest.TestCase):
-#     '''Ensure that we parse CSS files correctly according to the subset of CSS we wish to support
+#TODO: get a host of large CSS files from 'the wild', place them in a folder and just make sure we can handle them somewhat
+#That is to say, make sure they are the types of files we would want to parse without issue, then ensure no errors are thrown
+class TestCSSParser(unittest.TestCase):
+    '''Ensure that we parse CSS files correctly according to the subset of CSS we wish to support
     
-#     These tests are limited to CSS parsing and application to nodes, NOT to the actual functionality of how CSS 
-#     values affect a layout object (see layout tests for this). Tests are of 2 types: 1 is whether we extract values
-#     correctly and 2 is whether we apply values correctly.
-#     '''
+    These tests are limited to CSS parsing and application to nodes, NOT to the actual functionality of how CSS 
+    values affect a layout object (see layout tests for this). Tests are of 2 types: 1 is whether we extract values
+    correctly and 2 is whether we apply values correctly.
+    '''
 
-#         #TESTS RELATED TO CSS PARSING/EXTRACTING
+    RELATIVE_DIR = './cssparser_test_cases'
 
-#     def test_extractBasic(self):
-#         '''Tests whether the CSSParser can extract the expected set of rules for various selectors'''
+    def test_parse(self):
+        '''Tests whether the CSSParser can extract the expected set of rules for various selectors'''
+        parser = CSSParser()
 
-#         # #Empty Stylesheet
-#         # css = ""
-#         # css_rules = []
-#         # self.assertEqual(CSSParser(css).parse(), css_rules)
+        #Empty Stylesheet
+        self.assertEqual(parser.parse(""), [])
 
-#         # #Empty body
-#         # css = "body {}"
-#         # css_rules = [(TagSelector("body"), {})]
-#         # self.assertEqual(CSSParser(css).parse(), css_rules)
+        #Empty body
+        self.assertEqual(parser.parse("body {}"), [(TagSelector("body", None), {})])
         
-#         # #Simple Tag Selector
-#         # css = "div {width: 100px;}"
-#         # css_rules = [(TagSelector("div"), {'width':'100px'})]
-#         # self.assertEqual(CSSParser(css).parse(), css_rules)
+        #Non-EmptyRule
+        self.assertEqual(parser.parse("div {width: 100px;}"), [(TagSelector("div",None), {'width':'100px'})])
 
-#         # #Rule not ending in a semicolon
-#         # css = "div {width: 100px}"
-#         # css_rules = [(TagSelector("div"), {'width':'100px'})]
-#         # self.assertEqual(CSSParser(css).parse(), css_rules)
+        # #Rule not ending in a semicolon should still be accepted
+        self.assertEqual(parser.parse("div {width: 100px}"), [(TagSelector("div",None), {'width':'100px'})])
 
-#         # #CSS comments shouldn't impact code
-#         # css = "div {width: 100px}\n\\*I am a comment*\\ p {background-color: red}"
-#         # css_rules = [(TagSelector("div"), {'width':'100px'}), (TagSelector("p"),{'background-color':'red'})]
-#         # self.assertEqual(CSSParser(css).parse(), css_rules)
+        #CSS comments shouldn't impact code
+        css = "div {width: 100px}\n/*I am a comment*/ p {background-color: red}"
+        rules = [(TagSelector("div",None), {'width':'100px'}), (TagSelector("p",None),{'background-color':'red'})]
+        self.assertEqual(parser.parse(css), rules)
 
-#         # #Consecutive semicolons
-#         # css = "div {;;;;}"
-#         # self.assertEqual(CSSParser(css).parse(), [(TagSelector("div"), {})])
+        #Consecutive semicolons
+        self.assertEqual(parser.parse("div {;;;;}"), [(TagSelector("div",None), {})])
 
-#     def test_extractDescendants(self):
-#         '''Ensures that chains of various descendant selectors are extracted correctly'''
+        #spaces/tabs/newlines in between value/property pairs shouldnt reflect in their final values 
+        self.assertEqual(parser.parse(" div { width : 100px ; \tcolor\n:\n red;}"), [(TagSelector("div",None), {'width':'100px','color':'red'})])
 
-#         pass 
+        #consecutive rules
+        self.assertEqual(parser.parse("div {width: 100px;}span{color:red;}"), [(TagSelector("div",None), {'width':'100px'}),(TagSelector("span",None),{'color':'red'})])
 
-#     def test_extractSequence(self):
-#         '''Ensures sequences of various tags can be extracted correctly'''
+        #space separated value
+        self.assertEqual(parser.parse("div {border: 1em solid black;}"), [(TagSelector("div",None), {'border':'1em solid black'})])
 
-#         pass 
+        #Multiple property value pairs in a rule
+        self.assertEqual(parser.parse("#id.class{color: blue;font-size:large}"), [(ClassSelector("class",IDSelector("id",None)), {'color':'blue','font-size': 'large'})])
 
-#     def test_extracPseudoSelectors(self):
-#         '''Ensures the subset of PseudoSelectors supported are extracted correctly.'''
+        #multiple tags for the same rule
+        self.assertEqual(parser.parse("div,.class,#id{color:red;}"),[(TagSelector("div",None),{'color':'red'}),(ClassSelector("class",None),{'color':'red'}),(IDSelector("id",None),{'color':'red'})])
 
-#         pass
+        #at least one complex example
+        css = '''div{
+                    background-color: aqua;
+                }span{color:red;}
 
-#     def test_extractAttribute(self):
-#         pass 
+                /* A comment */
 
-#     def test_complexCases(self):
-#         '''Cases with multiple selectors used together'''
+                #meow {
+                    font: 1em sans-serif;
+                    border: 1em solid black;
+                    font-size: large;
+                }
 
-#         #div[value='arg'].class::after#id:hover > span {background-color: brown;}
+                div[attr] > p::after, .container {
+                    display: flex;
+                    flex-direction: column;
+                    flex-wrap: wrap-reverse;
+                    justify-content: center;
+                }'''
+        rules = [(TagSelector("div",None),{"background-color":"aqua"}),\
+                 (TagSelector("span",None),{"color":"red"}),\
+                 (IDSelector("meow",None),{"font":"1em sans-serif","border":"1em solid black","font-size":"large"}),\
+                 (ChildSelector(AttributeSelector("attr",TagSelector("div",None)),PseudoElementSelector("after",TagSelector("p",None))),\
+                  {"display":"flex","flex-direction":"column","flex-wrap":"wrap-reverse","justify-content":"center"}),\
+                  (ClassSelector("container",None),{"display":"flex","flex-direction":"column","flex-wrap":"wrap-reverse","justify-content":"center"})]
+        self.assertEqual(parser.parse(css),rules)
 
-#     def test_malformed(self):
-#         '''Tests whether the CSSParser can function if given malformed input'''
+        #Errors -> don't throw Exception
+        #As far as possible, the CSSParser should NOT throw errors. At most it should just print out (in debug) that it is 
+        #discarding something
 
-#         #Missing closing brace
-#         css = "div {width: 100px;"
-#         css_rules = []
-#         self.assertEqual(CSSParser(css).parse(), css_rules)
+        #selector only
+        self.assertEqual(parser.parse("div"),[])
 
-#         #Missing opening brace
-#         css = "div width: 100px;}"
-#         css_rules = []
-#         self.assertEqual(CSSParser(css).parse(), css_rules)
+        #body only 
+        self.assertEqual(parser.parse("{}"),[])
 
-#         #TODO: test with > followed by , (same for other non-space combinator symbols)
+        #second rule malformed 
+        self.assertEqual(parser.parse("div {width: 100px;} span{"), [(TagSelector("div",None), {'width':'100px'})])
 
+        #first rule malformed
+        self.assertEqual(parser.parse("{} div {width: 100px;}"), [(TagSelector("div",None), {'width':'100px'})])
+        self.assertEqual(parser.parse("} div {width: 100px;}"), [(TagSelector("div",None), {'width':'100px'})])
+        self.assertEqual(parser.parse("{ div {width: 100px;}"), [(TagSelector("div",None), {'width':'100px'})])
 
+        #missing closing brace. In this scenario we only care that we don't throw an exception
+        parser.parse("div{color:red")
 
-#     #TESTS RELATED TO SELECTORS
+        #TODO: add more cases
 
-#     def test_classSelector(self):
-#         '''Ensure that a class selector matches nodes correctly'''
+    def test_gracefulHandle(self):
+        '''Reads through a few stylesheets taken from random sites and ensures we don't throw errors'''
+        parser = CSSParser()
 
-#         # #no class attribute
-#         # self.assertFalse(ClassSelector("myClass", []).matches(Element("",{},None)))
+        test_dir = '{}/{}'.format(os.path.dirname(os.path.abspath(__file__)), TestCSSParser.RELATIVE_DIR)
+        file_list = [f for f in os.listdir(test_dir) if os.path.isfile(os.path.join(test_dir, f))]
 
-#         # #class attribute not matching 
-#         # self.assertFalse(ClassSelector("myClass", []).matches(Element("",{"class":"notMyClass"},None)))
+        for file_name in file_list:
+            file_path = os.path.join(test_dir, file_name)
+            #print('Testing {}'.format(file_name))
+            with open(file_path, 'r') as file:
+                content = file.read()
+                parser.parse(content)
 
-#         # #class attribute matching
-#         # self.assertTrue(ClassSelector("myClass", []).matches(Element("",{"class":"myClass"},None)))
+        pass 
 
-#         # #many classes none matching 
-#         # self.assertFalse(ClassSelector("myClass", []).matches(Element("",{"class":"beans toast coffee"},None)))
+    def test_parseStyleBody(self):
+        '''Tests whether the 'style' attribute string of a node is parsed as expected'''
 
-#         # #many classes 1 matching
-#         # self.assertTrue(ClassSelector("myClass", []).matches(Element("",{"class":"beans myClass coffee"},None)))
-
-#         # #many classes, ensure substring does not match
-#         # self.assertFalse(ClassSelector("myClass", []).matches(Element("",{"class":"beans myClassLonger coffee"},None)))
-
-#         # #test whitespaces don't cause non-matching
-#         # self.assertTrue(ClassSelector("myClass", []).matches(Element("",{"class":" \n beans \n  myClass  \t coffee"},None)))
-
-#     def test_tagSelector(self):
-#         pass 
-
-#     def test_IDSelector(self):
-#         pass
-#         #test no id
-#         # self.assertFalse(IDSelector("myID",[]).matches(Element("",{},None)))
-
-#         # #test id no matches 
-#         # self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"meow"},None)))
-
-#         # #test id exact match 
-#         # self.assertTrue(IDSelector("myID",[]).matches(Element("",{"id":"myID"},None)))
-
-#         # #test id doesn't match due to case 
-#         # self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"MyID"},None)))
-
-#         # #test id doesn't match due to substring 
-#         # self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"NOTmyID"},None)))
-
-#         # #test id does not match when trailing/leading whitespace
-#         # self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"\nmyID"},None)))
-#         # self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":" myID"},None)))
-#         # self.assertFalse(IDSelector("myID",[]).matches(Element("",{"id":"myID\t"},None)))
-
-
-#     def test_universalSelector(self):
-#         pass 
-
-#     def test_descendantSelector(self):
-#         pass
-    
-#     def test_attributeSelector(self):
-#         pass 
-
+        pass 

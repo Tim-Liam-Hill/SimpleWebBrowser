@@ -110,6 +110,7 @@ class Element:
 #TODO: mayhaps do this as a separate project at somepoint?
 #TODO: There is definitely a better/more elegant way to implement a lexer
 #TODO: this works well when HTML is well formatted (which it normally would be) but this should handle more malformed HTML
+#TODO: yeah this could use a slight rework later. 
 class HTMLParser:
     HEAD_TAGS = [
         "base", "basefont", "bgsound", "noscript",
@@ -214,9 +215,10 @@ class HTMLParser:
                 return
 
             #correction algorithm:
-            #we make sure the currnet closing tag matches the top tag on the stack
+            #we make sure the current closing tag matches the top tag on the stack
             #if it doesn't, pop current top of stack and save it for later (essentially closing it)
             #do this until we find a matching tag or error. Once done, add back deep copies of popped off tags
+            #TODO: if we error, just disregard the closing tag we were trying to add. This makes the algorithm a bit more robust
 
             stack = []
             while self.unfinished[-1].tag != tag[1:]:
