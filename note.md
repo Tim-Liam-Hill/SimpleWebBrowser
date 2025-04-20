@@ -773,6 +773,85 @@ So as I am testing my CSS parser I am coming back to a point I thought about a w
 
 Goodness writing test cases takes time. Still, in the long run it is probably faster. One more set of tests to do then I can get back to exercises/functionality (as opposed to a rework).
 
+AND WITH THAT THE REWORK IS COMPLETE!!!! HUZZAH!!!!!!!!!!
+Well, technically I need to start going over some files from the past and ensuring that implemented functionality is still there ... so let's do that now. I guess what we are actually doing at this stage is making sure our selectors work as anticipated (id selector, descendant etc).
+
+I have realized why my subscript no longer works or rather, why it is being placed at the top of the line as oppsed to at the bottom. It is because - actually I lied, I am not sure yet. I do think part of the issue is I am not calculating the baseline and offsets for a line properly. So let's see if I can fix that. 
+
+Problem is we are flushing on literally every word. Are our widths correct?? Yes. The problem could be this ```if not self.line```. If line=[] then this is always true. HMMMMMM!!!
+
+So I think I have found ein problem: take the below html: 
+
+``` 
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div>
+        <b>Hello</b> world! <sub>This</sub> is my <big>Very cool</big> sample <sup>html</sup>
+        A <small>small bunch of text</small> is a <i>very</i> <b>cool</b>
+        thing to have. If I put a lot of text inside this div will it overflow properly or stay on the same line? I am curious to find 
+        out.
+    </div>
+</body>
+</html>
+```
+
+This gives us a tree like the following:
+
+```
+DocumentLayout: max_width 776
+   BlockLayout: tag=html x=0 y=0 width=776 height=147.5
+     BlockLayout: tag=body x=0 y=0 width=776 height=147.5
+       BlockLayout: tag=div x=0 y=0 width=776 height=147.5
+         InlineLayout: x=0 y=0 width=0 height=38.75 text=NO_TEXT
+         InlineLayout: x=0 y=0 width=0 height=38.75 text=world!
+         InlineLayout: x=0 y=0 width=0 height=18.75 text=NO_TEXT
+         InlineLayout: x=0 y=0 width=0 height=38.75 text=is my
+         InlineLayout: x=0 y=0 width=0 height=85.0 text=NO_TEXT
+         InlineLayout: x=0 y=0 width=0 height=38.75 text=sample
+         InlineLayout: x=0 y=0 width=0 height=18.75 text=NO_TEXT
+         InlineLayout: x=0 y=0 width=0 height=38.75 text=
+         InlineLayout: x=0 y=0 width=0 height=62.5 text=NO_TEXT
+         InlineLayout: x=0 y=31.25 width=0 height=38.75 text=is a
+         InlineLayout: x=0 y=31.25 width=0 height=38.75 text=NO_TEXT
+         InlineLayout: x=0 y=31.25 width=0 height=38.75 text=NO_TEXT
+         InlineLayout: x=0 y=31.25 width=0 height=116.25 text=
+```
+
+The problem is the our InlineLayout recurses on its own children, but none of these InlineLayouts have children! So they all just place their one or two words relative to the baseline they see and return since they have no knowledge of their siblings.
+
+This represents a fundamental flow in our Layout Logic. Thankfully we have caught it now and should be able to fix it. The question is just how.
+
+Something I had thought about a little while back was to create a 'line' layout object/thingy. It is something that will apply to both divs and spans. How to do it though is another matter. 
+
+A question that comes up now is how does our browser handle cases like ```<div><b><div>meow hey there</div></b></div>``` -> well as it turns out. 
+
+```
+BLOCKLAYOUT children handling:
+
+for child in self.node.children:
+    if isinstance(child, Element) and child.tag in ["head","script","style","meta"]:
+        continue
+    next = self.createChild(child,prev)
+    self.children.append(next)
+    prev = next
+```
+
+So we know we need a 2 pass algorithm at least, and my tree is correct. A thought that comes to mind is delaying layout a lot further.
+
+After a short walk I believe I know what to do next. The BlockLayout needs to take the responsibility for laying out its children. That is to say, a the 'line' should belong to the Block Layout, not an Inline layout. the thing to take note of here is WIDTH AND HEIGHT PROPERTIES HAVE NO EFFECT ON INLINE LAYOUT ELEPHANTS!! That is the key to making this work. 
+
+The algorithm for BlockLayout will be something like: 
+* Iterate through my children
+* while inline, add it to my line
+* if block, flush a line, handle the block
+* carry on with my lines
+
+Need to think about this and draw it out a bit. Also: what happens if we have a block layout inside an inline layout?? 
+
+I probably have [some reading](https://www.w3.org/TR/CSS2/visuren.html#normal-flow) ahead of me.
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!

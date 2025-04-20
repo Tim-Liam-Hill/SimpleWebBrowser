@@ -79,7 +79,7 @@ class BlockLayout(Layout):
 
         prev = None
         for child in self.node.children:
-            if isinstance(child, Element) and child.tag in ["head"]:
+            if isinstance(child, Element) and child.tag in ["head","script","style","meta"]:
                 continue
             next = self.createChild(child,prev)
             self.children.append(next)

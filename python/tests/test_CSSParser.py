@@ -120,8 +120,6 @@ class TestCSSParser(unittest.TestCase):
                 content = file.read()
                 parser.parse(content)
 
-        pass 
-
     def test_parseStyleBody(self):
         '''Tests whether the 'style' attribute string of a node is parsed as expected'''
 

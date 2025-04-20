@@ -72,7 +72,9 @@ class Browser:
         rules = self.getCSSRules(self.root_node,url)
         style(self.root_node, sorted(rules, key=cascade_priority))
         self.createLayout()
-        #print_tree(self.document)
+        print_tree(self.root_node)
+        print('############')
+        print_tree(self.document)
         #print(self.display_list)
   
         self.draw()

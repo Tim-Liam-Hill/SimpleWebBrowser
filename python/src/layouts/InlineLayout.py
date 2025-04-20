@@ -136,11 +136,11 @@ class InlineLayout(Layout):
 
     def word(self, word, node):
 
-        font = self.getFont(word, node)
+        font = self.getFont(node)
         w = font.measure(word)
         if self.cursor_x + w >= self.getContentWidth(): #TODO: what if overflow set? Also: do we still need HSTEP?
             if not self.line and self.previous: 
-                #this will only happen if we are a span following on another span
+                #this will only happen if we are an inline following on another inline
                 #unless browser page is far too small in which case oops
                 self.y = self.previous.getY() + self.previous.getHeight()
                 self.cursor_y = 0
@@ -165,13 +165,12 @@ class InlineLayout(Layout):
         self.line.append((self.cursor_x, word, font, css_props))
         self.cursor_x += w + font.measure(" ")
 
-    def getFont(self, word, node):
+    def getFont(self, node):
         '''Used to create the font needed to render text, taking into account css properties'''
 
         weight = node.style["font-weight"]
         style = node.style["font-style"]
         family = node.style["font-family"]
-        color = node.style["color"]
         if style == "normal": style = "roman"
         size = int(float(node.style["font-size"][:-2]) * .75)
 
@@ -182,7 +181,7 @@ class InlineLayout(Layout):
 
     def flush(self):
         if not self.line: return
-        metrics = [font.metrics() for x, word, font, css_props in self.line] #like this
+        metrics = [font.metrics() for x, word, font, css_props in self.line]
         max_ascent = max([metric["ascent"] for metric in metrics])
         baseline = self.cursor_y +  DEFAULT_LEADING * max_ascent
         text_display_list = []
