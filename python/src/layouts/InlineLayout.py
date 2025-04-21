@@ -130,7 +130,7 @@ class InlineLayout(Layout):
         if isinstance(node, Text):
             for word in node.text.split(): #TODO: to stop trailing space isn't as simple as I thought: i need to know if we have a a next after us
                 self.word(word, node)
-        elif node.tag not in ["script","style", "head", "meta"]: #TODO: make this a global var somewhere
+        elif node.tag not in ["script","style", "head", "meta"]: #TODO: make this a global var somewhere. In well formed css this shouldn't be needed
             for child in node.children:
                 self.recurse(child)
 

@@ -85,6 +85,8 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Move Element and Text classes into a different folder.
 * Make concrete class for DFAs
 * make HTML parser handle errors more gracefully. Maybe rework the DFA there entirely at some point
+* stop inheriting background-color once we move away from tkinter
+* Implement paragraph spacing with default margin!!
 
 # BUGS
 
@@ -104,3 +106,13 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Basic animations (which might end up being doable Interestingly enough)
 * gifs 
 * Parse selectors [according to their official grammar](https://drafts.csswg.org/selectors/#grammar)
+
+# Official Docs
+
+A list of docs (not necessarily all the latest) that define HTML/CSS etc specifications. These docs are the official w3 docs, not anything like geeksforgeeks and the like.
+
+* https://html.spec.whatwg.org/multipage/
+* https://www.w3.org/TR/2009/CR-CSS2-20090908/visuren.html#visual-model-intro -> old but useful it seems
+* https://www.w3.org/TR/css-position-3/#intro -> for positioning if we want to get around to that. 
+* https://www.w3.org/TR/2009/CR-CSS2-20090908/box.html
+* https://www.w3.org/TR/2009/CR-CSS2-20090908/visudet.html#containing-block-details

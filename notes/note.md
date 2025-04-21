@@ -852,6 +852,82 @@ Need to think about this and draw it out a bit. Also: what happens if we have a 
 
 I probably have [some reading](https://www.w3.org/TR/CSS2/visuren.html#normal-flow) ahead of me.
 
+"Block-level elements (except for display 'table' elements, which are described in a later chapter) generate a principal block box that contains either only block boxes or only inline boxes." [source](https://www.w3.org/TR/2009/CR-CSS2-20090908/visuren.html#visual-model-intro)
+
+"In other words: if a block box (such as that generated for the DIV above) has another block box or run-in box inside it (such as the P above), then we force it to have only block boxes and run-in boxes inside it." -> seems I should implement anonymous block boxes from an earlier chapter.
+
+"When an inline box contains a block box, the inline box (and its inline ancestors within the same line box) are broken around the block. The line boxes before the break and after the break are enclosed in anonymous boxes, and the block box becomes a sibling of those anonymous boxes. When such an inline box is affected by relative positioning, the relative positioning also affects the block box." 
+
+## HTMLLayout Rework (again lol)
+
+so, things I will implement:
+* anon block boxes (all blocklayout objects will have all inline or all blocklayout children, not a mix)
+
+I think we do need a new 'line' layout/class type approach. The documentation even suggests as much when it says ["The rectangular area that contains the boxes that form a line is called a line box."](https://www.w3.org/TR/2009/CR-CSS2-20090908/visuren.html#visual-model-intro). The question is: who 'owns' the lines? 
+
+"A line box is always tall enough for all of the boxes it contains. However, it may be taller than the tallest box it contains (if, for example, boxes are aligned so that baselines line up). When the height of a box B is less than the height of the line box containing it, the vertical alignment of B within the line box is determined by the 'vertical-align' property. When several inline boxes cannot fit horizontally within a single line box, they are distributed among two or more vertically-stacked line boxes. Thus, a paragraph is a vertical stack of line boxes. Line boxes are stacked with no vertical separation and they never overlap."
+
+
+```
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        #outer {background-color: crimson; color: black; border: 3px solid blue;}
+        #inner {background-color: aquamarine; border: 3px solid seagreen;}
+    </style>
+</head>
+<body>
+    <div><span id="outer">The outer spam <span id="inner">The inner Span</span> after the inner span</span> after both spans</div>
+</body>
+</html>
+```
+![alt text](image.png)
+
+Notice how the border around each anon box isn't always the same. Interesting. 
+
+Let's simplify things for the moment. All we care about is background color and that the text baseline is correct. 
+
+I think we can do this sort of recursively.
+* Assume no inline boxes contain block boxes (will change this later)
+* when we come across a block box that contains only inline boxes, we start creating lines.
+* to create a line, pass down the content width to the first inline box
+* it will start creating its words with their own CSS properties
+* if it would go onto a newline, create a new line object and keep all the created words in the first line
+* if this inline box contains another inline box, pass it the current line object, the current x_offset, y_offset etc
+* the inner one creates its words in the same fashion and once it is done passes up the lines it has created along with place to continue
+* once we have done this, we have the groups of words that belong to each line and we can calculate the baseline from there.
+* sounds good right?
+
+So, let's come up with some test cases of what we expect then do some TDD because that really helped when doing the CSS.
+
+[Its funny, I basically described this before reading it](https://www.w3.org/TR/2009/CR-CSS2-20090908/visuren.html#inline-formatting)
+
+So, we need something that will represent a line box. This basically is my blocklayout but I don't want my blocklayout getting too confusing since a blocklayout with no inline children will not be a linebox. Maybe what we do is say all lineboxes are necessarily the direct child of a blocklayout and that if a blocklayout has a linebox, this is its only child. 
+
+What will our lines look like? we might run into a case where an inline element contains a block element. In such cases we could just treat the block element as an inline element (what the book does) but I want to explore the option of block elements inside inline elements. This is complicated though :/
+
+Linebox must inherit from layout if it will be used by BLockLayout. Anon blocks will be blocklayout with a flag set for easier display. Linebox will have an array of children that must all implement a 'draw' function. So let's say a linebox will create Line objects but can also have blocklayout objects as a child. Linebox is responsible for depth first iteration of its children, creating line's as it goes, passing down props and 'flushing' lines when necessary. It will handle the logic for padding/margin/borders when the time comes (and hopefully I won't regret saying that). Actually, is there an approach we can use to keep track of what line of a node we are working on? Almost certainly there is but the pseudo element matching isn't really that easy, so let's worry about that another time -> actually, it can work. 
+
+* do I need to change the inheritance pattern I am using?? The only thing that is a bit gross about it is the fact that the layout method will in some cases return values and take additional params, and in other cases not (is that even allowed for an abstract method??). If we have to just make another method and worry about these things another time
+
+Let's try and define a full flow now and not get distracted this time.
+
+* Start with the Document layout, it creates a blocklayout.
+* Anytime we are looking to create the children of a block layout, we first check if we have any block element child
+* If we do, all our children will be block children and anonymous blocks are used to hold the non-block elements (anon box just an alias for blocklayout for logging purposes)
+* if all children are inline elephants (ie: no block layout child), then we create an inline layout for each of our children
+* The inline layout will start iterating through its children
+* for each text node, we go through word by word and start populating our lines array with LineBoxes
+* Each LineBox contains the start x offset, words to display, css properties and split left/right props. 
+* Whenever we encounter a non-text node, we check if it is inline or block
+* if it is block, we display the block and update our y and x offsets based on the height of the block child
+* if we come across a line element, we display it
+
+So the flow is: if I am an InlineLayout, check my parent. If it is block then I am responsible for getting all the lines from my children and displaying them. If it is inline then I must use its curr_x_offset and content width values to populate my own lines. Once a child inline is done, the parent is responsible for fetching and concatenating its lines with its own. 
+
+I think this will work AND let me implement borders correctly at some point, so I suppose let's go ahead and do this. 
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!
