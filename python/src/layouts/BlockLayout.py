@@ -78,7 +78,9 @@ class BlockLayout(Layout):
         self.content_width = self.calculateContentWidth()
 
         prev = None
-        for child in self.node.children:
+        for child in self.node.children: #TODO: first iterate through list to determine if we have any block layouts
+                                         #if yes, everything is a block layout and we create anon block layouts
+                                         #else, we have only inline and need a linebox approach
             if isinstance(child, Element) and child.tag in ["head","script","style","meta"]:
                 continue
             next = self.createChild(child,prev)
@@ -99,7 +101,6 @@ class BlockLayout(Layout):
             cmds.append(rect)
         
         return cmds
-
 
     def getLayoutMode(self):
         
