@@ -77,10 +77,12 @@ class BlockLayout(Layout):
         self.width = self.calculateWidth()
         self.content_width = self.calculateContentWidth()
 
+        # first iterate through list to determine if we have any block layouts
+        #if yes, everything is a block layout and we create anon block layouts
+        #else, we have only inline and need a linebox approach
+
         prev = None
-        for child in self.node.children: #TODO: first iterate through list to determine if we have any block layouts
-                                         #if yes, everything is a block layout and we create anon block layouts
-                                         #else, we have only inline and need a linebox approach
+        for child in self.node.children: 
             if isinstance(child, Element) and child.tag in ["head","script","style","meta"]:
                 continue
             next = self.createChild(child,prev)
@@ -107,9 +109,9 @@ class BlockLayout(Layout):
         return LayoutTypes.Block
 
     def createChild(self, node, previous):
-        """Creates and returns a new node based on its display property. Default is InlineLayout if no display property"""
+        """Creates and returns a new node based on its display property and whether or not it should be an anonymous block"""
 
-        if "display" in node.style and self.node.style.get("display") in ["block", "inline"]:
+        if "display" in node.style and self.node.style.get("display") in ["block"]:
             match node.style.get("display"):
                 case "block": return BlockLayout(node, self, previous)
                 case "inline": return InlineLayout(node, self, previous)

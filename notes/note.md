@@ -928,6 +928,10 @@ So the flow is: if I am an InlineLayout, check my parent. If it is block then I 
 
 I think this will work AND let me implement borders correctly at some point, so I suppose let's go ahead and do this. 
 
+I think I have just realized why the docs say that blocks can only contain all inline or all block. This is to ensure you don't get an inline trying to display directly after a block. I think I can loosen this requirement since I seem to have already worked around that. 
+
+You know what? Let's read through the document once, FULLY without thinking about what specifically I want to do. I think I should follow the box layout idea since otherwise I am going to go crazy trying to adapt my system to act exactly like other browsers
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!
