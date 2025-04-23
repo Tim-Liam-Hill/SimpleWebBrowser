@@ -107,7 +107,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * gifs 
 * Parse selectors [according to their official grammar](https://drafts.csswg.org/selectors/#grammar)
 
-# Official Docs
+# Resources
 
 A list of docs (not necessarily all the latest) that define HTML/CSS etc specifications. These docs are the official w3 docs, not anything like geeksforgeeks and the like.
 
@@ -116,3 +116,13 @@ A list of docs (not necessarily all the latest) that define HTML/CSS etc specifi
 * https://www.w3.org/TR/css-position-3/#intro -> for positioning if we want to get around to that. 
 * https://www.w3.org/TR/2009/CR-CSS2-20090908/box.html
 * https://www.w3.org/TR/2009/CR-CSS2-20090908/visudet.html#containing-block-details
+
+Below are projects to take inspiration from (eg: rendering engines).
+
+* https://github.com/Kozea/WeasyPrint
+* https://github.com/philborlin/CSSBox
+
+Some other guides 
+
+* https://limpet.net/mbrubeck/2014/08/08/toy-layout-engine-1.html
+* https://web.dev/articles/howbrowserswork

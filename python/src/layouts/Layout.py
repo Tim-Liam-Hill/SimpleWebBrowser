@@ -92,14 +92,14 @@ class Layout(ABC):
 
         pass
     
-    def getXContinue(self):
-        '''Determines where on the current ystart line text content should continue
+    # def getXContinue(self):
+    #     '''Determines where on the current ystart line text content should continue
         
-        This method has the default behaviour of starting text at the beginning of the content rectangle
-        and is overridden as necessary eg: by inline class.
-        '''
+    #     This method has the default behaviour of starting text at the beginning of the content rectangle
+    #     and is overridden as necessary eg: by inline class.
+    #     '''
 
-        return self.getXStart()
+    #     return self.getXStart()
 
     @abstractmethod
     def layout(self):

@@ -7,7 +7,11 @@ class BlockLayout(Layout):
     '''The implementation for "block" css display property'''
     
     def __init__(self, node, parent, previous):
-        super().__init__(node,parent,previous)
+        super().__init__(parent,previous)
+
+        self.node = node 
+        self.display_list = []
+        self.children = [] 
 
     def getWidth(self):
 

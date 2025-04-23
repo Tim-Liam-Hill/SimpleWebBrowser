@@ -27,10 +27,13 @@ class InlineRectInfo:
 
 
 class InlineLayout(Layout):
-    '''The implementation for "block" css display property'''
+    '''Holds and displays a sequence/tree of HTML elements with display inline.
     
-    def __init__(self, node,parent,previous):
-        super().__init__(node,parent,previous)
+    This class functions similar to a LineBox but simplified.
+    '''
+    
+    def __init__(self, nodes,parent,previous):
+        super().__init__(parent,previous)
         self.cursor_x = 0
         self.cursor_y = 0
         
@@ -39,6 +42,8 @@ class InlineLayout(Layout):
 
         self.line = []
         self.line_start_x = 0
+
+        self.nodes = nodes
     
     def getWidth(self):
 
