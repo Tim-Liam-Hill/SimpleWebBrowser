@@ -3,8 +3,7 @@ from abc import ABC, abstractmethod
 class Layout(ABC):
     '''The base class that all LayoutTypes inherit'''
 
-    def __init__(self, node, parent, previous):
-        self.node = node 
+    def __init__(self, parent, previous):
         self.x = 0 
         self.y = 0 
         
@@ -13,11 +12,11 @@ class Layout(ABC):
         
         '''Width available for inner text and other elements'''
         self.content_width = 0
-
-        self.display_list = []
         self.parent = parent 
         self.previous = previous
-        self.children = [] #TODO: I think every element has children but double check
+        self.children = []
+
+
         
     @abstractmethod
     def getWidth(self):
@@ -123,3 +122,11 @@ class Layout(ABC):
     def getLayoutMode(self):
         '''Returns this objects CSS display property'''
         pass 
+
+    def layoutType(node):
+        '''Given an html element node, determines its layout type'''
+
+        if "display" in node.style and node.style.get("display") in ["block"]:
+            return node.style.get("display")
+
+        return "inline"

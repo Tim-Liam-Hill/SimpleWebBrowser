@@ -11,7 +11,6 @@ class BlockLayout(Layout):
 
         self.node = node 
         self.display_list = []
-        self.children = [] 
 
     def getWidth(self):
 
@@ -69,33 +68,47 @@ class BlockLayout(Layout):
     def layout(self):
         '''Forces this Layout Object to create all of its layout children'''
 
-        self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
-        
-        if self.previous:
-            if self.previous.getLayoutMode().value == LayoutTypes.Inline.value:
-                self.y = self.previous.getHeight() + self.previous.getY() #TODO: this logic may need to change.
-            else: 
-                self.y = self.previous.getYStart() #TODO: here aswell
-        else: 
-            self.y = self.parent.getY() #TODO: same here. also, NOT Y start here. if we are a block element and our parent was a block element and no previous then we start at their start
+        self.setCoordinates()
         self.width = self.calculateWidth()
         self.content_width = self.calculateContentWidth()
 
-        # first iterate through list to determine if we have any block layouts
-        #if yes, everything is a block layout and we create anon block layouts
-        #else, we have only inline and need a linebox approach
+        self.createChildren()
+        
+        # for child in self.children:
+        #     child.layout()
 
+    def setCoordinates(self):
+        self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
+        
+        if self.previous:
+            self.y = self.previous.getYStart() #TODO: here aswell
+        else: 
+            self.y = self.parent.getY() #TODO: same here. also, NOT Y start here. if we are a block element and our parent was a block element and no previous then we start at their start
+
+    def createChildren(self):
+        inline_children = []
         prev = None
         for child in self.node.children: 
             if isinstance(child, Element) and child.tag in ["head","script","style","meta"]:
                 continue
-            next = self.createChild(child,prev)
+            if Layout.layoutType(child) == "inline":
+                inline_children.append(child)
+                continue
+
+            if len(inline_children) != 0:
+                next = InlineLayout(inline_children,self,prev)
+                self.children.append(next)
+                prev = next
+            next = BlockLayout(child,self,prev)
             self.children.append(next)
             prev = next
-        
-        for child in self.children:
-            child.layout()
 
+        if len(inline_children) != 0:
+            next = InlineLayout(inline_children,self,prev)
+            self.children.append(next)
+            prev = next
+
+            
     def paint(self): #TODO:Should this be abstract or can we make this generic? 
         cmds = []
 
@@ -111,17 +124,6 @@ class BlockLayout(Layout):
     def getLayoutMode(self):
         
         return LayoutTypes.Block
-
-    def createChild(self, node, previous):
-        """Creates and returns a new node based on its display property and whether or not it should be an anonymous block"""
-
-        if "display" in node.style and self.node.style.get("display") in ["block"]:
-            match node.style.get("display"):
-                case "block": return BlockLayout(node, self, previous)
-                case "inline": return InlineLayout(node, self, previous)
-                case _: return InlineLayout(node, self, previous)
-        else: 
-            return InlineLayout(node, self, previous)
 
     def __repr__(self):
         return "BlockLayout: tag={} x={} y={} width={} height={}".format(self.node.tag, self.x, self.y, self.width,self.getHeight())

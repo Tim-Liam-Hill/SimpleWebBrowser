@@ -43,23 +43,22 @@ class InlineLayout(Layout):
         self.line = []
         self.line_start_x = 0
 
+        self.children = []
         self.nodes = nodes
+        #does layout need its own display_list array? I think it can just get it from its children. 
     
     def getWidth(self):
 
         return self.width
-
     
     def getContentWidth(self):
 
         return self.content_width
-
-    
+  
     def calculateContentWidth(self):
 
         return self.parent.getContentWidth()
 
-    
     def calculateWidth(self):
 
         return self.parent.getContentWidth()
@@ -73,23 +72,20 @@ class InlineLayout(Layout):
 
         return self.x
 
-    
     def getY(self):
 
         return self.y
     
-    
     def getXStart(self):
 
         return self.cont_x
-    
     
     def getYStart(self):
 
         return self.cont_y
 
     #TODO: css to change initial values
-        #TODO: content width calcs and width calcs are confusing me rn.
+    #TODO: content width calcs and width calcs are confusing me rn.
 
     def layout(self):
         
@@ -115,19 +111,9 @@ class InlineLayout(Layout):
         for child in self.children:
             child.layout()
     
-    def getXContinue(self):
-
-        return self.cont_x
-    
-    def paint(self): #TODO:Should this be abstract or can we make this generic? 
+    def paint(self): 
         cmds = []
         
-        for elem in self.display_list:
-            if isinstance(elem, InlineTextInfo):
-                cmds.append(DrawText(elem.x, elem.y, elem.word, elem.font, elem.color))
-            elif isinstance(elem, InlineRectInfo):
-                cmds.append(DrawRect(elem.x,elem.y,elem.x2,elem.y2,elem.background_color))
-
         return cmds
 
     def recurse(self, node):
@@ -214,15 +200,5 @@ class InlineLayout(Layout):
         return LayoutTypes.Inline
 
     def __repr__(self):
-        text = ""
-        if isinstance(self.node, Text):
-            text = self.node.text 
-        elif "alt" in self.node.attributes: #for img tags
-            text = "ALT:{}".format(self.node.attributes["alt"])
-        else: 
-            text = "NO_TEXT"
-        arr = text.split(" ")
-        if len(arr) > 6:
-            arr = arr[:6]
-        text = " ".join(arr).strip()
-        return "InlineLayout: x={} y={} width={} height={} text={}".format(self.x, self.y, self.width,self.getHeight(),text)
+
+        return "InlineLayout: x={} y={} width={} height={} num_nodes={}".format(self.x, self.y, self.width,self.getHeight(),len(self.nodes))

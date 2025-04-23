@@ -106,6 +106,11 @@ class Element:
 
     def __str__(self):
         return "<" + self.tag + ">"
+    
+    def __eq__(self, value):
+        return self.tag == value.tag and self.attributes == value.attributes\
+              and self.children == value.children and self.parent == value.parent\
+              and self.style == value.style
 
 #TODO: mayhaps do this as a separate project at somepoint?
 #TODO: There is definitely a better/more elegant way to implement a lexer

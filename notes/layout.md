@@ -37,3 +37,6 @@ Thought: since we want all nodes to have a valid previous component, I am going 
 ![alt text](image-1.png)
 
 Linebox will use a stack to keep track of things like background colors, borders etc. 
+
+
+python3 -m unittest tests.test_Layout

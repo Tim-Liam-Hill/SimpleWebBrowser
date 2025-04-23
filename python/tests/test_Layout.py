@@ -1,4 +1,6 @@
-from src.HTMLParser import HTMLParser
+from src.layouts.BlockLayout import BlockLayout
+from src.layouts.DocumentLayout import DocumentLayout
+from src.HTMLParser import Element, Text, print_tree
 import unittest
 
 print("Testing Layout functionality")
@@ -34,6 +36,21 @@ class TestHTMLParser(unittest.TestCase):
         '''Tests whether width values for children are computed correctly based on parents and CSS'''
 
         pass
+
+    def test_Block(self):
+        '''Tests whether a block layout object will correctly createblock and inline children'''
+
+        p = Element("div",{"display":"block"},None)
+        c1 = Element("span",{"display":"inline"}, p)
+        c2 = Text("mr meow meow",p)
+        c1c1 = Text("inside span",c1)
+        c1.children = [c1c1]
+        p.children= [c1,c2]
+        block = BlockLayout(p,DocumentLayout(None,700),None)
+        block.layout()
+        print(block)
+        for child in block.children:
+            print(child)
 
 #Test blocklayout in an inlinelayout
 
