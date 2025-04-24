@@ -1,4 +1,6 @@
 from src.layouts.BlockLayout import BlockLayout
+import logging
+logger = logging.getLogger(__name__)
 
 
 class DocumentLayout: #edge case that doesn't need to inherit everything from Layout
@@ -38,3 +40,8 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
 
     def __repr__(self):
         return "DocumentLayout: max_width {}".format(self.max_width)
+
+    def print(self):
+
+        print("Document Layout: width {} and height {}".format(self.width,self.height))
+        self.child.print(1)

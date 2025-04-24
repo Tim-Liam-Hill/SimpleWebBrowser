@@ -34,17 +34,8 @@ class InlineLayout(Layout):
     
     def __init__(self, nodes,parent,previous):
         super().__init__(parent,previous)
-        self.cursor_x = 0
-        self.cursor_y = 0
-        
-        self.cont_x = 0
-        self.cont_y = 0
-
-        self.line = []
-        self.line_start_x = 0
-
-        self.children = []
         self.nodes = nodes
+        self.lines = [] #2d array
         #does layout need its own display_list array? I think it can just get it from its children. 
     
     def getWidth(self):
@@ -88,42 +79,70 @@ class InlineLayout(Layout):
     #TODO: content width calcs and width calcs are confusing me rn.
 
     def layout(self):
+        logger.debug("laying our InlineLayout with {} children".format(len(self.children)))
+        self.setCoordinates()
+        self.content_width = self.calculateContentWidth()
+
+        #2 pass algorithm: the first pass we make sure all lines have the text that fits on them and the 
+        #boxes for backgrounds and such. Second pass we set the height for every Line. 
+
+        cursor_x, x_cont, y_cont, lines_index = 0
+        for node in self.nodes:
+            cursor_x, x_cont, y_cont, lines_index = self.recurse(node,0, self.getYStart(), 0)
+
+        #flush once we are done!!!
+        #then we go through and populate the starting y and height for each element
         
+    def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
         if self.previous:
             self.y = self.previous.getYStart() #TODO: here aswell
         else: 
             self.y = self.parent.getY() #TODO: same here
         
-        self.content_width = self.calculateContentWidth()
+    def recurse(self, node, cursor_x,  start_y, lines_index): #x start is always 0 since line's always start at leftmost edge in an inline display.
+        ''''''
 
-        if self.previous:
-            self.cursor_x = self.previous.getXContinue()
-        else: self.cursor_x = self.parent.getXContinue()
-        self.line_start_x = self.cursor_x #so we can draw a rect at the correct starting position if this is a follow on element
+        #DON'T CHANGE THE CSS PROPS OBJECT!! IT WILL BE (potentially) SHARED
+        #any extra data related to css should be applied to a different dict (which I will get to eventually)
 
-        self.recurse(self.node)
-        self.cont_x = self.cursor_x 
-        self.cont_y = self.cursor_y + self.y
+        #start with my node
+        #if is text, starts splitting by word, create boxes for each word 
+        #if cursor_x + width greater than width, flush 
+        #flush handles setting the ascent and such
+        #if we encounter non-text node, recurse that node so things are saved on stack
+        # if we encounter block element, flush, add it to its own line then update 
+        #coordinates to continue from. 
 
-        self.flush()
+        '''* anytime you finish a line, you prepend your border commands to the lines array
+* this way, the parent will keep track of whether to show a border on left/right and childrens borders will also still show in correct order (they will be drawn after parent's border)
+* could also do background colors like this I suppose. Yeah, this is exactly how we will do things. '''
 
-        for child in self.children:
-            child.layout()
-    
-    def paint(self): 
-        cmds = []
-        
-        return cmds
 
-    def recurse(self, node):
-
+        #TODO: test an empty span <span></span> and make sure we don't die if this is what we have. 
         if isinstance(node, Text):
-            for word in node.text.split(): #TODO: to stop trailing space isn't as simple as I thought: i need to know if we have a a next after us
-                self.word(word, node)
-        elif node.tag not in ["script","style", "head", "meta"]: #TODO: make this a global var somewhere. In well formed css this shouldn't be needed
-            for child in node.children:
-                self.recurse(child)
+            words = node.text.split(" ")
+            font = self.getFont(node)
+            for i in range(len(words)):
+                pass
+
+        elif Layout.layoutType(node) == "inline":
+            #record start x and y here for any background rects we need to add (also lines_index)
+            #get index within current line.
+            for node in self.nodes:
+                cursor_x = self.recurse(node, cursor_x)
+            #once we are done recursing through our children we need to come back and put in the boxes 
+            #for background color and such. For the line we were initially on we can find the length of 
+            #any boxes by taking the x value of the last element and adding its width
+            #then for every line between our lines_index and last line index, add a box. Don't worry about height at this stage.
+        else: #technically this is an error on author's part, inline element shouldn't have block child. 
+            # finish laying out all lines laid out till this point
+            # lay out the block element
+            # record the new x and y start and index of lines to continue laying out 
+
+            pass 
+
+        return cursor_x, start_y, lines_index
 
     def word(self, word, node):
 
@@ -195,6 +214,11 @@ class InlineLayout(Layout):
 
         self.line = []
 
+        def paint(self): 
+            cmds = []
+            
+            return cmds
+
     def getLayoutMode(self):
 
         return LayoutTypes.Inline
@@ -202,3 +226,43 @@ class InlineLayout(Layout):
     def __repr__(self):
 
         return "InlineLayout: x={} y={} width={} height={} num_nodes={}".format(self.x, self.y, self.width,self.getHeight(),len(self.nodes))
+
+    def print(self, indent):
+        print("-" * indent + "InlineLayout: width {} height {}".format(self.width, self.getHeight()))
+
+
+'''
+ALGORITHM:
+
+1. Start recursing through your children.
+- Each child gets to know the cursor_x, current_y start and current index in lines from where we need to start flushing (ie: last non-flushed line)
+- calculating heights from
+2. If we have a text node:
+    2.1 get font
+    2.2 split based on spaces
+    2.3 create a text box for each space 
+    2.4 while cursor_x is smaller than content width + width, add text_boxes to current line (ie: last line in lines array)
+    2.5 if we would go over this line, make a new line
+    2.6 Only prepend spaces to words if they aren't the first word in the list
+    2.7 Make sure to add css properties 
+    2.8 Return the same lines_start index, same y_start index but the updated cursor_x. Child knows where to continue based on latest line in array.
+3. If we encounter an inline node:
+    3.1 Record the line we are currently at now along with the curr_x value 
+    3.2 Recurse through each of our children 
+    3.3 Starting at the line before recurse up to and including the current line, add boxes IF background color/border set
+        3.3.1 For the first box, set is_start to true 
+        3.3.2 For the first box, cursor_x is we saved is start and end is cursor x of last text in the line + its width (plus some padding??)
+        3.3.3 For last box set is_start to true 
+        3.3.4 For last box, cursor_x that is returned is end x and start x (relative) is 0
+4. If we encounter a box layout, flush every line from the line_start index to the last line in the array. 
+    4.1 flush each line from line_start index till end of lines
+        4.1.1 Get the height of the line by calculating the baseline for all text then adding padding as necessary
+        4.1.2 Set this lines y value based on the start y_start
+        4.1.3 add y_start to height to get next y_start
+        4.1.4 repeat for all lines 
+    4.2 Layout the block layout 
+    4.3 Get its height
+    4.4 Update the line_start index to be the end of the lines array (len(self.lines))
+5. Once done, 
+
+'''

@@ -38,5 +38,14 @@ Thought: since we want all nodes to have a valid previous component, I am going 
 
 Linebox will use a stack to keep track of things like background colors, borders etc. 
 
+I am confusing myself a lot because of how borders look on spans :/ 
+
+I think I have a border algorithm: 
+* anytime you finish a line, you prepend your border commands to the lines array
+* this way, the parent will keep track of whether to show a border on left/right and childrens borders will also still show in correct order (they will be drawn after parent's border)
+* could also do background colors like this I suppose. Yeah, this is exactly how we will do things. 
+
+Finalizing an algorithm is hard since as soon as you start going through the given algorithm you discover you need to tweak it. 
+
 
 python3 -m unittest tests.test_Layout

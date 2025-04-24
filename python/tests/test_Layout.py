@@ -1,7 +1,8 @@
 from src.layouts.BlockLayout import BlockLayout
 from src.layouts.DocumentLayout import DocumentLayout
-from src.HTMLParser import Element, Text, print_tree
+from src.HTMLParser import Element, Text
 import unittest
+import logging
 
 print("Testing Layout functionality")
 
@@ -48,9 +49,7 @@ class TestHTMLParser(unittest.TestCase):
         p.children= [c1,c2]
         block = BlockLayout(p,DocumentLayout(None,700),None)
         block.layout()
-        print(block)
-        for child in block.children:
-            print(child)
+        block.print(0)
 
 #Test blocklayout in an inlinelayout
 

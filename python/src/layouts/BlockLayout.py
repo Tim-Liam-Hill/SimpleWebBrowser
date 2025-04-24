@@ -2,6 +2,8 @@ from src.layouts.Layout import Layout
 from src.layouts.LayoutConstants import LayoutTypes, DrawRect, VSTEP
 from src.layouts.InlineLayout import InlineLayout
 from src.HTMLParser import Element
+import logging
+logger = logging.getLogger(__name__)
 
 class BlockLayout(Layout):
     '''The implementation for "block" css display property'''
@@ -109,7 +111,7 @@ class BlockLayout(Layout):
             prev = next
 
             
-    def paint(self): #TODO:Should this be abstract or can we make this generic? 
+    def paint(self):  
         cmds = []
 
         bgcolor = self.node.style.get("background-color",
@@ -127,3 +129,9 @@ class BlockLayout(Layout):
 
     def __repr__(self):
         return "BlockLayout: tag={} x={} y={} width={} height={}".format(self.node.tag, self.x, self.y, self.width,self.getHeight())
+
+    def print(self, indent):
+        print("-" * indent + "BlockLayout: width {} height {}".format(self.width, self.getHeight()))
+
+        for child in self.children:
+            child.print(indent + 1)

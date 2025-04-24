@@ -2,17 +2,19 @@
 <html>
 <head>
     <style>
-        .d::first-line {color: red;}
+        .outer {border: 2px solid red; background-color: aqua; font-size: 2em;}
+        .inner {border: 1px solid blue;}
+        .back {background-color: blueviolet;}
     </style>
 </head>
 <body>
-    <div><i>Hello, </i><b>world!</b><p>So it began...</p></div>    <br>
-    <div><big>SOME REALLY BIG ONES</big><small>some small ones</small></div>
-    <span>
-        <b>Hello</b> world! <sub>This</sub> is my <big>Very cool</big> sample <sup>html</sup>
-        A <small>small bunch of text</small> is a <i>very</i> <b>cool</b>
-        thing to have. If I put a lot of text inside this div will it overflow properly or stay on the same line? I am curious to find 
-        out.
+    <span class="outer">
+        <b>Hello</b> world! <sub>This</sub> 
+        <span class="inner">is my <big>Very cool</big> sample <sup>html</sup>
+            A <small>small bunch of text</small> is a <i>very</i> <b>cool</b>
+            thing to have. If I put a lot of text inside this div will it overflow properly or stay on the same line? I am curious to find 
+            out. I am on the inside meopw meow meow meow mewo</span>
+        <span class="back">mr meow meow is a bcuitleful meow meow mewo</span>
     </span>
 </body>
 </html>
