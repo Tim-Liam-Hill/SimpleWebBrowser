@@ -41,6 +41,7 @@ class TestHTMLParser(unittest.TestCase):
     def test_Block(self):
         '''Tests whether a block layout object will correctly createblock and inline children'''
 
+        logging.basicConfig(level=logging.DEBUG)
         p = Element("div",{"display":"block"},None)
         c1 = Element("span",{"display":"inline"}, p)
         c2 = Text("mr meow meow",p)

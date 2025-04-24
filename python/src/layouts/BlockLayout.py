@@ -76,8 +76,8 @@ class BlockLayout(Layout):
 
         self.createChildren()
         
-        # for child in self.children:
-        #     child.layout()
+        for child in self.children:
+            child.layout()
 
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
@@ -109,8 +109,7 @@ class BlockLayout(Layout):
             next = InlineLayout(inline_children,self,prev)
             self.children.append(next)
             prev = next
-
-            
+   
     def paint(self):  
         cmds = []
 

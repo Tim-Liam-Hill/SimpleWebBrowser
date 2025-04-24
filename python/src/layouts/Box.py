@@ -10,9 +10,10 @@ class Line:
     def addText(self, textBox):
         '''Append a text box to the list'''
 
-        self.boxes.append(textBox)
+        self.text_boxes.append(textBox)
     
     def addBox(self,box):
+        '''Boxes are prepended since parents only add their boxes after their children but these should be displayed first'''
 
         self.boxes.insert(0,box)
     
@@ -34,6 +35,13 @@ class Line:
     
     def __repr__(self):
         return "Line: boxes {} text_boxes {}".format(len(self.boxes), len(self.text_boxes))
+    
+    def print(self, indent):
+        print("-" * indent + self.__repr__())
+        for b in self.boxes:
+            print(" "*(indent) + "-" + b.__repr__())
+        for b in self.text_boxes:
+            print(" "*(indent) + "-" + b.__repr__())
 
 class TextBox: 
     '''A textbox is essentially the atomic unit that makes up a portion of a line's text.
@@ -42,8 +50,10 @@ class TextBox:
     they are placed. 
     '''
 
-    def __init__(self, text, font, x, y, css_props, node):
-        '''X and y are the coordinates of the surrounding box.
+    def __init__(self, text, font, x, width, node):
+        '''Holds the data needed to print a portion of text
+
+        x is relative coordinate to the x position of the line to which this TextBox belongs
 
         In order to calculate font position, the max_ascent and max_descent of all fonts must
         first be calculated, which can't be done when this box is created
@@ -51,18 +61,18 @@ class TextBox:
         #TODO: rename to make clear it is relative coordinates
         self.text = text 
         self.font = font 
-        self.x = x 
-        self.y = y 
-        self.css_props = css_props
+        self.x = x  
+        self.width = width
         self.node = node #save the parent node for this text in case we can use it for css implementation later (eg: first-word)
+        #get css props from node
 
-    def paint(self, height):
+    def paint(self, x, y, baseline):
         cmds = []
         return cmds
     
-    def repr(self):
+    def __repr__(self):
         t = self.text if len(self.text.split(" ")) < 7 else self.text.split(" ")[0:7].join(" ")
-        return "TextBox: x {} y {} text {}".format(self.x,self.y, t)
+        return "TextBox: x '{}' width '{}' text '{}'".format(self.x,self.width, t)
     
     def __eq__(self, value):
         if not isinstance(value, Line):
@@ -80,20 +90,16 @@ class Box:
     '''
 
     #TODO: rename to make clear it is relative coordinates
-    def __init__(self,x,y, css_props, is_start, is_end, node):
+    def __init__(self,x,width, is_start, is_end, node):
         self.x = x 
-        self.y = y 
-        self.width = 0
-        self.height = 0
-        self.css_props = css_props
         self.is_start = is_start
         self.is_end = is_end
+        self.width = width
         self.node = node 
-        #TODO: split left/right border
     
     def paint(self, height):
         cmds = []
         return cmds
     
-    def repr(self):
-        return "Box: x {} y {} width {} height {}".format(self.x,self.y, self.width, self.height)
+    def __repr__(self):
+        return "Box: x '{}' width '{}' is_start '{}' is_end '{}'".format(self.x,self.width,self.is_start, self.is_end)

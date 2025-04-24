@@ -181,13 +181,37 @@ class Browser:
         self.draw()
 
 
+from src.layouts.BlockLayout import BlockLayout
+from src.layouts.DocumentLayout import DocumentLayout
+from src.HTMLParser import Element, Text
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    # logging.basicConfig(level=logging.INFO)
     b = Browser()
 
-    if(len(sys.argv) != 2):
-        b.load(f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}')
-    else: b.load(sys.argv[1])
-    tkinter.mainloop()
+    # if(len(sys.argv) != 2):
+    #     b.load(f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}')
+    # else: b.load(sys.argv[1])
+    # tkinter.mainloop()
+    style = {
+        "font-size": "26px",
+        "font-style": "normal",
+        "font-weight": "normal",
+        "color": "black",
+        "font-family": 'Times',
+    }
     
+    logging.basicConfig(level=logging.DEBUG)
+    p = Element("div",{"display":"block"},None)
+    c1 = Element("span",{"display":"inline"}, p)
+    c2 = Text("mr meow meow",p)
+    c2.style = style
+    c1.style = {"background-color":"red"}
+
+    c1c1 = Text("inside span",c1)
+    c1c1.style = style
+    c1.children = [c1c1]
+    p.children= [c1,c2]
+    block = BlockLayout(p,DocumentLayout(None,500),None)
+    block.layout()
+    block.print(0)

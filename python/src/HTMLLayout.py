@@ -2,7 +2,7 @@ import tkinter
 from src.HTMLParser import Element
 from src.CSS.CSSParser import CSSParser
 import logging
-from src.layouts import LayoutConstants
+from src.CSS import CSSConstants
 logger = logging.getLogger(__name__)
 
 """Populates the given display list with the commands needed to style the HTMLElement tree according to the CSS rules"""
@@ -36,7 +36,7 @@ def style(node, rules):
         if node.parent:
             parent_font_size = node.parent.style["font-size"]
         else:
-            parent_font_size = LayoutConstants.INHERITED_PROPERTIES["font-size"]
+            parent_font_size = CSSConstants.INHERITED_PROPERTIES["font-size"]
         node_pct = float(node.style["font-size"][:-1]) / 100
         parent_px = float(parent_font_size[:-2])
         node.style["font-size"] = str(node_pct * parent_px) + "px"
