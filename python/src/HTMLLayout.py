@@ -5,17 +5,17 @@ import logging
 from src.CSS import CSSConstants
 logger = logging.getLogger(__name__)
 
-"""Populates the given display list with the commands needed to style the HTMLElement tree according to the CSS rules"""
-def paint_tree(layout_object, display_list):
-    display_list.extend(layout_object.paint())
+# """Populates the given display list with the commands needed to style the HTMLElement tree according to the CSS rules"""
+# def paint_tree(layout_object, display_list):
+#     display_list.extend(layout_object.paint())
 
-    for child in layout_object.children:
-        paint_tree(child, display_list)
+#     for child in layout_object.children:
+#         paint_tree(child, display_list)
 
 
 def style(node, rules):
 
-    for property, default_value in LayoutConstants.INHERITED_PROPERTIES.items():
+    for property, default_value in CSSConstants.INHERITED_PROPERTIES.items():
         if node.parent:
             node.style[property] = node.parent.style[property]
         else:

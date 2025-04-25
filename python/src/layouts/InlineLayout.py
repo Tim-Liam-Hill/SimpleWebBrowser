@@ -114,15 +114,15 @@ class InlineLayout(Layout):
         - start_y = the y value which the line ad lines_index starts
         - lines_index = tracks the last line which has not been flushed
         '''
-
+        #TODO: break these up into individual functions
         #TODO: test an empty span <span></span> and make sure we don't die if this is what we have. 
         if isinstance(node, Text):
-            words = node.text.split(" ")
+            words = node.text.strip().split(" ")
             font = self.getFont(node)
             curr_sentence = "" #create as few textboxes as possible, put lot's of words into a text box
             curr_w = 0
             for i in range(len(words)):
-                word = words[i] if i == len(curr_sentence) == 0 else " {}".format(words[i])
+                word = words[i] if i == len(curr_sentence) == 0 else " {}".format(words[i]) #TODO: last word might be followed by a space
                 w = font.measure(word)
                 if curr_w + w + cursor_x < self.getContentWidth():
                     curr_sentence += word 
@@ -134,14 +134,13 @@ class InlineLayout(Layout):
                     curr_w = font.measure(word)
                     self.curr_line = Line()
                     cursor_x = 0
-                    lines_index += 1
             if curr_sentence != "":
                 self.curr_line.addText(TextBox(curr_sentence,font,cursor_x,curr_w,node))
 
             cursor_x += curr_w    
 
         elif Layout.layoutType(node) == "inline":
-            index = lines_index
+            index = len(self.lines)
             curr_cursor_x = cursor_x #that's a mouthful
             for child in node.children:
                 cursor_x, start_y, lines_index = self.recurse(child, cursor_x,start_y,lines_index)
@@ -153,7 +152,7 @@ class InlineLayout(Layout):
                     box = Box(curr_cursor_x, self.getContentWidth()-curr_cursor_x,i == index, False ,node) #boxes should go all the way to the end if they go onto multiple lines
                     self.lines[i].addBox(box)
                     curr_cursor_x = 0
-                box = Box(curr_cursor_x, cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
+                box = Box(curr_cursor_x, self.getContentWidth()-curr_cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
                 self.curr_line.addBox(box)
         else: 
             self.flush(lines_index,start_y)
@@ -203,11 +202,6 @@ class InlineLayout(Layout):
         self.line.append((self.cursor_x, word, font, css_props))
         self.cursor_x += w + font.measure(" ")
 
-    def paint(self):
-        #TODO: implement
-        #pass each line the x start 
-        pass 
-
     def getFont(self, node):
         '''Used to create the font needed to render text, taking into account css properties'''
 
@@ -234,6 +228,13 @@ class InlineLayout(Layout):
 
     def paint(self): 
         cmds = []
+
+        for line in self.lines:
+            if isinstance(line, Line):
+                cmds.extend(line.paint(self.x))
+            else:
+                cmds.extend(line.paint())
+            
         
         return cmds
 

@@ -108,14 +108,9 @@ class Layout(ABC):
     
     @abstractmethod
     def paint(self): #TODO:Should this be abstract or can we make this generic? 
-        '''Populates the draw commands in the display list necessary for this element to render its content on a canvas'''
+        '''Returns the display list of draw commands necessary for this element to render its content on a canvas'''
 
         pass
-
-    def getDisplayList(self):
-        '''Returns the display list for this object'''
-
-        return self.display_list
 
     #TODO: do we even need this method?? 
     @abstractmethod

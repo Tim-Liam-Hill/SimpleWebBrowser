@@ -36,7 +36,10 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
         return self.max_width
 
     def paint(self):
-        return []
+        display_list = []
+        for child in self.children:
+            display_list.extend(child.paint())
+        return display_list
 
     def __repr__(self):
         return "DocumentLayout: max_width {}".format(self.max_width)
@@ -44,4 +47,5 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
     def print(self):
 
         print("Document Layout: width {} and height {}".format(self.width,self.height))
-        self.child.print(1)
+        self.children[0].print(1)
+    

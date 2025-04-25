@@ -54,7 +54,8 @@ class DrawText:
             anchor='nw',
             fill=self.color)
 
-
+    def __repr__(self):
+        return "DrawText: x '{}' y '{}-{}' color '{}' text '{}'".format(self.left,self.top,self.bottom,self.color, self.text)
 
 class DrawRect:
     ''''''
@@ -75,3 +76,6 @@ class DrawRect:
             self.right, self.bottom - scroll,
             width=0,
             fill=self.color)
+
+    def __repr__(self):
+        return "DrawRect: x '{}->{}' y '{}-{}' color '{}'".format(self.left,self.right,self.top,self.bottom,self.color)

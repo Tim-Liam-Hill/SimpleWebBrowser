@@ -119,6 +119,9 @@ class BlockLayout(Layout):
             x2, y2 = self.x + self.width, self.y + self.getHeight()
             rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
             cmds.append(rect)
+
+        for child in self.children:
+            cmds.extend(child.paint())
         
         return cmds
 

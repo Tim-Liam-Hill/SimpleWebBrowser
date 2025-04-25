@@ -47,5 +47,6 @@ I think I have a border algorithm:
 
 Finalizing an algorithm is hard since as soon as you start going through the given algorithm you discover you need to tweak it. 
 
+Another change I am making is to make the paint() call recursive for nodes. That way you don't need another function (like the book's ```paint_tree```) to do the recursion for you (ie we abstract this away). 
 
 python3 -m unittest tests.test_Layout

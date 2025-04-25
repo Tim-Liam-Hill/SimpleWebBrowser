@@ -1,6 +1,6 @@
 import tkinter
 import tkinter.font
-from src.HTMLLayout import paint_tree, style
+from src.HTMLLayout import style
 from src.URLHandler import URLHandler
 from src.HTMLParser import Element, HTMLParser, print_tree
 import sys
@@ -72,9 +72,9 @@ class Browser:
         rules = self.getCSSRules(self.root_node,url)
         style(self.root_node, sorted(rules, key=cascade_priority))
         self.createLayout()
-        print_tree(self.root_node)
-        print('############')
-        print_tree(self.document)
+        # print_tree(self.root_node)
+        # print('############')
+        # print_tree(self.document)
         #print(self.display_list)
   
         self.draw()
@@ -117,8 +117,9 @@ class Browser:
         logger.info("Creating DOM from HTML Tree")
         self.document = DocumentLayout(self.root_node, self.widthForContent())
         self.document.layout()
-        self.display_list = []
-        paint_tree(self.document, self.display_list)
+        self.display_list = self.document.paint()
+        self.document.print()
+        print(self.display_list)
         self.doc_height = self.document.height
 
     def widthForContent(self):
@@ -186,41 +187,42 @@ from src.layouts.DocumentLayout import DocumentLayout
 from src.HTMLParser import Element, Text
 
 if __name__ == "__main__":
-    # logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO)
     b = Browser()
 
-    # if(len(sys.argv) != 2):
-    #     b.load(f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}')
-    # else: b.load(sys.argv[1])
-    # tkinter.mainloop()
-    style = {
-        "font-size": "26px",
-        "font-style": "normal",
-        "font-weight": "normal",
-        "color": "black",
-        "font-family": 'Times',
-    }
+    if(len(sys.argv) != 2):
+        b.load(f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}')
+    else: b.load(sys.argv[1])
+    tkinter.mainloop()
+    # style = {
+    #     "font-size": "26px",
+    #     "font-style": "normal",
+    #     "font-weight": "normal",
+    #     "color": "black",
+    #     "font-family": 'Times',
+    # }
     
-    logging.basicConfig(level=logging.DEBUG)
-    p = Element("div",{},None)
-    p.style = {"display":"block"}
-    c1 = Element("span",{"display":"inline"}, p)
-    c2 = Text("mr meow meow",p)
-    c2.style = style
-    c1.style = {"background-color":"red"}
-    c1c1 = Text("inside span",c1)
-    c1c1.style = style
+    # logging.basicConfig(level=logging.DEBUG)
+    # p = Element("div",{},None)
+    # p.style = {"display":"block"}
+    # c1 = Element("span",{"display":"inline"}, p)
+    # c2 = Text("mr meow meow",p)
+    # c2.style = style
+    # c1.style = {"background-color":"red"}
+    # c1c1 = Text("inside span",c1)
+    # c1c1.style = style
 
-    c1c2 = Element("div",{"display":"block"},c1)
-    c1c2.style = {}
-    c1c2.style["display"] = "block"
-    c1c2c1 = Text("ooooo",c1c2)
-    c1c2c1.style = style
-    c1c2.children = [c1c2c1]
-    c1c3 = Text("eeee",c1)
-    c1c3.style = style
-    c1.children = [c1c1,c1c2,c1c3]
-    p.children= [c1,c2]
-    block = BlockLayout(p,DocumentLayout(None,500),None)
-    block.layout()
-    block.print(0)
+    # c1c2 = Element("div",{"display":"block"},c1)
+    # c1c2.style = {}
+    # c1c2.style["display"] = "block"
+    # c1c2c1 = Text("ooooo",c1c2)
+    # c1c2c1.style = style
+    # c1c2.children = [c1c2c1]
+    # c1c3 = Text("eeee",c1)
+    # c1c3.style = style
+    # c1.children = [c1c1,c1c2,c1c3]
+    # p.children= [c1,c2]
+    # block = BlockLayout(p,DocumentLayout(None,500),None)
+    # block.layout()
+    # block.print(0)
+    # print(block.paint())

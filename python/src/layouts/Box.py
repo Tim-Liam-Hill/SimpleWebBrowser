@@ -1,4 +1,5 @@
 from src.CSS.CSSConstants import DEFAULT_LEADING
+from src.layouts.LayoutConstants import DrawText, DrawRect
 
 #TODO: should we inherit from layout?? 
 class Line:
@@ -49,9 +50,19 @@ class Line:
         self.y = y
         metrics = [tbox.font.metrics() for tbox in self.text_boxes]
         max_ascent = max([metric["ascent"] for metric in metrics])
-        self.baseline = y + DEFAULT_LEADING * max_ascent
+        self.baseline = DEFAULT_LEADING * max_ascent
         max_descent = max([metric["descent"] for metric in metrics])
-        self.height = y + (DEFAULT_LEADING * (max_ascent+max_descent))
+        self.height = (DEFAULT_LEADING * (max_ascent+max_descent))
+
+    def paint(self,x):
+        cmds = [] 
+
+        #commands for boxes go first so we don't paint over text 
+        for box in self.boxes:
+            cmds.extend(box.paint(x, self.y, self.height))
+        for text_box in self.text_boxes:
+            cmds.extend(text_box.paint(x,self.y, self.baseline))
+        return cmds
 
     def __eq__(self, value):
         if not isinstance(value, Line):
@@ -87,18 +98,20 @@ class TextBox:
         #TODO: rename to make clear it is relative coordinates
         self.text = text 
         self.font = font 
-        self.x = x  
+        self.rel_x = x  
         self.width = width
         self.node = node #save the parent node for this text in case we can use it for css implementation later (eg: first-word)
         #get css props from node
 
     def paint(self, x, y, baseline):
         cmds = []
+        y1 = y + baseline - self.font.metrics("ascent")
+        cmds.append(DrawText(x+self.rel_x,y1,self.text,self.font,self.node.style["color"]))
         return cmds
     
     def __repr__(self):
-        t = self.text if len(self.text.split(" ")) < 7 else self.text.split(" ")[0:7].join(" ")
-        return "TextBox: x '{}' width '{}' text '{}'".format(self.x,self.width, t)
+        t = self.text if len(self.text.split(" ")) < 7 else " ".join(self.text.split(" ")[0:7])
+        return "TextBox: rel_x '{}' width '{}' text '{}'".format(self.rel_x,self.width, t)
     
     def __eq__(self, value):
         if not isinstance(value, Line):
@@ -117,15 +130,19 @@ class Box:
 
     #TODO: rename to make clear it is relative coordinates
     def __init__(self,x,width, is_start, is_end, node):
-        self.x = x 
+        self.rel_x = x 
         self.is_start = is_start
         self.is_end = is_end
         self.width = width
         self.node = node 
     
-    def paint(self, height):
+    def paint(self, x, y, height):
         cmds = []
+        x_start = x + self.rel_x
+        x_end = x_start + self.width
+        y_end = y + height
+        cmds.append(DrawRect(x_start, y, x_end, y_end, self.node.style["background-color"])) 
         return cmds
     
     def __repr__(self):
-        return "Box: x '{}' width '{}' is_start '{}' is_end '{}'".format(self.x,self.width,self.is_start, self.is_end)
+        return "Box: rel_x '{}' width '{}' is_start '{}' is_end '{}'".format(self.rel_x,self.width,self.is_start, self.is_end)
