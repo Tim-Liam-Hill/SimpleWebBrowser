@@ -7,3 +7,5 @@ INHERITED_PROPERTIES = {
     "font-family": 'Times',
     "super_script":""
 }
+
+DEFAULT_LEADING = 1.25 

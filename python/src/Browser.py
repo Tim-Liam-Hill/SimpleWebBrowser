@@ -202,15 +202,24 @@ if __name__ == "__main__":
     }
     
     logging.basicConfig(level=logging.DEBUG)
-    p = Element("div",{"display":"block"},None)
+    p = Element("div",{},None)
+    p.style = {"display":"block"}
     c1 = Element("span",{"display":"inline"}, p)
     c2 = Text("mr meow meow",p)
     c2.style = style
     c1.style = {"background-color":"red"}
-
     c1c1 = Text("inside span",c1)
     c1c1.style = style
-    c1.children = [c1c1]
+
+    c1c2 = Element("div",{"display":"block"},c1)
+    c1c2.style = {}
+    c1c2.style["display"] = "block"
+    c1c2c1 = Text("ooooo",c1c2)
+    c1c2c1.style = style
+    c1c2.children = [c1c2c1]
+    c1c3 = Text("eeee",c1)
+    c1c3.style = style
+    c1.children = [c1c1,c1c2,c1c3]
     p.children= [c1,c2]
     block = BlockLayout(p,DocumentLayout(None,500),None)
     block.layout()

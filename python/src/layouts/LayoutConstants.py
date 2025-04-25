@@ -14,7 +14,6 @@ class LayoutTypes(Enum):
 HSTEP, VSTEP = 13, 18
 
 """"""
-DEFAULT_LEADING = 1.25 #do we need different leadings? TODO: later on might get this from CSS.
 
 """Font Cache"""
 FONTS = {}

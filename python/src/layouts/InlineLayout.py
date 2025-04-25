@@ -3,7 +3,7 @@ from src.HTMLParser import Element, Text
 import tkinter.font
 import logging
 from dataclasses import dataclass
-from src.layouts.LayoutConstants import LayoutTypes, DrawRect, DrawText, VSTEP, HSTEP, get_font,DEFAULT_LEADING
+from src.layouts.LayoutConstants import LayoutTypes, get_font
 from src.layouts.Layout import Layout
 from src.layouts.Box import TextBox, Box, Line
 logger = logging.getLogger(__name__)
@@ -36,8 +36,8 @@ class InlineLayout(Layout):
     def __init__(self, nodes,parent,previous):
         super().__init__(parent,previous)
         self.nodes = nodes
-        self.lines = [] #2d array
-        self.curr_line = Line()
+        self.lines = [] 
+        self.curr_line = Line() 
         #does layout need its own display_list array? I think it can just get it from its children. 
     
     def getWidth(self):
@@ -72,7 +72,7 @@ class InlineLayout(Layout):
     
     def getXStart(self):
 
-        return self.cont_x
+        return self.x
     
     def getYStart(self):
 
@@ -95,7 +95,7 @@ class InlineLayout(Layout):
         for node in self.nodes:
             cursor_x, start_y, lines_index = self.recurse(node,cursor_x, start_y, lines_index)
 
-        self.lines.append(self.curr_line)
+        self.flush(lines_index,start_y)
         #flush once we are done!!!
         #then we go through and populate the starting y and height for each element
         
@@ -147,21 +147,30 @@ class InlineLayout(Layout):
                 cursor_x, start_y, lines_index = self.recurse(child, cursor_x,start_y,lines_index)
 
             if self.needsBox(node):
-                for i in range(index, len(self.lines)):
+                for i in range(index, len(self.lines)): 
+                    if not isinstance(self.lines[i], Line): #we could have interleaved BlockLayouts
+                        break
                     box = Box(curr_cursor_x, self.getContentWidth()-curr_cursor_x,i == index, False ,node) #boxes should go all the way to the end if they go onto multiple lines
                     self.lines[i].addBox(box)
                     curr_cursor_x = 0
                 box = Box(curr_cursor_x, cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
                 self.curr_line.addBox(box)
         else: 
-            pass 
+            self.flush(lines_index,start_y)
+            from src.layouts.BlockLayout import BlockLayout #hopefully this don't cause no circular dependencies but we will see
+            block = BlockLayout(node,self,self.lines[-1])
+            block.layout()
+            self.lines.append(block)
+            start_y += block.getHeight()
+            lines_index = len(self.lines)
+            cursor_x = 0
 
         return cursor_x, start_y, lines_index
 
     def needsBox(self,node):
         '''Given a node, determines if it needs a surrounding box for background color, border etc'''
         
-        return isinstance(node, Element) and "background-color" in node.style
+        return isinstance(node, Element) and "background-color" in node.style and node.style["background-color"] != "transparent"
 
     def word(self, word, node):
 
@@ -196,6 +205,7 @@ class InlineLayout(Layout):
 
     def paint(self):
         #TODO: implement
+        #pass each line the x start 
         pass 
 
     def getFont(self, node):
@@ -212,38 +222,20 @@ class InlineLayout(Layout):
 
         return get_font(size, weight, style, family)
 
-    def flush(self, line_index, start_y):
-        '''Starting with line at line_index, calculates baselines, height and sets y position for each line'''
+    def flush(self, lines_index, start_y):
+        '''Adds current line to lines, then starting with line at line_index, calculates baselines, height and sets y position for each line'''
 
-        pass 
-        # if not self.line: return
-        # metrics = [font.metrics() for x, word, font, css_props in self.line]
-        # max_ascent = max([metric["ascent"] for metric in metrics])
-        # baseline = self.cursor_y +  DEFAULT_LEADING * max_ascent
-        # text_display_list = []
+        self.lines.append(self.curr_line)
+        self.curr_line = Line()
+        for i in range(lines_index, len(self.lines)):
+            self.lines[i].flush(start_y)
+            start_y += self.lines[i].getHeight()
+        return start_y
 
-        # for rel_x, word, font, css_props in self.line:
-        #     x = self.x + rel_x
-        #     y =  self.y + baseline - (css_props["vert_align"] * font.metrics("ascent"))
-        #     text_display_list.append(InlineTextInfo(x, y, word, font,css_props["color"]))
-        # max_descent = max([metric["descent"] for metric in metrics])
+    def paint(self): 
+        cmds = []
         
-        # if self.node.style.get("background-color") != "transparent": #TODO: adjust offsets once we have padding etc
-        #     self.display_list.append(InlineRectInfo(self.line_start_x, self.y + self.cursor_y,  self.cursor_x, self.y + self.cursor_y + DEFAULT_LEADING*max_descent +  max_ascent,self.node.style.get("background-color")))
-
-        # #Rects must be rendered before text otherwise text gets covered 
-        # self.display_list = self.display_list + text_display_list
-
-        # self.cursor_y = baseline + DEFAULT_LEADING * max_descent
-        # self.cursor_x = 0
-        # self.line_start_x = self.x 
-
-        # self.line = []
-
-        def paint(self): 
-            cmds = []
-            
-            return cmds
+        return cmds
 
     def getLayoutMode(self):
 

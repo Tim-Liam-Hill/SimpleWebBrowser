@@ -1,11 +1,16 @@
+from src.CSS.CSSConstants import DEFAULT_LEADING
 
-
+#TODO: should we inherit from layout?? 
 class Line:
     '''A line is a collection of TextBoxes and Boxes that make up the content to be shown on a specific line within some inline block'''
 
     def __init__(self):
         self.text_boxes = [] 
         self.boxes = [] 
+        self.height = 0 #children won't have vertical padding/margin affecting them per what chrome shows
+        self.baseline = 0
+        #self.x = 0 #don't need to store this, we will get it when we paint since we only need it then
+        self.y = 0
 
     def addText(self, textBox):
         '''Append a text box to the list'''
@@ -18,14 +23,35 @@ class Line:
         self.boxes.insert(0,box)
     
     def getHeight(self):
-        '''Determines the height of this line relative to all different font sizes present'''
-
-        pass 
+        '''Determines the height of this line relative to all different font sizes present
+        
+        NOTE: this will only return a sensible value once this line has been flushed.
+        '''
+        #inline elements don't seem to be affected by margin/padding top and bottom so this should 
+        #be a static return value right?? 
+        return self.height
     
     def getBaseLine(self):
-        '''Determines the baseline to use for displaying text based on the different font sizes present in text_boxes'''
+        '''Determines the baseline to use for displaying text based on the different font sizes present in text_boxes
+        
+        NOTE: this will only return a sensible value once this line has been flushed.
+        '''
 
-        pass
+        return self.baseline
+
+    def getYStart(self):
+        '''Only needed since a blocklayout might call this'''
+
+        return self.y
+
+    def flush(self, y):
+        '''Given a starting y position, determines the baseline for each text node.'''
+        self.y = y
+        metrics = [tbox.font.metrics() for tbox in self.text_boxes]
+        max_ascent = max([metric["ascent"] for metric in metrics])
+        self.baseline = y + DEFAULT_LEADING * max_ascent
+        max_descent = max([metric["descent"] for metric in metrics])
+        self.height = y + (DEFAULT_LEADING * (max_ascent+max_descent))
 
     def __eq__(self, value):
         if not isinstance(value, Line):
@@ -34,7 +60,7 @@ class Line:
         return self.text_boxes == value.text_boxes and self.boxes == value.boxes
     
     def __repr__(self):
-        return "Line: boxes {} text_boxes {}".format(len(self.boxes), len(self.text_boxes))
+        return "Line: height '{}' boxes '{}' text_boxes '{}'".format(self.getHeight(),len(self.boxes), len(self.text_boxes))
     
     def print(self, indent):
         print("-" * indent + self.__repr__())
