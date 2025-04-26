@@ -58,6 +58,8 @@ class Line:
     def flush(self, y):
         '''Given a starting y position, determines the baseline for each text node.'''
         self.y = y
+        if len(self.text_boxes) == 0: 
+            return 
         metrics = [tbox.font.metrics() for tbox in self.text_boxes]
         max_ascent = max([metric["ascent"] for metric in metrics])
         self.baseline = DEFAULT_LEADING * max_ascent

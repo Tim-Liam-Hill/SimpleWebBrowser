@@ -216,7 +216,10 @@ class InlineLayout(Layout):
         style = node.style["font-style"]
         family = node.style["font-family"]
         if style == "normal": style = "roman"
-        size = int(float(node.style["font-size"][:-2]) * .75)
+        try:
+            size = int(float(node.style["font-size"][:-2]) * .75)
+        except:
+            size = 26
 
         if node.style.get('font-size', " ")[-1] == "%": #TODO: expand and ensure this works. 
             size *= 1/float(node.style.get('font-size'))

@@ -108,6 +108,8 @@ class Element:
         return "<" + self.tag + ">"
     
     def __eq__(self, value):
+        if not isinstance(value, Element):
+            return False
         return self.tag == value.tag and self.attributes == value.attributes\
               and self.children == value.children and self.parent == value.parent\
               and self.style == value.style
