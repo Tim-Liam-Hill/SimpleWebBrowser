@@ -3,15 +3,29 @@
 <head>
     <style>
         .outer {border: 2px solid red; background-color: aqua; }
-        .inner {border: 1px solid blue;}
+        .inner {background-color: bisque;}
         .back {background-color: blueviolet;}
-        #pad {margin: 4em;}
+        #pad {font-size: 130%;}
     </style>
 </head>
 <body>
+    <div>
     <span class="outer">
         Hey there everyone, its me! your favorite web browser engineer. I am currently trying to make sure that my beautiful web 
-        browser <span class="back">this is the inner class with a different background color</span>But this one is the original color.
+        browser <span class="back">this is the inner class with a different background color</span><span id="pad">But this one is the original color.</span>
     </span>
+</div>
+<div class="inner">
+    This is text in the next div
+</div>
+<div>
+    <span class="outer">
+        Hey there everyone, its me! your favorite web browser engineer. I am currently trying to make sure that my beautiful web 
+        browser <span class="back">this is the inner class with a different background color</span><span id="pad">But this one is the original color.</span>
+    </span>
+</div>
+<div class="inner">
+    This is text in the next div
+</div>
 </body>
 </html>

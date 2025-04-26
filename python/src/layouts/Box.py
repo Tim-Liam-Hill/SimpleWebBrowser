@@ -50,6 +50,10 @@ class Line:
         '''Only needed since a blocklayout might call this'''
 
         return self.y
+    
+    def getY(self):
+        ''''''
+        return self.y
 
     def flush(self, y):
         '''Given a starting y position, determines the baseline for each text node.'''

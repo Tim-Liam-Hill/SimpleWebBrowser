@@ -37,9 +37,13 @@ class BlockLayout(Layout):
 
         if self.node.tag in ["br", "hr"]:
             return VSTEP
+        
+        if len(self.children) == 0:
+            return 0
 
         height = max([child.getHeight() + child.getY() for child in self.children] + [0]) #TODO: should this ever be 0??? 
         height -= self.y
+        #height = self.y- (self.children[-1].getHeight() + self.children[-1].getY())
         #TODO: add our own borders and padding
 
         return height

@@ -60,8 +60,11 @@ class InlineLayout(Layout):
     
     #TODO: implement CSS
     def getHeight(self):
-        #TODO: implement
-        return 0
+
+        if len(self.lines) == 0:
+            return 0
+        
+        return sum([line.getHeight() for line in self.lines ])
     
     def getX(self):
 
