@@ -40,6 +40,12 @@ class Line:
 
         return self.baseline
 
+    def getTextWidth(self):
+        '''Returns the relative x coordinate of the last textbox's right hand side which can be used to calculate the width of the CURRENT text elements of this line.'''
+        if len(self.text_boxes) == 0:
+            return 0
+        return self.text_boxes[-1].rel_x + self.text_boxes[-1].width
+
     def getYStart(self):
         '''Only needed since a blocklayout might call this'''
 

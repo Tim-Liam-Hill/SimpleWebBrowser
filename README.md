@@ -85,8 +85,8 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Move Element and Text classes into a different folder.
 * Make concrete class for DFAs
 * make HTML parser handle errors more gracefully. Maybe rework the DFA there entirely at some point
-* stop inheriting background-color once we move away from tkinter
 * Implement paragraph spacing with default margin!!
+* Use CSS priorities
 
 # BUGS
 

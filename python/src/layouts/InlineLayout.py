@@ -5,6 +5,7 @@ import logging
 from dataclasses import dataclass
 from src.layouts.LayoutConstants import LayoutTypes, get_font
 from src.layouts.Layout import Layout
+import re
 from src.layouts.Box import TextBox, Box, Line
 logger = logging.getLogger(__name__)
 
@@ -117,7 +118,9 @@ class InlineLayout(Layout):
         #TODO: break these up into individual functions
         #TODO: test an empty span <span></span> and make sure we don't die if this is what we have. 
         if isinstance(node, Text):
-            words = node.text.strip().split(" ")
+            no_newlines = re.sub(r'\t|\n','',node.text)
+            squash_spaces = re.sub(r' +', ' ', no_newlines)
+            words = squash_spaces.split(" ")
             font = self.getFont(node)
             curr_sentence = "" #create as few textboxes as possible, put lot's of words into a text box
             curr_w = 0
@@ -152,7 +155,8 @@ class InlineLayout(Layout):
                     box = Box(curr_cursor_x, self.getContentWidth()-curr_cursor_x,i == index, False ,node) #boxes should go all the way to the end if they go onto multiple lines
                     self.lines[i].addBox(box)
                     curr_cursor_x = 0
-                box = Box(curr_cursor_x, self.getContentWidth()-curr_cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
+                #subtract curr_cursor_x since we may only have one line and we don't start that line
+                box = Box(curr_cursor_x, self.curr_line.getTextWidth() - curr_cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
                 self.curr_line.addBox(box)
         else: 
             self.flush(lines_index,start_y)
