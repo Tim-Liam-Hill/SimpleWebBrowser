@@ -161,6 +161,8 @@ class InlineLayout(Layout):
                 #subtract curr_cursor_x since we may only have one line and we don't start that line
                 box = Box(curr_cursor_x, self.curr_line.getTextWidth() - curr_cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
                 self.curr_line.addBox(box)
+        elif Layout.layoutType(node) == "none":
+            pass
         else: 
             self.flush(lines_index,start_y)
             from src.layouts.BlockLayout import BlockLayout #hopefully this don't cause no circular dependencies but we will see

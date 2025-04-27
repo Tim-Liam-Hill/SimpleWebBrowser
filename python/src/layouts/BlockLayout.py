@@ -97,6 +97,10 @@ class BlockLayout(Layout):
         for child in self.node.children: 
             if isinstance(child, Element) and child.tag in ["head","script","style","meta"]:
                 continue
+            
+            if Layout.layoutType(child) == "none":
+                continue
+
             if Layout.layoutType(child) == "inline":
                 inline_children.append(child)
                 continue

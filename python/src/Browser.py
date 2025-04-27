@@ -110,7 +110,7 @@ class Browser:
         for node in style_nodes:
             if len(node.children) == 1: #just a sanity check, it is possible there are no children (empty style tag). Should never be more than one
                 rules.extend(self.css_parser.parse(node.children[0].text))
-
+        
         return rules
 
     def createLayout(self):
@@ -119,7 +119,7 @@ class Browser:
         self.document.layout()
         self.display_list = self.document.paint()
         self.document.print()
-        print(self.display_list)
+        #print(self.display_list)
         self.doc_height = self.document.height
 
     def widthForContent(self):

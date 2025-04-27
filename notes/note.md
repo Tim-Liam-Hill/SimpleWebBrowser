@@ -942,6 +942,8 @@ Oh mein goodness, I forgot you can have comments inside of the body of a rule!!!
 
 ```python3 -m unittest tests.test_CSSParser```
 
+That's fixed but there is still one shmol issue it seems -> its because I have not implemented layout none. Should be a quick fix. 
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!

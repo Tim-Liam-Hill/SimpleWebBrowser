@@ -121,7 +121,7 @@ class Layout(ABC):
     def layoutType(node):
         '''Given an html element node, determines its layout type'''
 
-        if "display" in node.style and node.style.get("display") in ["block"]:
+        if "display" in node.style and node.style.get("display") in ["block", "none"]:
             return node.style.get("display")
 
         return "inline"
