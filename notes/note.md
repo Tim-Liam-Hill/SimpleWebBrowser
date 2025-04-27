@@ -943,6 +943,7 @@ Oh mein goodness, I forgot you can have comments inside of the body of a rule!!!
 ```python3 -m unittest tests.test_CSSParser```
 
 That's fixed but there is still one shmol issue it seems -> its because I have not implemented layout none. Should be a quick fix. 
+Found yet another bug!!! Block elements interleaved with inline ones result in blocklayouts being placed relative to each other and being displayed about the inline elephants.
 
 6.4 -> In progress
 

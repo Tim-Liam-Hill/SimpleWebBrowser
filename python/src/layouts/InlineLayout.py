@@ -80,7 +80,7 @@ class InlineLayout(Layout):
     
     def getYStart(self):
 
-        return self.y
+        return self.y + self.getHeight()
 
     #TODO: css to change initial values
     #TODO: content width calcs and width calcs are confusing me rn.
