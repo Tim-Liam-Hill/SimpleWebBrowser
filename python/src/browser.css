@@ -18,6 +18,7 @@ sub {
     vertical-align: sub;
 }
 code {font-family: "Courier";}
+em {font-style: italic;}
 
 
 html { display: block; }
@@ -27,7 +28,7 @@ body {
 }
 article { display: block; }
 section {display: block;}
-nav {display: block;}
+nav { display: block; }
 aside {display: block;}
 h1 {
     display: block;

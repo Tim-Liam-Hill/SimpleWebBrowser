@@ -38,6 +38,25 @@ class TestCSSParser(unittest.TestCase):
         rules = [(TagSelector("div",None), {'width':'100px'}), (TagSelector("p",None),{'background-color':'red'})]
         self.assertEqual(parser.parse(css), rules)
 
+        css = "div {width: 100px /*I am a comment*/}\n p {background-color: red}"
+        rules = [(TagSelector("div",None), {'width':'100px'}), (TagSelector("p",None),{'background-color':'red'})]
+        self.assertEqual(parser.parse(css), rules)
+
+        css = "div {width: /*I am a comment*/100px }\n p {background-color: red}"
+        rules = [(TagSelector("div",None), {'width':'100px'}), (TagSelector("p",None),{'background-color':'red'})]
+        self.assertEqual(parser.parse(css), rules)
+        css = "div {width/*I am a comment*/: 100px }\n p {background-color: red}"
+        rules = [(TagSelector("div",None), {'width':'100px'}), (TagSelector("p",None),{'background-color':'red'})]
+        self.assertEqual(parser.parse(css), rules)
+
+        css = "div {/*I am a comment*/width: 100px }\n p {background-color: red}"
+        rules = [(TagSelector("div",None), {'width':'100px'}), (TagSelector("p",None),{'background-color':'red'})]
+        self.assertEqual(parser.parse(css), rules)
+
+        css = "div /*I am a comment*/{width: 100px }\n p {background-color: red}"
+        rules = [(TagSelector("div",None), {'width':'100px'}), (TagSelector("p",None),{'background-color':'red'})]
+        self.assertEqual(parser.parse(css), rules)
+
         #Consecutive semicolons
         self.assertEqual(parser.parse("div {;;;;}"), [(TagSelector("div",None), {})])
 

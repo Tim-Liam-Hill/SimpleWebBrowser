@@ -105,6 +105,7 @@ class BlockLayout(Layout):
                 next = InlineLayout(inline_children,self,prev)
                 self.children.append(next)
                 prev = next
+                inline_children = []
             next = BlockLayout(child,self,prev)
             self.children.append(next)
             prev = next

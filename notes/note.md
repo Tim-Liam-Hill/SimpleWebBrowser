@@ -934,6 +934,14 @@ You know what? Let's read through the document once, FULLY without thinking abou
 
 I STILL NEED TO USE MY IMPLEMENTED PRIORITIES REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 
+OUr layout rework seems to be done, but now I have discovered a bug in mein css parser that makes things look weird. Seem slike I am not always parsing display properties correctly. 
+
+I hope I haven't gotten ahead of myself :/, I'll probably have to work on the css parser later but eh, what can you do. 
+
+Oh mein goodness, I forgot you can have comments inside of the body of a rule!!! silly me.
+
+```python3 -m unittest tests.test_CSSParser```
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!

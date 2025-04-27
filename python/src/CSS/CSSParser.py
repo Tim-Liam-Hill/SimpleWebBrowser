@@ -23,8 +23,20 @@ class States(Enum):
     COMMENT_BODY = "comment_body"
     COMMENT_END = "comment_end"
     SELECTOR = "selector"
+    SELECTOR_COMMENT_START = "selector_comment_start"
+    SELECTOR_COMMENT_BODY = "selector_comment_body"
+    SELECTOR_COMMENT_END = "selector_comment_END"
+
     PROPERTY = "property"
+    PROPERTY_COMMENT_START = "property_comment_start"
+    PROPERTY_COMMENT_BODY = "property_comment_body"
+    PROPERTY_COMMENT_END = "property_comment_end"
+
     VALUE = "value"
+    VALUE_COMMENT_START = "value_comment_start"
+    VALUE_COMMENT_BODY = "value_comment_body"
+    VALUE_COMMENT_END = "value_comment_end"
+
     RULE = "rule"
     VALUE_RULE = "value_rule" #handles the case where a value is followed by closing brace with no semi-colon
 
@@ -61,11 +73,25 @@ DFA = {
         States.COMMENT_START: {"*":{NEXT:States.COMMENT_BODY},DEFAULT_TRANSITION:{ACCEPT:States.DISCARD,NEXT:States.OPEN}},
         States.COMMENT_BODY: {"*":{NEXT:States.COMMENT_END}, DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
         States.COMMENT_END: {"/":{ACCEPT:States.DISCARD, NEXT:States.OPEN},DEFAULT_TRANSITION:{NEXT:States.COMMENT_BODY}},
-        States.SELECTOR: {"{": {ACCEPT: States.SELECTOR,NEXT:States.PROPERTY}, "}":{ACCEPT:States.INVALID_BRACE_CLOSE, NEXT: States.OPEN}, DEFAULT_TRANSITION: {NEXT: States.SELECTOR}},
+
+        States.SELECTOR: {"{": {ACCEPT: States.SELECTOR,NEXT:States.PROPERTY}, "}":{ACCEPT:States.INVALID_BRACE_CLOSE, NEXT: States.OPEN}, DEFAULT_TRANSITION: {NEXT: States.SELECTOR},
+                          "/":{NEXT: States.SELECTOR_COMMENT_START}},
+        States.SELECTOR_COMMENT_START: {"*": {NEXT:States.SELECTOR_COMMENT_BODY},DEFAULT_TRANSITION: {NEXT:States.SELECTOR}},
+        States.SELECTOR_COMMENT_BODY: {"*": {NEXT:States.SELECTOR_COMMENT_END},DEFAULT_TRANSITION: {NEXT:States.SELECTOR_COMMENT_BODY}},
+        States.SELECTOR_COMMENT_END: {"/": {ACCEPT: States.SELECTOR_COMMENT_END,NEXT:States.SELECTOR},DEFAULT_TRANSITION: {NEXT:States.SELECTOR_COMMENT_BODY}},
+
         States.PROPERTY: {";":{ACCEPT: States.DISCARD, NEXT: States.PROPERTY}, ":":{ACCEPT:States.PROPERTY,NEXT:States.VALUE},
-                          "}":{ACCEPT:States.RULE,NEXT: States.OPEN},  DEFAULT_TRANSITION:{NEXT:States.PROPERTY}},
+                          "}":{ACCEPT:States.RULE,NEXT: States.OPEN},  DEFAULT_TRANSITION:{NEXT:States.PROPERTY}, "/":{NEXT:States.PROPERTY_COMMENT_START}},
+        States.PROPERTY_COMMENT_START: {"*": {NEXT:States.PROPERTY_COMMENT_BODY}, DEFAULT_TRANSITION: {NEXT: States.PROPERTY}},
+        States.PROPERTY_COMMENT_BODY: {"*": {NEXT:States.PROPERTY_COMMENT_END}, DEFAULT_TRANSITION: {NEXT: States.PROPERTY_COMMENT_BODY}},
+        States.PROPERTY_COMMENT_END: {"/": {ACCEPT: States.PROPERTY_COMMENT_END, NEXT:States.PROPERTY}, DEFAULT_TRANSITION: {NEXT: States.PROPERTY_COMMENT_BODY}},
+
         States.VALUE: {";":{ACCEPT: States.VALUE, NEXT: States.PROPERTY},"}":{ACCEPT:States.VALUE_RULE, NEXT: States.OPEN}, 
-                       DEFAULT_TRANSITION: {NEXT:States.VALUE}}
+                       DEFAULT_TRANSITION: {NEXT:States.VALUE}, "/": {NEXT: States.VALUE_COMMENT_START}},
+        States.VALUE_COMMENT_START: {"*": {NEXT: States.VALUE_COMMENT_BODY}, DEFAULT_TRANSITION: {NEXT: States.VALUE}},
+        States.VALUE_COMMENT_BODY: {"*": {NEXT: States.VALUE_COMMENT_END}, DEFAULT_TRANSITION: {NEXT: States.VALUE_COMMENT_BODY}},
+        States.VALUE_COMMENT_END: {"/": {ACCEPT: States.VALUE_COMMENT_END, NEXT: States.VALUE},DEFAULT_TRANSITION: {NEXT:States.VALUE_COMMENT_BODY}},
+
     }
 }
 
@@ -113,6 +139,11 @@ class CSSParser:
                             rules += self.acceptRule(curr_selector,curr_rule)
                             curr_selector = None 
                             curr_rule = None
+                        case States.SELECTOR_COMMENT_END | States.PROPERTY_COMMENT_END | States.VALUE_COMMENT_END:
+                            text += "/" #we haven't added last char yet
+                            text = text[0:text.index("/*")] + text[text.index("*/")+2:]
+                            state = DFA["states"][state][char][NEXT]
+                            continue #skip usual flow.
                         case _: #discard by default
                             pass #we don't reset any vars here: we might just be ignoring a single property. 
                     text = ""
@@ -191,12 +222,12 @@ if __name__ == "__main__":
     parser = CSSParser()
     path = ""
 
-    #print(parser.parse("div {width: 100px}\n/*I am a comment*/ p {background-color: red}"))
+    print(parser.parse("div {width/*I am a comment*/: 100px }\n p {background-color: red}"))
 
-    if(len(sys.argv) != 2):
-        path = "{}/../browser.css".format(os.path.dirname(os.path.abspath(__file__)))
-    else: 
-        path = sys.argv[1]
+    # if(len(sys.argv) != 2):
+    #     path = "{}/../browser.css".format(os.path.dirname(os.path.abspath(__file__)))
+    # else: 
+    #     path = sys.argv[1]
 
-    with open(path, "r") as f:
-        print(parser.parse(f.read()))
+    # with open(path, "r") as f:
+    #     print(parser.parse(f.read()))
