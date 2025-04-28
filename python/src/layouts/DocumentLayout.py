@@ -24,8 +24,11 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
         child = BlockLayout(self.node, self, None)
         self.children.append(child)
         child.layout()
-        self.height = child.getHeight()
-    
+
+    #TODO: could speed this up if needed    
+    def getHeight(self):
+        return self.children[0].getHeight()
+
     def getXStart(self):
         return 0
 
@@ -46,7 +49,7 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
 
     def print(self):
 
-        print("Document Layout: width {} and height {}".format(self.width,self.height))
+        print("Document Layout: width {} and height {}".format(self.width,self.getHeight()))
         self.children[0].print(1)
     
     def getElementsAt(self,x,y):
