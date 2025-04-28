@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from src.URLHandler import URLHandler
 import logging
 import os
+import re
 CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
 
@@ -206,6 +207,7 @@ class HTMLParser:
         if tag.startswith("!") or tag=="": return #we realistically shouldn't encounter empty tags, and technically I don't think we need to remove them
         self.implicit_tags(tag)
         logger.debug("Adding tag: %s", tag)
+        tag = re.sub(r"(\t|\n)", " ", tag) #new lines will mess things up if the first attribute is on a newline after the tagname
 
         if tag.startswith("/"):
             if tag == "/html":

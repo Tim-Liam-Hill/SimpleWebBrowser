@@ -21,6 +21,12 @@ FONTS = {}
 #TODO: support more fonts. Also set up a more sophisticated cache at some point??
 """Used to access fonts in the font cache"""
 def get_font(size, weight, style, family):
+
+    #TODO: change later once more CSS involved and SKIA involved
+    if weight not in ["normal", "bold"]:
+        weight = "normal"
+    
+
     key = (size, weight, style)
     if key not in FONTS:
         font = tkinter.font.Font(size=math.floor(size), weight=weight,
