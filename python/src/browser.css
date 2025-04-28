@@ -68,10 +68,23 @@ p {display: block;}
 hr {display: block;}
 pre {display: block;}
 blockquote {display: block;}
-ol {display: block;}
-ul {display: block;}
+
+ol, ul { /*Keeping things simple and not supporting decimal list-style-type*/
+    display: block;
+    list-style-type: disc;
+}
+
+ul ul, ol ul {
+    list-style-type: circle
+}
+ol ol ul, ol ul ul, ul ol ul, ul ul ul {
+    list-style-type: square
+}
+
+li {display: list-item;}
+
 menu {display: block;}
-li {display: block;}
+
 dl {display: block;}
 dt {display: block; } 
 dd {display: block; }

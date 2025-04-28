@@ -87,6 +87,9 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * make HTML parser handle errors more gracefully. Maybe rework the DFA there entirely at some point
 * Implement paragraph spacing with default margin!!
 * Use CSS priorities
+* CSS colors parsed correctly
+* CSS Shorthand properties
+* CSS make sure fonts not stinky!!! 
 
 # BUGS
 

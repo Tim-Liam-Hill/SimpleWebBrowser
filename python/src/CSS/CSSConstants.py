@@ -5,7 +5,7 @@ INHERITED_PROPERTIES = {
     "font-weight": "normal",
     "color": "black",
     "font-family": 'Times',
-    "super_script":""
+    "super_script":"",
 }
 
 DEFAULT_LEADING = 1.25 

@@ -946,7 +946,24 @@ That's fixed but there is still one shmol issue it seems -> its because I have n
 Found yet another bug!!! Block elements interleaved with inline ones result in blocklayouts being placed relative to each other and being displayed about the inline elephants.
 
 https://pages.cs.wisc.edu/~remzi/OSTEP/ -> had to adjust the regex for URLs so that this is accepted.
-Interestingly enough, we have a bug where if you have <img ...></img> then an error is thrown. Let's just disregard img closing tags
+Interestingly enough, we have a bug where if you have <img ...></img> then an error is thrown. Let's just disregard img closing tags.
+
+Okay, what do we want to work on before finally putting this chapter behind us?
+
+* List display
+* Use priorities
+* Most of the exercizes 
+* multithreading for downloading stylesheets. 
+
+Mayhaps I will write some more test cases...probs not (at least not now) but yeah. WIll probs also fix bugs as they come up but some sites are looking good so far!!! Happy!
+
+I'll put a lot of CSS things on the backburner for now just for the sake of progress (and to avoid potentially duplicating work).
+
+### Lists Implementation
+
+So lists are kinda interesting. I think I will make a new layout for lists. This layout will represent the ul and ol tags and for now we won't care about numeric styles or bullet position. The layout will add the padding for the element and create a block element for its children content (somehow, what if child is inline element?). OKAY actually: only children with display "list-item" will get leading marker and we can basically just copy the layout logic for block display. Yay!! 
+
+So here is the thing: to implement this, I want to make use of default padding for list elephants BUT inorder to do that I need to implement padding BUT I don't want to do this yet since we are going to be changing the rendering library (to skia). I don't want to work on rendering logic now I end up changing later. I am also a little bit bored of doing css right now: I kinda just want to move onto a newer chapter. I will definitely come back to CSS though. So Yeah. 
 
 6.4 -> In progress
 
