@@ -945,6 +945,9 @@ Oh mein goodness, I forgot you can have comments inside of the body of a rule!!!
 That's fixed but there is still one shmol issue it seems -> its because I have not implemented layout none. Should be a quick fix. 
 Found yet another bug!!! Block elements interleaved with inline ones result in blocklayouts being placed relative to each other and being displayed about the inline elephants.
 
+https://pages.cs.wisc.edu/~remzi/OSTEP/ -> had to adjust the regex for URLs so that this is accepted.
+Interestingly enough, we have a bug where if you have <img ...></img> then an error is thrown. Let's just disregard img closing tags
+
 6.4 -> In progress
 
 Just started reading ahead and it seems like the rework I did for my HTML elements into Layout elements is similar to what the next chapter handles. Still, I like my solution and can actually incorporate a bit of the books solution into my own so yay!!

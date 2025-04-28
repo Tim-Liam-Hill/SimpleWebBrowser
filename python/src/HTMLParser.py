@@ -213,7 +213,9 @@ class HTMLParser:
                        #the below which is commented out handles this cas and also the case when there are more closing than opening tags
                        #pretty soon I intend on implementing an algorithm to match opening with closing tags.
             #if len(self.unfinished) == 1: return #this was placed here to ensure code doesn't fail if we have more closing than opening braces
-            #if tag ==
+            
+            if tag == "/img":
+                return #we already close any img opening tags we encounter
 
             #for tags we don't nest, we may end up creating extra closing tags so we need
             #to check this case (otherwise we would throw an error with the algorithm below)
