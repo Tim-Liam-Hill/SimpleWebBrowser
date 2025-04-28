@@ -44,6 +44,7 @@ class Browser:
         self.tokens = []
         self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
         self.css_parser = CSSParser()
+        self.curr_url = ""
 
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
@@ -52,6 +53,7 @@ class Browser:
         self.window.bind("<Button-4>", self.linuxWheelScroll)
         self.window.bind("<Button-5>", self.linuxWheelScroll)
         self.window.bind("<Configure>", self.resize)
+        self.window.bind("<Button-1>",self.click)
         #--------------------------------------
 
         #css
@@ -66,6 +68,7 @@ class Browser:
     #We will consider the load function to be the start of everything. the passed in url
     #is the base url that everything else is relative to. 
     def load(self, url):
+        self.curr_url = url
         content = self.urlHandler.request(url)
 
         self.root_node = HTMLParser(content).parse(self.urlHandler.isViewSource(url))
@@ -181,13 +184,39 @@ class Browser:
         self.createLayout()
         self.draw()
 
+    def click(self, e):
+        '''Entry to click events on the tkinter canvas'''
 
-from src.layouts.BlockLayout import BlockLayout
-from src.layouts.DocumentLayout import DocumentLayout
-from src.HTMLParser import Element, Text
+        x,y = e.x, e.y
+        logger.debug("Canvas clicked at x '{}' y '{}'".format(x,y))
+        y += self.scroll
+        logger.debug("Document coordinates are x '{}' y '{}'".format(x,y))
+        elems = self.document.getElementsAt(x,y)
+        if len(elems) == 0:
+            logger.warning("Empty list of clicked elements, if page is scrollable this is an error")
+            return 
+        elt = elems[-1]
+        print(elems)
+        
+        while elt:
+            if isinstance(elt, Element) and elt.tag == "a" and "href" in elt.attributes:
+                url = elt.attributes["href"]
+                try:
+                    url = self.urlHandler.resolve(url, self.curr_url)
+                except e:
+                    logger.info("Could not load clicked link")
+                    logger.info(e)
+                    break
+                self.load(url)
+            elt = elt.parent
+        
+
+# from src.layouts.BlockLayout import BlockLayout
+# from src.layouts.DocumentLayout import DocumentLayout
+# from src.HTMLParser import Element, Text
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     b = Browser()
 
     if(len(sys.argv) != 2):

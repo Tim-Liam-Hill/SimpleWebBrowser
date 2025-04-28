@@ -146,3 +146,17 @@ class BlockLayout(Layout):
 
         for child in self.children:
             child.print(indent + 1)
+    
+    def getElementsAt(self,x,y):
+        '''Returns a list of one or more elements that bound the given x and y coordinates (document coordinates, NOT canvas coordinates)'''
+
+        elems = []
+        if self.getX() <= x < self.getX() + self.getWidth() and \
+            self.getY() <= y < self.getY() + self.getHeight():
+            elems.append(self.node)
+        if self.y > y:
+            return elems 
+        for child in self.children:
+            elems.extend(child.getElementsAt(x,y))
+
+        return elems

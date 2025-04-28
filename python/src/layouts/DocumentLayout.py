@@ -49,3 +49,6 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
         print("Document Layout: width {} and height {}".format(self.width,self.height))
         self.children[0].print(1)
     
+    def getElementsAt(self,x,y):
+
+        return self.children[0].getElementsAt(x,y)

@@ -125,3 +125,12 @@ class Layout(ABC):
             return node.style.get("display")
 
         return "inline"
+    
+    @abstractmethod
+    def getElementsAt(self,x,y):
+        '''Returns a list of one or more elements that bound the given x and y coordinates (document coordinates, NOT canvas coordinates).
+        
+        Returned elements are html elements, not Layout elements
+        '''
+        
+        pass 

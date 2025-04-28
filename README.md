@@ -90,6 +90,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * CSS colors parsed correctly
 * CSS Shorthand properties
 * CSS make sure fonts not stinky!!! 
+* right click on links -> print a preview to that link (bottom of screen over content??). Maybe for right clicking in general we print some shtuff
 
 # BUGS
 

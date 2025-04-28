@@ -10,7 +10,6 @@ class Line:
         self.boxes = [] 
         self.height = 0 #children won't have vertical padding/margin affecting them per what chrome shows
         self.baseline = 0
-        #self.x = 0 #don't need to store this, we will get it when we paint since we only need it then
         self.y = 0
 
     def addText(self, textBox):
@@ -91,6 +90,23 @@ class Line:
             print(" "*(indent) + "-" + b.__repr__())
         for b in self.text_boxes:
             print(" "*(indent) + "-" + b.__repr__())
+    
+    def getElementsAt(self,x,y, parent_x):
+        
+        elems = [] 
+        if self.y > y or self.y + self.getHeight() < y:
+            return elems 
+        
+        for box in self.boxes:
+            temp_x = box.getX() + parent_x
+            if  temp_x < x and temp_x + box.getWidth() > x:
+                elems.append(box.getNode())
+        for text_box in self.text_boxes: 
+            temp_x = text_box.getX() + parent_x
+            if  temp_x < x and temp_x + text_box.getWidth() > x:
+                elems.append(text_box.getNode())
+
+        return elems 
 
 class TextBox: 
     '''A textbox is essentially the atomic unit that makes up a portion of a line's text.
@@ -114,6 +130,15 @@ class TextBox:
         self.width = width
         self.node = node #save the parent node for this text in case we can use it for css implementation later (eg: first-word)
         #get css props from node
+
+    def getWidth(self):
+        return self.width
+    
+    def getX(self):
+        return self.rel_x
+    
+    def getNode(self):
+        return self.node
 
     def paint(self, x, y, baseline):
         cmds = []
@@ -147,6 +172,15 @@ class Box:
         self.is_end = is_end
         self.width = width
         self.node = node 
+    
+    def getWidth(self):
+        return self.width
+    
+    def getX(self):
+        return self.rel_x
+    
+    def getNode(self):
+        return self.node
     
     def paint(self, x, y, height):
         cmds = []

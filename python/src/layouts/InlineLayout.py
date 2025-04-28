@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from src.layouts.LayoutConstants import LayoutTypes, get_font
 from src.layouts.Layout import Layout
 import re
-from src.layouts.Box import TextBox, Box, Line
+from src.layouts.Line import TextBox, Box, Line
 logger = logging.getLogger(__name__)
 
 @dataclass 
@@ -263,7 +263,22 @@ class InlineLayout(Layout):
         for line in self.lines:
             line.print(indent + 1)
 
+    def getElementsAt(self,x,y):
+        '''Returns a list of one or more elements that bound the given x and y coordinates (document coordinates, NOT canvas coordinates)'''
 
+        elems = []
+        if self.getX() <= x < self.getX() + self.getWidth() and \
+            self.getY() <= y < self.getY() + self.getHeight():
+            elems.append(self.node)
+        if self.y > y:
+            return elems 
+        for child in self.lines:
+            if isinstance(child, Line):
+                elems.extend(child.getElementsAt(x,y, self.x))
+            else: 
+                elems.extend(child.getElementsAt(x,y))
+
+        return elems
 '''
 ALGORITHM:
 
