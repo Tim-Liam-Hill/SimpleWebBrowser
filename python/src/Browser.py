@@ -57,6 +57,7 @@ class Browser:
     def load(self, url):
         self.active_tab.load(url)
 
+
     def new_tab(self, url):
         new_tab = Tab(self.defaultCSS, self.urlHandler)
         new_tab.load(url)
@@ -66,7 +67,8 @@ class Browser:
         self.draw()
 
     def layout(self):
-        self.active_tab.createLayout(self.window_width)
+        self.active_tab.createLayout(self.window_width, self.chrome.getHeight())
+
 
     def draw(self):
         self.active_tab.draw(self.window_width, self.window_height, self.canvas)
@@ -99,9 +101,11 @@ class Browser:
         if e.height == self.window_height and e.width == self.window_width:
             logger.debug("No change in proportions, returning")
             return
+        prev_width = self.window_width
+        prev_height = self.window_height
         self.window_height = e.height
         self.window_width = e.width
-        if self.active_tab.resize(self.window_height):
+        if prev_width != self.window_width or prev_height < self.window_height:
             self.layout()
             self.draw()
 

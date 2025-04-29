@@ -74,9 +74,9 @@ class Tab:
         
         return rules
 
-    def createLayout(self, window_width):
+    def createLayout(self, window_width, y_start):
         logger.info("Creating DOM from HTML Tree")
-        self.document = DocumentLayout(self.root_node, self.widthForContent(window_width))
+        self.document = DocumentLayout(self.root_node, self.widthForContent(window_width), y_start)
         self.document.layout()
         self.display_list = self.document.paint()
         #self.document.print()

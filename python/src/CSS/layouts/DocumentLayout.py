@@ -10,16 +10,17 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
     to kick off the process of laying out child elements.
     '''
     
-    def __init__(self, node, max_width):
+    def __init__(self, node, max_width, y_start):
         self.node = node
         self.parent = None
         self.children = []
         self.max_width = max_width
-
-    def layout(self):
         self.width = self.max_width
         self.x = 0
-        self.y = 0
+        self.y = y_start
+
+    def layout(self):
+
 
         child = BlockLayout(self.node, self, None)
         self.children.append(child)
@@ -33,7 +34,7 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
         return 0
 
     def getY(self):
-        return 0
+        return self.y
 
     def getContentWidth(self):
         return self.max_width

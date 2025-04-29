@@ -18,7 +18,11 @@ class Chrome:
            self.padding, self.padding,
            self.padding + plus_width,
            self.padding + self.font_height)
-        
+    
+    def getHeight(self):
+        #TODO: this will likely need to be updated
+        return self.tabbar_bottom
+
     def tab_rect(self, i):
         tabs_start = self.newtab_rect.right + self.padding
         tab_width = self.font.measure("Tab X") + 2*self.padding
