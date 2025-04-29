@@ -1,5 +1,6 @@
 from src.CSS.layouts.Layout import Layout
-from src.CSS.layouts.LayoutConstants import LayoutTypes, DrawRect, VSTEP
+from src.CSS.layouts.LayoutConstants import LayoutTypes, VSTEP
+from src.Draw.Commands import DrawRect
 from src.CSS.layouts.InlineLayout import InlineLayout
 from src.HTML.HTMLParser import Element
 import logging

@@ -1,4 +1,5 @@
 import tkinter
+from src.chrome.Chrome import Chrome
 from src.chrome.Tab import Tab
 from src.HTTP.URLHandler import URLHandler
 from src.CSS.CSSParser import CSSParser
@@ -29,6 +30,7 @@ class Browser:
         self.window_width = INIT_WIDTH
         self.tabs = [] 
         self.active_tab = None
+        self.chrome = Chrome(self)
 
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
@@ -68,6 +70,9 @@ class Browser:
 
     def draw(self):
         self.active_tab.draw(self.window_width, self.window_height, self.canvas)
+        for cmd in self.chrome.paint():
+            cmd.execute(0, self.canvas)
+
 
     def scrolldown(self, e):
         logger.debug("Scrolling down")
@@ -97,6 +102,7 @@ class Browser:
         self.window_height = e.height
         self.window_width = e.width
         if self.active_tab.resize(self.window_height):
+            self.layout()
             self.draw()
 
     def click(self, e):

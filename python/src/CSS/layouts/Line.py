@@ -1,5 +1,5 @@
 from src.CSS.CSSConstants import DEFAULT_LEADING
-from src.CSS.layouts.LayoutConstants import DrawText, DrawRect
+from src.Draw.Commands import DrawText, DrawRect
 
 #TODO: should we inherit from layout?? 
 class Line:

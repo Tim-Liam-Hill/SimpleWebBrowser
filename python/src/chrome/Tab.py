@@ -79,7 +79,7 @@ class Tab:
         self.document = DocumentLayout(self.root_node, self.widthForContent(window_width))
         self.document.layout()
         self.display_list = self.document.paint()
-        self.document.print()
+        #self.document.print()
         #print(self.display_list)
 
     def widthForContent(self, window_width):
