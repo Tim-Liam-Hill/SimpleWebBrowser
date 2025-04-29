@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class URLCache:
 
-    LIMIT = 1
+    LIMIT = 400
     def __init__(self):
         self.order = []
         self.mapping = {}

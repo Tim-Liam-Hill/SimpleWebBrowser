@@ -27,4 +27,4 @@ order</a>. And then there are languages laid out <a
 href="https://en.wikipedia.org/wiki/Mongolian_script">vertically</a>…</p>
 </div>
 ```
-The href value for the a tags isn't being picked up correctly due to the newlines. 
+The href value for the a tags isn't being picked up correctly due to the newlines -> simple fix. We are getting somewhere! With a bit of elbow grease we can really make this browser somewhat workable (within the confines of the Javascript implementation). 
