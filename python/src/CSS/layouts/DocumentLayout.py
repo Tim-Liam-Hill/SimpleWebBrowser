@@ -1,4 +1,4 @@
-from src.layouts.BlockLayout import BlockLayout
+from src.CSS.layouts.BlockLayout import BlockLayout
 import logging
 logger = logging.getLogger(__name__)
 

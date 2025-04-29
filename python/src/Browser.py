@@ -1,7 +1,6 @@
 import tkinter
-import tkinter.font
-from src.Tab import Tab
-from src.URLHandler import URLHandler
+from src.chrome.Tab import Tab
+from src.HTTP.URLHandler import URLHandler
 from src.CSS.CSSParser import CSSParser
 import sys
 import logging
@@ -9,7 +8,7 @@ import os
 logger = logging.getLogger(__name__)
 
 INIT_WIDTH, INIT_HEIGHT = 800, 600
-DEFAULT_CSS_PATH = 'browser.css'
+DEFAULT_CSS_PATH = 'CSS/browser.css'
 DEFAULT_FILE_PATH = '../tests/htmlparser_test_cases/test.html' #path from this file's directory to default file we show
 CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 

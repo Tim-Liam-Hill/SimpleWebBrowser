@@ -1,7 +1,7 @@
-from src.layouts.Layout import Layout
-from src.layouts.LayoutConstants import LayoutTypes, DrawRect, VSTEP
-from src.layouts.InlineLayout import InlineLayout
-from src.HTMLParser import Element
+from src.CSS.layouts.Layout import Layout
+from src.CSS.layouts.LayoutConstants import LayoutTypes, DrawRect, VSTEP
+from src.CSS.layouts.InlineLayout import InlineLayout
+from src.HTML.HTMLParser import Element
 import logging
 logger = logging.getLogger(__name__)
 

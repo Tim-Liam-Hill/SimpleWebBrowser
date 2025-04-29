@@ -1,14 +1,9 @@
-import tkinter
-import tkinter.font
-from src.HTMLLayout import style
-from src.URLHandler import URLHandler
-from src.HTMLParser import Element, HTMLParser, print_tree
-import sys
+from src.HTML.HTMLLayout import style
+from src.HTML.HTMLParser import Element, HTMLParser
 from src.CSS.CSSParser import CSSParser, cascade_priority
 import logging
-import os 
 from src.Utils import tree_to_list
-from src.layouts.DocumentLayout import DocumentLayout
+from src.CSS.layouts.DocumentLayout import DocumentLayout
 logger = logging.getLogger(__name__)
 
 SCROLL_STEP = 100

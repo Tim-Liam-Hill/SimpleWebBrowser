@@ -1,12 +1,8 @@
 import logging
 logger = logging.getLogger(__name__)
 from src.CSS.SelectorsParser import SelectorsParser
-from src.HTMLParser import Element
+from src.HTML.HTMLParser import Element
 from enum import Enum, unique
-import sys
-import os
-
-#TODO: might be worthwhile spliting things up into more classes (eg: one specifically for selectors). 
 
 @unique
 class States(Enum):
@@ -14,8 +10,6 @@ class States(Enum):
     
     States are given concrete values to aid in debugging. Note that this enum.
     '''
-
-    #Maybe it would be better to separate states for transition and states for accept?
 
     OPEN = "open"
     DISCARD = "discard"

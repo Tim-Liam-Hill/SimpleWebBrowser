@@ -1,4 +1,4 @@
-from src.HTMLParser import HTMLParser
+from src.HTML.HTMLParser import HTMLParser
 import unittest
 import os
 

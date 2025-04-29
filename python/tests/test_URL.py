@@ -1,4 +1,4 @@
-from src.URLHandler import URLHandler
+from src.HTTP.URLHandler import URLHandler
 import unittest
 
 print("Testing URL extraction and validation")

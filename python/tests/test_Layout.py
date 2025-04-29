@@ -1,6 +1,6 @@
 from src.layouts.BlockLayout import BlockLayout
 from src.layouts.DocumentLayout import DocumentLayout
-from src.HTMLParser import Element, Text
+from src.HTML.HTMLParser import Element, Text
 import unittest
 import logging
 

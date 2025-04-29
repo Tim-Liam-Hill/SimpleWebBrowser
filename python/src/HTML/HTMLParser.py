@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from src.URLHandler import URLHandler
+from src.HTTP.URLHandler import URLHandler
 import logging
 import os
 import re

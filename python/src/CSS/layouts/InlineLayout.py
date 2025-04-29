@@ -1,12 +1,10 @@
-import tkinter
-from src.HTMLParser import Element, Text
-import tkinter.font
+from src.HTML.HTMLParser import Element, Text
 import logging
 from dataclasses import dataclass
-from src.layouts.LayoutConstants import LayoutTypes, get_font
-from src.layouts.Layout import Layout
+from src.CSS.layouts.LayoutConstants import LayoutTypes, get_font
+from src.CSS.layouts.Layout import Layout
 import re
-from src.layouts.Line import TextBox, Box, Line
+from src.CSS.layouts.Line import TextBox, Box, Line
 logger = logging.getLogger(__name__)
 
 @dataclass 
@@ -165,7 +163,7 @@ class InlineLayout(Layout):
             pass
         else: 
             self.flush(lines_index,start_y)
-            from src.layouts.BlockLayout import BlockLayout #hopefully this don't cause no circular dependencies but we will see
+            from src.CSS.layouts.BlockLayout import BlockLayout #hopefully this don't cause no circular dependencies but we will see
             block = BlockLayout(node,self,self.lines[-1])
             block.layout()
             self.lines.append(block)
