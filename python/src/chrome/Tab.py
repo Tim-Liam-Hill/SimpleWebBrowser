@@ -85,7 +85,7 @@ class Tab:
     def widthForContent(self, window_width):
         return window_width - SCROLLBAR_WIDTH
 
-    def draw(self, window_width, window_height, canvas):
+    def draw(self, window_width, window_height, start_y, canvas):
 
         canvas.delete("all")
 
@@ -95,16 +95,24 @@ class Tab:
             cmd.execute(self.scroll, canvas)
         
         #scrollbar
-        if self.document.getHeight() > window_height:
-            canvas.create_rectangle(self.widthForContent(window_width),  0, window_width, window_height, fill=SCROLLBAR_COLOR)
+        if self.document.getHeight() > window_height - start_y:
+            canvas.create_rectangle(self.widthForContent(window_width),  start_y, window_width, window_height, fill=SCROLLBAR_COLOR)
             #start y can go to maximum of self.window_height - INNER_SCROLL_HEIGHT
-            proportionScrolled = (self.scroll )/(self.document.getHeight() - window_height)
+            proportionScrolled = (self.scroll )/(self.document.getHeight() - window_height - start_y)
             
-            start_y = min( proportionScrolled * (window_height-INNER_SCROLLBAR_HEIGHT), window_height-INNER_SCROLLBAR_HEIGHT)
-            canvas.create_rectangle(window_width -  INNER_SCROLLBAR_WIDTH - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH)/2,  start_y, window_width - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH), start_y + INNER_SCROLLBAR_HEIGHT, fill=INNER_SCROLLBAR_COLOR)
+            start = min( proportionScrolled * (window_height-INNER_SCROLLBAR_HEIGHT-start_y), window_height-INNER_SCROLLBAR_HEIGHT) + start_y
+            canvas.create_rectangle(window_width -  INNER_SCROLLBAR_WIDTH - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH)/2,  start, window_width - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH), start + INNER_SCROLLBAR_HEIGHT, fill=INNER_SCROLLBAR_COLOR)
 
-    def click(self, x, y):
+    def scrollClick(self, y, window_height,start_y):
+        '''Allows for faster scrolling'''
+        self.scroll = ((y-start_y)/(window_height- start_y)) * self.document.getHeight()
+
+    def click(self, x, y, window_width, window_height, start_y):
         '''Handles changes to the page based on a click event. Returns whether a re-render is needed.'''
+
+        if x >= window_width - SCROLLBAR_WIDTH and y > start_y: 
+            self.scrollClick(y, window_height,start_y)
+            return True
 
         logger.debug("Canvas clicked at x '{}' y '{}'".format(x,y))
         y += self.scroll
@@ -121,6 +129,7 @@ class Tab:
                     url = elt.attributes["href"]
                     url = self.urlHandler.resolve(url, self.curr_url)
                     self.load(url)
+                    self.createLayout(window_width,start_y)
                     return True
                 except Exception as e:
                     logger.info("Could not load clicked link")

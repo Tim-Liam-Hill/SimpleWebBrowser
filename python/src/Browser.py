@@ -10,10 +10,9 @@ logger = logging.getLogger(__name__)
 
 INIT_WIDTH, INIT_HEIGHT = 800, 600
 DEFAULT_CSS_PATH = 'CSS/browser.css'
-DEFAULT_FILE_PATH = '../tests/htmlparser_test_cases/test.html' #path from this file's directory to default file we show
+DEFAULT_FILE_PATH = '../tests/htmlparser_test_cases/test.html' 
 CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 
-#TODO: this gonna need a rework to support mutliple pages but that's okay.
 class Browser:
     def __init__(self):
         # Initialize instance variables--------
@@ -69,9 +68,8 @@ class Browser:
     def layout(self):
         self.active_tab.createLayout(self.window_width, self.chrome.getHeight())
 
-
     def draw(self):
-        self.active_tab.draw(self.window_width, self.window_height, self.canvas)
+        self.active_tab.draw(self.window_width, self.window_height, self.chrome.getHeight(), self.canvas)
         for cmd in self.chrome.paint():
             cmd.execute(0, self.canvas)
 
@@ -110,8 +108,8 @@ class Browser:
             self.draw()
 
     def click(self, e):
-        if self.active_tab.click(e.x,e.y):
-            self.layout()
+        if self.active_tab.click(e.x,e.y, self.window_width, self.window_height, self.chrome.getHeight()):
+            #self.layout()
             self.draw()
 
         
