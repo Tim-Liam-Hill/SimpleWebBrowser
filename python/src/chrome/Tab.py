@@ -23,6 +23,7 @@ class Tab:
         self.css_parser = CSSParser()
         self.curr_url = ""
         self.defaultCSS = defaultCSS
+        self.history = []
         
     #We will consider the load function to be the start of everything. the passed in url
     #is the base url that everything else is relative to. 
@@ -33,6 +34,8 @@ class Tab:
         self.root_node = HTMLParser(content).parse(self.urlHandler.isViewSource(url))
         rules = self.getCSSRules(self.root_node,url)
         style(self.root_node, sorted(rules, key=cascade_priority))
+        self.scroll = 0 #if you navigate from another page we shouldn't preserve scroll
+        self.history.append(url)
         # self.createLayout(window_width) #for now, Browser will call createLayout.
         #TODO: implement better algorithm/performance for creating layout.
         # print_tree(self.root_node)
@@ -157,6 +160,12 @@ class Tab:
         if self.document.getHeight() > window_height:
             self.scroll = min(self.scroll, self.document.getHeight() - window_height)
         else: self.scroll = 0
+
+    def go_back(self):
+        if len(self.history) > 1:
+            self.history.pop()
+            back = self.history.pop()
+            self.load(back)
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

@@ -108,8 +108,11 @@ class Browser:
             self.draw()
 
     def click(self, e):
-        if self.active_tab.click(e.x,e.y, self.window_width, self.window_height, self.chrome.getHeight()):
-            #self.layout()
+
+        if e.y < self.chrome.bottom and self.chrome.click(e.x, e.y):
+            self.layout()
+            self.draw()
+        elif self.active_tab.click(e.x,e.y, self.window_width, self.window_height, self.chrome.getHeight()):
             self.draw()
 
         

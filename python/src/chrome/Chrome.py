@@ -87,6 +87,26 @@ class Chrome:
             self.back_rect.left + self.padding,
             self.back_rect.top,
             "<", self.font, "black"))
+        cmds.append(DrawOutline(self.address_rect, "black", 1))
+        url = str(self.browser.active_tab.curr_url)
+        cmds.append(DrawText(
+            self.address_rect.left + self.padding,
+            self.address_rect.top,
+            url, self.font, "black"))
 
         return cmds
 
+    def click(self, x, y):
+        if self.newtab_rect.contains_point(x, y):
+            self.browser.new_tab("https://browser.engineering/")
+            return True
+        elif self.back_rect.contains_point(x, y):
+            self.browser.active_tab.go_back()
+            return True
+        else:
+            for i, tab in enumerate(self.browser.tabs):
+                if self.tab_rect(i).contains_point(x, y):
+                    self.browser.active_tab = tab
+                    return True
+        
+        return False
