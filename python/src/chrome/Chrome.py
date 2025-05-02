@@ -18,10 +18,27 @@ class Chrome:
            self.padding, self.padding,
            self.padding + plus_width,
            self.padding + self.font_height)
+        self.urlbar_top = self.tabbar_bottom
+        self.urlbar_bottom = self.urlbar_top + \
+            self.font_height + 2*self.padding
+        self.bottom = self.urlbar_bottom
+
+        back_width = self.font.measure("<") + 2*self.padding
+        self.back_rect = Rect(
+            self.padding,
+            self.urlbar_top + self.padding,
+            self.padding + back_width,
+            self.urlbar_bottom - self.padding)
+
+        self.address_rect = Rect(
+            self.back_rect.top + self.padding,
+            self.urlbar_top + self.padding,
+            self.browser.window_width - self.padding,
+            self.urlbar_bottom - self.padding)
     
     def getHeight(self):
-        #TODO: this will likely need to be updated
-        return self.tabbar_bottom
+
+        return self.bottom
 
     def tab_rect(self, i):
         tabs_start = self.newtab_rect.right + self.padding
@@ -34,11 +51,11 @@ class Chrome:
         cmds = [] 
 
         cmds.append(DrawRect(
-            0, 0, self.browser.window_width, self.tabbar_bottom,
+            0, 0, self.browser.window_width, self.bottom,
             "white"))
         cmds.append(DrawLine(
-            0, self.tabbar_bottom, self.browser.window_width,
-            self.tabbar_bottom, "black", 1))
+            0, self.bottom, self.browser.window_width,
+            self.bottom, "black", 1))
 
         cmds.append(DrawOutline(self.newtab_rect, "black", 1))
         cmds.append(DrawText(
@@ -64,6 +81,12 @@ class Chrome:
                 cmds.append(DrawLine(
                     bounds.right, bounds.bottom, self.browser.window_width, bounds.bottom,
                     "black", 1))
+        
+        cmds.append(DrawOutline(self.back_rect, "black", 1))
+        cmds.append(DrawText(
+            self.back_rect.left + self.padding,
+            self.back_rect.top,
+            "<", self.font, "black"))
 
         return cmds
 

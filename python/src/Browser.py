@@ -76,7 +76,7 @@ class Browser:
 
     def scrolldown(self, e):
         logger.debug("Scrolling down")
-        if self.active_tab.scrolldown(self.window_height):
+        if self.active_tab.scrolldown(self.window_height, self.chrome.getHeight()):
             self.draw()
     
     def scrollup(self, e):

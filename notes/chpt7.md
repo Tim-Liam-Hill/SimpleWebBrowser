@@ -32,3 +32,5 @@ The href value for the a tags isn't being picked up correctly due to the newline
 I am going to do things slightly differently to the textbook. Chrome will calculate its height and Browser will use this value when laying out webpages. I want the coordinates of elements in the DOM to be exactly what they render as on the canvas to make it easier to handle clicks and rendering n stuff. 
 
 Side quest: when we click on the scroll bar navigate to that place! 
+
+The home page renders kinda strange for us. That is something we will need to look at. 

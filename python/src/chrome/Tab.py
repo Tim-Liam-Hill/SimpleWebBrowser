@@ -140,10 +140,10 @@ class Tab:
         
         return False
 
-    def scrolldown(self, window_height):
+    def scrolldown(self, window_height, chrome_height):
         prev = self.scroll
-        if self.document.getHeight() > window_height:
-            self.scroll = min(self.scroll + SCROLL_STEP, self.document.getHeight() - window_height)
+        if self.document.getHeight() > window_height + chrome_height:
+            self.scroll = min(self.scroll + SCROLL_STEP, self.document.getHeight() - window_height + chrome_height)
         else: 
             self.scroll = 0
         return prev != self.scroll
