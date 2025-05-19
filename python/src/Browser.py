@@ -115,8 +115,6 @@ class Browser:
         elif self.active_tab.click(e.x,e.y, self.window_width, self.window_height, self.chrome.getHeight()):
             self.draw()
 
-        
-
 # from src.layouts.BlockLayout import BlockLayout
 # from src.layouts.DocumentLayout import DocumentLayout
 # from src.HTMLParser import Element, Text
