@@ -1,13 +1,18 @@
 from src.CSS.layouts.LayoutConstants import get_font
 from src.Draw.Commands import DrawOutline, DrawLine, DrawText, DrawRect, Rect
-
-CHROME_DEFAULT_FONT_SIZE = 20
+import logging
+logger = logging.getLogger(__name__)
+CHROME_DEFAULT_FONT_SIZE = 14
 
 class Chrome: 
     '''Responsible for the search bar and tab display for a given window'''
     
     def __init__(self, browser):
         self.browser = browser
+        self.focus = None
+        self.address_bar = ""
+
+        #TODO: clean up this init (may need to cleanup Rect Classes n such first)
         self.font = get_font(CHROME_DEFAULT_FONT_SIZE, "normal", "roman", "Courier")
         self.font_height = self.font.metrics("linespace")
         self.padding = 5
@@ -29,12 +34,6 @@ class Chrome:
             self.urlbar_top + self.padding,
             self.padding + back_width,
             self.urlbar_bottom - self.padding)
-
-        self.address_rect = Rect(
-            self.back_rect.top + self.padding,
-            self.urlbar_top + self.padding,
-            self.browser.window_width - self.padding,
-            self.urlbar_bottom - self.padding)
     
     def getHeight(self):
 
@@ -50,6 +49,7 @@ class Chrome:
     def paint(self):
         cmds = [] 
 
+        #TODO: we can clean this a bit more
         cmds.append(DrawRect(
             0, 0, self.browser.window_width, self.bottom,
             "white"))
@@ -64,49 +64,99 @@ class Chrome:
             "+", self.font, "black"))
         
         for i, tab in enumerate(self.browser.tabs):
-            bounds = self.tab_rect(i)
-            cmds.append(DrawLine(
-                bounds.left, 0, bounds.left, bounds.bottom,
-                "black", 1))
-            cmds.append(DrawLine(
-                bounds.right, 0, bounds.right, bounds.bottom,
-                "black", 1))
-            cmds.append(DrawText(
-                bounds.left + self.padding, bounds.top + self.padding,
-                "Tab {}".format(i), self.font, "black"))
-            if tab == self.browser.active_tab:
-                cmds.append(DrawLine(
-                    0, bounds.bottom, bounds.left, bounds.bottom,
-                    "black", 1))
-                cmds.append(DrawLine(
-                    bounds.right, bounds.bottom, self.browser.window_width, bounds.bottom,
-                    "black", 1))
+            cmds += self.paintTab(i, tab)
         
         cmds.append(DrawOutline(self.back_rect, "black", 1))
         cmds.append(DrawText(
             self.back_rect.left + self.padding,
             self.back_rect.top,
             "<", self.font, "black"))
-        cmds.append(DrawOutline(self.address_rect, "black", 1))
-        url = str(self.browser.active_tab.curr_url)
+        
+        address_rect = self.calculateAddressRect()
+        cmds.append(DrawOutline(address_rect, "black", 1))
+        url = self.getAddressBarContents()
         cmds.append(DrawText(
-            self.address_rect.left + self.padding,
-            self.address_rect.top,
+            address_rect.left + self.padding,
+            address_rect.top,
             url, self.font, "black"))
+
+        if self.focus == "address bar":
+            cmds += self.paintCursor(address_rect)
+
+        return cmds
+    
+    def paintCursor(self, address_rect):
+        w = self.font.measure(self.address_bar)
+        return [DrawLine(
+            address_rect.left + self.padding + w,
+            address_rect.top,
+            address_rect.left + self.padding + w,
+            address_rect.bottom,
+            "red", 1)]
+
+    def paintTab(self, i, tab):
+        '''Given a tab and the index it appears in the tab list, returns the commands to render it on the canvas'''
+
+        cmds = []
+        bounds = self.tab_rect(i)
+        cmds.append(DrawLine(
+            bounds.left, 0, bounds.left, bounds.bottom,
+            "black", 1))
+        cmds.append(DrawLine(
+            bounds.right, 0, bounds.right, bounds.bottom,
+            "black", 1))
+        cmds.append(DrawText(
+            bounds.left + self.padding, bounds.top + self.padding,
+            "Tab {}".format(i), self.font, "black"))
+        if tab == self.browser.active_tab:
+            cmds.append(DrawLine(
+                0, bounds.bottom, bounds.left, bounds.bottom,
+                "black", 1))
+            cmds.append(DrawLine(
+                bounds.right, bounds.bottom, self.browser.window_width, bounds.bottom,
+                "black", 1))
 
         return cmds
 
+    def getAddressBarContents(self):
+        '''Returns what should be displayed in the address bar (based on whether chrome is focused)'''
+        return self.address_bar if self.focus == "address bar" else str(self.browser.active_tab.curr_url)
+        
+    def calculateAddressRect(self):
+        '''Calcualtes and returns a Rect that will hold address bar contents. Needs to be dynamic to handle resize'''
+        
+        return Rect(
+            self.back_rect.top + self.padding,
+            self.urlbar_top + self.padding,
+            self.browser.window_width - self.padding,
+            self.urlbar_bottom - self.padding)
+
     def click(self, x, y):
+        self.focus = None
         if self.newtab_rect.contains_point(x, y):
             self.browser.new_tab("https://browser.engineering/")
             return True
         elif self.back_rect.contains_point(x, y):
             self.browser.active_tab.go_back()
             return True
+        elif self.calculateAddressRect().contains_point(x,y):
+            self.focus = "address bar"
+            self.address_bar = ""
+            logger.warning(self.focus)
+            return True
         else:
             for i, tab in enumerate(self.browser.tabs):
                 if self.tab_rect(i).contains_point(x, y):
                     self.browser.active_tab = tab
                     return True
-        
+
         return False
+    
+    def keypress(self,char):
+        if self.focus == "address bar":
+            self.address_bar += char
+
+    def enter(self):
+        if self.focus == "address bar":
+            self.browser.active_tab.load(self.address_bar)
+            self.focus = None

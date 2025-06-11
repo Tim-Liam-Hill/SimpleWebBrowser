@@ -39,6 +39,8 @@ class Browser:
         self.window.bind("<Button-5>", self.linuxWheelScroll)
         self.window.bind("<Configure>", self.resize)
         self.window.bind("<Button-1>",self.click)
+        self.window.bind("<Key>", self.keyPress)
+        self.window.bind("<Return>", self.enterPress)
         #--------------------------------------
 
         #css
@@ -55,7 +57,6 @@ class Browser:
     #is the base url that everything else is relative to. 
     def load(self, url):
         self.active_tab.load(url)
-
 
     def new_tab(self, url):
         new_tab = Tab(self.defaultCSS, self.urlHandler)
@@ -114,6 +115,16 @@ class Browser:
         elif self.active_tab.click(e.x,e.y, self.window_width, self.window_height, self.chrome.getHeight()):
             self.draw()
 
+    def keyPress(self, e):
+        if len(e.char) == 0: return
+        if not (0x20 <= ord(e.char) < 0x7f): return
+        self.chrome.keypress(e.char)
+        self.draw()
+
+    def enterPress(self, e):
+        self.chrome.enter()
+        self.layout()
+        self.draw()
 # from src.layouts.BlockLayout import BlockLayout
 # from src.layouts.DocumentLayout import DocumentLayout
 # from src.HTMLParser import Element, Text
