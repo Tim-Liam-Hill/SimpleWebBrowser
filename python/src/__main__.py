@@ -12,9 +12,9 @@ CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     b = Browser()
-
-    if(len(sys.argv) != 2):
-        b.load(f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}')
-    else: b.load(sys.argv[1])
+    url = f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}'
+    if(len(sys.argv) == 2):
+        url = sys.argv[1]
+    b.new_tab(url)
     tkinter.mainloop()
     

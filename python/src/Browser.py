@@ -73,7 +73,6 @@ class Browser:
         for cmd in self.chrome.paint():
             cmd.execute(0, self.canvas)
 
-
     def scrolldown(self, e):
         logger.debug("Scrolling down")
         if self.active_tab.scrolldown(self.window_height, self.chrome.getHeight()):

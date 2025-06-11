@@ -3,11 +3,12 @@
 
 Its been a hot moment since I have worked on this project. This is leading me to realize how important documentation really is since I have forgotten what I was working on and how to run this project. TeeHee~
 
-Browser is the main entry point. We run that file. As of chapter 6 the way of running is:
+To run the project, run the below in the 'python' directory:
+```
+python3 -m src 
+```
 
-```
-python3 Browser.py <url>
-```
+Alternatively, use the command ```make run```.
 
 I know I will need a virtual environment in the future, so why not just set one up now??? 
 
