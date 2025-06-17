@@ -34,3 +34,15 @@ I am going to do things slightly differently to the textbook. Chrome will calcul
 Side quest: when we click on the scroll bar navigate to that place! 
 
 The home page renders kinda strange for us. That is something we will need to look at. 
+
+--- Time Passes ---
+
+Its been a while, and the reasons behind me not working on this project would make for a good blog post (but that's for another time). Let's carry on the chapter 7 work,
+then worry about tidying up some bugs. 
+
+Looks like we are under subheading 7: typing into an active address bar. 
+
+Gonna have to do a check to unfocus things when click away. I think the book will do this but it will be good for me to remember as well. 
+
+Yeah, I think in the next chapter will handle changing focus n such. Will wait till then to fix focus issues (unless there is an exercise to do that??).
+

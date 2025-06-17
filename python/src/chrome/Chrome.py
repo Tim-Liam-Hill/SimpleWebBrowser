@@ -3,6 +3,7 @@ from src.Draw.Commands import DrawOutline, DrawLine, DrawText, DrawRect, Rect
 import logging
 logger = logging.getLogger(__name__)
 CHROME_DEFAULT_FONT_SIZE = 14
+import math
 
 class Chrome: 
     '''Responsible for the search bar and tab display for a given window'''
@@ -11,6 +12,7 @@ class Chrome:
         self.browser = browser
         self.focus = None
         self.address_bar = ""
+        self.address_bar_index = 0 # 0 is before the first char, len()+1 is after the last char
 
         #TODO: clean up this init (may need to cleanup Rect Classes n such first)
         self.font = get_font(CHROME_DEFAULT_FONT_SIZE, "normal", "roman", "Courier")
@@ -86,7 +88,9 @@ class Chrome:
         return cmds
     
     def paintCursor(self, address_rect):
-        w = self.font.measure(self.address_bar)
+        width = self.font.measure(self.address_bar)
+        ave_w = width/max(len(self.address_bar),1)
+        w = self.address_bar_index * ave_w
         return [DrawLine(
             address_rect.left + self.padding + w,
             address_rect.top,
@@ -154,9 +158,27 @@ class Chrome:
     
     def keypress(self,char):
         if self.focus == "address bar":
-            self.address_bar += char
+            if self.address_bar_index == 0:
+                self.address_bar += char
+            else: 
+                self.address_bar = self.address_bar[:self.address_bar_index] + char + self.address_bar[self.address_bar_index:]
+            self.address_bar_index += 1
 
     def enter(self):
         if self.focus == "address bar":
             self.browser.active_tab.load(self.address_bar)
             self.focus = None
+
+    def arrowRight(self):
+        if self.address_bar_index < len(self.address_bar):
+            self.address_bar_index += 1
+    
+    def arrowLeft(self):
+        if self.address_bar_index > 0:
+            self.address_bar_index -= 1
+    
+    def backSpace(self):
+        if self.focus == "address bar":
+            if self.address_bar_index > 0 and len(self.address_bar) > 0:
+                self.address_bar = self.address_bar[:self.address_bar_index-1] + self.address_bar[self.address_bar_index:]
+                self.address_bar_index -=1

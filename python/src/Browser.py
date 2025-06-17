@@ -39,8 +39,11 @@ class Browser:
         self.window.bind("<Button-5>", self.linuxWheelScroll)
         self.window.bind("<Configure>", self.resize)
         self.window.bind("<Button-1>",self.click)
-        self.window.bind("<Key>", self.keyPress)
+        self.window.bind("<Key>", self.keyPress) #TODO: have one generic handle key function, deal with different cases in there
         self.window.bind("<Return>", self.enterPress)
+        self.window.bind("<BackSpace>", self.backSpacePress)
+        self.window.bind("<Left>", self.leftArrowPress)
+        self.window.bind("<Right>", self.rightArrowPress)
         #--------------------------------------
 
         #css
@@ -121,10 +124,27 @@ class Browser:
         self.chrome.keypress(e.char)
         self.draw()
 
+    #TODO: maybe have a function to redraw only the chrome (for when performance becomes a factor)
     def enterPress(self, e):
         self.chrome.enter()
         self.layout()
         self.draw()
+
+    def backSpacePress(self, e):
+        self.chrome.backSpace()
+        self.layout()
+        self.draw()
+
+    def leftArrowPress(self, e):
+        self.chrome.arrowLeft()
+        self.layout()
+        self.draw()
+    
+    def rightArrowPress(self, e):
+        self.chrome.arrowRight()
+        self.layout()
+        self.draw()
+
 # from src.layouts.BlockLayout import BlockLayout
 # from src.layouts.DocumentLayout import DocumentLayout
 # from src.HTMLParser import Element, Text
