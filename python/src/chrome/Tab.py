@@ -1,3 +1,4 @@
+from src.HTTP.URLHandler import URLHandler
 from src.HTML.HTMLLayout import style
 from src.HTML.HTMLParser import Element, HTMLParser
 from src.CSS.CSSParser import CSSParser, cascade_priority
@@ -24,6 +25,7 @@ class Tab:
         self.curr_url = ""
         self.defaultCSS = defaultCSS
         self.history = []
+        self.title = ""
         
     #We will consider the load function to be the start of everything. the passed in url
     #is the base url that everything else is relative to. 
@@ -32,6 +34,7 @@ class Tab:
         content = self.urlHandler.request(url)
 
         self.root_node = HTMLParser(content).parse(self.urlHandler.isViewSource(url))
+        self.setTitle()
         rules = self.getCSSRules(self.root_node,url)
         style(self.root_node, sorted(rules, key=cascade_priority))
         self.scroll = 0 #if you navigate from another page we shouldn't preserve scroll
@@ -43,6 +46,32 @@ class Tab:
         # print_tree(self.document)
         #print(self.display_list)
     
+    def setTitle(self):
+        """Traverses the HTML tree, finds the title tag and sets the title field of the object. If no title tag is present a default name is given"""
+        stack = [self.root_node]
+        curr = None
+        while(len(stack) > 0):
+            curr = stack.pop()
+            if not isinstance(curr, Element):
+                continue
+            if curr.tag == "title":
+                self.title = curr.children[0]
+                return
+            elif curr.tag == "body":
+                continue
+            else:
+                stack += curr.children
+
+        #if no title then set title based on url
+        temp = URLHandler()
+        scheme, path = temp.extractScheme(self.curr_url)
+        if "/" not in path:
+            path = path + "/"
+        host, _ = path.split("/", 1)
+        if scheme != "http" and scheme!="https":
+            self.title = "Tab"
+        else: self.title = host
+
     #TODO: we should consider having a cache for computed stylesheets if computing them becomes too slow
     def getCSSRules(self, root_node, base_url):
         logger.info("Determining CSS rules for page")
@@ -166,6 +195,11 @@ class Tab:
             self.history.pop()
             back = self.history.pop()
             self.load(back)
+
+    def getTitle(self): 
+        """Returns the title of the document currently being displayed"""
+
+        return self.title
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)

@@ -46,3 +46,6 @@ Gonna have to do a check to unfocus things when click away. I think the book wil
 
 Yeah, I think in the next chapter will handle changing focus n such. Will wait till then to fix focus issues (unless there is an exercise to do that??).
 
+Backspace and index done. That's good. 
+
+Now for titles. 

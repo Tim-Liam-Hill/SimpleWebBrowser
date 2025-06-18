@@ -41,13 +41,16 @@ class Chrome:
 
         return self.bottom
 
-    def tab_rect(self, i):
-        tabs_start = self.newtab_rect.right + self.padding
-        tab_width = self.font.measure("Tab X") + 2*self.padding
+    def tab_rect(self, i, text, offset):
+        tabs_start = offset + self.padding
+        tab_width = self.calculateTabWidth(text)
         return Rect(
-            tabs_start + tab_width * i, self.tabbar_top,
-            tabs_start + tab_width * (i + 1), self.tabbar_bottom)
+            tabs_start, self.tabbar_top,
+            tabs_start + tab_width, self.tabbar_bottom)
     
+    def calculateTabWidth(self, text):
+        return self.font.measure(text) + 2*self.padding
+
     def paint(self):
         cmds = [] 
 
@@ -65,8 +68,11 @@ class Chrome:
             self.newtab_rect.top,
             "+", self.font, "black"))
         
+        offset = self.newtab_rect.right
         for i, tab in enumerate(self.browser.tabs):
-            cmds += self.paintTab(i, tab)
+            cmdsTemp, newOffset = self.paintTab(i, tab, offset)
+            cmds += cmdsTemp
+            offset = newOffset
         
         cmds.append(DrawOutline(self.back_rect, "black", 1))
         cmds.append(DrawText(
@@ -98,11 +104,12 @@ class Chrome:
             address_rect.bottom,
             "red", 1)]
 
-    def paintTab(self, i, tab):
-        '''Given a tab and the index it appears in the tab list, returns the commands to render it on the canvas'''
+    def paintTab(self, i, tab, offset):
+        '''Given a tab and the index it appears in the tab list, returns the commands to render it on the canvas. Further returns the offset for next tab to start'''
 
         cmds = []
-        bounds = self.tab_rect(i)
+        title = tab.getTitle()
+        bounds = self.tab_rect(i,title, offset)
         cmds.append(DrawLine(
             bounds.left, 0, bounds.left, bounds.bottom,
             "black", 1))
@@ -111,7 +118,7 @@ class Chrome:
             "black", 1))
         cmds.append(DrawText(
             bounds.left + self.padding, bounds.top + self.padding,
-            "Tab {}".format(i), self.font, "black"))
+            title, self.font, "black"))
         if tab == self.browser.active_tab:
             cmds.append(DrawLine(
                 0, bounds.bottom, bounds.left, bounds.bottom,
@@ -120,7 +127,7 @@ class Chrome:
                 bounds.right, bounds.bottom, self.browser.window_width, bounds.bottom,
                 "black", 1))
 
-        return cmds
+        return cmds, offset + self.calculateTabWidth(title)
 
     def getAddressBarContents(self):
         '''Returns what should be displayed in the address bar (based on whether chrome is focused)'''
@@ -149,10 +156,13 @@ class Chrome:
             logger.warning(self.focus)
             return True
         else:
+            offset = self.newtab_rect.right
             for i, tab in enumerate(self.browser.tabs):
-                if self.tab_rect(i).contains_point(x, y):
+                if self.tab_rect(i, tab.getTitle(),offset).contains_point(x, y):
                     self.browser.active_tab = tab
                     return True
+                offset += self.calculateTabWidth(tab.getTitle())
+                
 
         return False
     
