@@ -153,6 +153,7 @@ class Chrome:
         elif self.calculateAddressRect().contains_point(x,y):
             self.focus = "address bar"
             self.address_bar = ""
+            self.address_bar_index = 0
             logger.warning(self.focus)
             return True
         else:
