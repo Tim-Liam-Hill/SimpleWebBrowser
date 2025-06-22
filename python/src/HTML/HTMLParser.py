@@ -226,13 +226,19 @@ class HTMLParser:
                 return
 
             #correction algorithm:
-            #we make sure the current closing tag matches the top tag on the stack
-            #if it doesn't, pop current top of stack and save it for later (essentially closing it)
-            #do this until we find a matching tag or error. Once done, add back deep copies of popped off tags
-            #TODO: if we error, just disregard the closing tag we were trying to add. This makes the algorithm a bit more robust
+            #we first ensure there is a matching opening tag for the closing tag. If not, discard the closing tag
+            #Next, pop off until we reach the matching tag
+            #while not matching, pop current top of stack and save it for later (essentially closing it)
+            #Once done, add back deep copies of popped off tags
 
+            index = len(self.unfinished) -1
+            while self.unfinished[index].tag != tag[1:]:
+                index -= 1
+                if index == 0: #no matching opening tag tag, discard this closing tag
+                    return 
+                
             stack = []
-            while self.unfinished[-1].tag != tag[1:]:
+            while self.unfinished[-1].tag != tag[1:]: #we could use the index here but I don't feel like rewriting code
                 if len(self.unfinished) == 1:
                     raise ValueError("Malformed HTML has no matching opening tag for tag : " + tag)
                 c = Element(self.unfinished[-1].tag, self.unfinished[-1].attributes, self.unfinished[-1])
@@ -240,7 +246,6 @@ class HTMLParser:
                 node = self.unfinished.pop()
                 parent = self.unfinished[-1]
                 parent.children.append(node)
-
 
             node = self.unfinished.pop()
             parent = self.unfinished[-1]
