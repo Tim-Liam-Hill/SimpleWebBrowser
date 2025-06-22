@@ -1,4 +1,4 @@
-from src.layouts.BlockLayout import BlockLayout
+from src.CSS.layouts.BlockLayout import BlockLayout
 import logging
 logger = logging.getLogger(__name__)
 
@@ -10,27 +10,31 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
     to kick off the process of laying out child elements.
     '''
     
-    def __init__(self, node, max_width):
+    def __init__(self, node, max_width, y_start):
         self.node = node
         self.parent = None
         self.children = []
         self.max_width = max_width
-
-    def layout(self):
         self.width = self.max_width
         self.x = 0
-        self.y = 0
+        self.y = y_start
+
+    def layout(self):
+
 
         child = BlockLayout(self.node, self, None)
         self.children.append(child)
         child.layout()
-        self.height = child.getHeight()
-    
+
+    #TODO: could speed this up if needed    
+    def getHeight(self):
+        return self.children[0].getHeight()
+
     def getXStart(self):
         return 0
 
     def getY(self):
-        return 0
+        return self.y
 
     def getContentWidth(self):
         return self.max_width
@@ -46,6 +50,9 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
 
     def print(self):
 
-        print("Document Layout: width {} and height {}".format(self.width,self.height))
+        print("Document Layout: width {} and height {}".format(self.width,self.getHeight()))
         self.children[0].print(1)
     
+    def getElementsAt(self,x,y):
+
+        return self.children[0].getElementsAt(x,y)

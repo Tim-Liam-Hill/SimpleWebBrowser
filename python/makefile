@@ -1,6 +1,9 @@
 init: requirements.txt
 	pip install -r requirements.txt
 
+run: 
+	python3 -m src
+
 test: 
 	python3 -m unittest 
 # if we want to only test certain modules we can possible do 

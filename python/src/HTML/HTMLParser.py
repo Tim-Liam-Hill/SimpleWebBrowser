@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from src.URLHandler import URLHandler
+from src.HTTP.URLHandler import URLHandler
 import logging
 import os
+import re
 CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger(__name__)
 
@@ -206,6 +207,7 @@ class HTMLParser:
         if tag.startswith("!") or tag=="": return #we realistically shouldn't encounter empty tags, and technically I don't think we need to remove them
         self.implicit_tags(tag)
         logger.debug("Adding tag: %s", tag)
+        tag = re.sub(r"(\t|\n)", " ", tag) #new lines will mess things up if the first attribute is on a newline after the tagname
 
         if tag.startswith("/"):
             if tag == "/html":
@@ -224,13 +226,19 @@ class HTMLParser:
                 return
 
             #correction algorithm:
-            #we make sure the current closing tag matches the top tag on the stack
-            #if it doesn't, pop current top of stack and save it for later (essentially closing it)
-            #do this until we find a matching tag or error. Once done, add back deep copies of popped off tags
-            #TODO: if we error, just disregard the closing tag we were trying to add. This makes the algorithm a bit more robust
+            #we first ensure there is a matching opening tag for the closing tag. If not, discard the closing tag
+            #Next, pop off until we reach the matching tag
+            #while not matching, pop current top of stack and save it for later (essentially closing it)
+            #Once done, add back deep copies of popped off tags
 
+            index = len(self.unfinished) -1
+            while self.unfinished[index].tag != tag[1:]:
+                index -= 1
+                if index == 0: #no matching opening tag tag, discard this closing tag
+                    return 
+                
             stack = []
-            while self.unfinished[-1].tag != tag[1:]:
+            while self.unfinished[-1].tag != tag[1:]: #we could use the index here but I don't feel like rewriting code
                 if len(self.unfinished) == 1:
                     raise ValueError("Malformed HTML has no matching opening tag for tag : " + tag)
                 c = Element(self.unfinished[-1].tag, self.unfinished[-1].attributes, self.unfinished[-1])
@@ -238,7 +246,6 @@ class HTMLParser:
                 node = self.unfinished.pop()
                 parent = self.unfinished[-1]
                 parent.children.append(node)
-
 
             node = self.unfinished.pop()
             parent = self.unfinished[-1]
@@ -276,6 +283,8 @@ class HTMLParser:
             open_tags = [node.tag for node in self.unfinished]
             if open_tags == [] and (tag == None or (len(tag) >= 4 and "html" not in tag[:4])): #tag could be None
                 self.add_tag("html")
+            elif open_tags == ["html"] and tag == "html": #handles case where we have a meta tag and implicitly added our own html tag
+                break
             elif open_tags == ["html"] and not any(substring in tag for substring in ["head", "body", "/html"]):
                 if tag in self.HEAD_TAGS:
                     self.add_tag("head")

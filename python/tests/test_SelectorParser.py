@@ -1,5 +1,5 @@
 from src.CSS.SelectorParser import *
-from src.HTMLParser import Element
+from src.HTML.HTMLParser import Element
 import unittest
 
 print("Testing Selector Parsing")

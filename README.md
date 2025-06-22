@@ -3,11 +3,12 @@
 
 Its been a hot moment since I have worked on this project. This is leading me to realize how important documentation really is since I have forgotten what I was working on and how to run this project. TeeHee~
 
-Browser is the main entry point. We run that file. As of chapter 6 the way of running is:
+To run the project, run the below in the 'python' directory:
+```
+python3 -m src 
+```
 
-```
-python3 Browser.py <url>
-```
+Alternatively, use the command ```make run```.
 
 I know I will need a virtual environment in the future, so why not just set one up now??? 
 
@@ -90,6 +91,11 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * CSS colors parsed correctly
 * CSS Shorthand properties
 * CSS make sure fonts not stinky!!! 
+* right click on links -> print a preview to that link (bottom of screen over content??). Maybe for right clicking in general we print some shtuff
+* is there a better system to handle setting re-renders in browser? A 'mark dirty' of some sort? 
+* Targeted redraw: only recreate layout and redraw necessary parts (eg: if changing the search bar text, we don't need to redraw everything)
+* Delete tabs on right click
+* Error handling: show feedback to user and don't stick with the unusable content.
 
 # BUGS
 

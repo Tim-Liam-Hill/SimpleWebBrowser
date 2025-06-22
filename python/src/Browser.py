@@ -1,29 +1,18 @@
 import tkinter
-import tkinter.font
-from src.HTMLLayout import style
-from src.URLHandler import URLHandler
-from src.HTMLParser import Element, HTMLParser, print_tree
+from src.chrome.Chrome import Chrome
+from src.chrome.Tab import Tab
+from src.HTTP.URLHandler import URLHandler
+from src.CSS.CSSParser import CSSParser
 import sys
-from src.CSS.CSSParser import CSSParser, cascade_priority
 import logging
 import os 
-from src.Utils import tree_to_list
-from src.layouts.DocumentLayout import DocumentLayout
 logger = logging.getLogger(__name__)
 
 INIT_WIDTH, INIT_HEIGHT = 800, 600
-NEWLINE_STEP_FACTOR = 1.2
-SCROLL_STEP = 100
-SCROLLBAR_WIDTH = 24
-INNER_SCROLLBAR_WIDTH = 18
-INNER_SCROLLBAR_HEIGHT = 40
-SCROLLBAR_COLOR = 'deep sky blue'
-INNER_SCROLLBAR_COLOR = 'sky blue'
-DEFAULT_CSS_PATH = 'browser.css'
-DEFAULT_FILE_PATH = '../tests/htmlparser_test_cases/test.html' #path from this file's directory to default file we show
+DEFAULT_CSS_PATH = 'CSS/browser.css'
+DEFAULT_FILE_PATH = '../tests/htmlparser_test_cases/test.html' 
 CURR_FILEPATH = os.path.dirname(os.path.abspath(__file__))
 
-#TODO: this gonna need a rework to support mutliple pages but that's okay.
 class Browser:
     def __init__(self):
         # Initialize instance variables--------
@@ -36,14 +25,11 @@ class Browser:
         )
         self.canvas.pack(fill="both", expand=1)
         self.urlHandler = URLHandler()
-        self.display_list = []
-        self.scroll = 0
         self.window_height = INIT_HEIGHT #height of rendered window
         self.window_width = INIT_WIDTH
-        self.doc_height = self.window_height #keeps track of the height of the document (DOM, not tkinter window)
-        self.tokens = []
-        self.document = None #textbook gives the var this name but I don't like that. Still, keeping it as is for now
-        self.css_parser = CSSParser()
+        self.tabs = [] 
+        self.active_tab = None
+        self.chrome = Chrome(self)
 
         #event handlers
         self.window.bind("<Down>", self.scrolldown)
@@ -52,110 +38,56 @@ class Browser:
         self.window.bind("<Button-4>", self.linuxWheelScroll)
         self.window.bind("<Button-5>", self.linuxWheelScroll)
         self.window.bind("<Configure>", self.resize)
+        self.window.bind("<Button-1>",self.click)
+        self.window.bind("<Key>", self.keyPress) #TODO: have one generic handle key function, deal with different cases in there
+        self.window.bind("<Return>", self.enterPress)
+        self.window.bind("<BackSpace>", self.backSpacePress)
+        self.window.bind("<Left>", self.leftArrowPress)
+        self.window.bind("<Right>", self.rightArrowPress)
+        self.window.bind("<Button-2>",self.middleClick)
+
         #--------------------------------------
 
         #css
         logger.info("Loading default Browser CSS")
         
         try:
-            self.defaultCSS = self.css_parser.parse(open(f'{CURR_FILEPATH}/{DEFAULT_CSS_PATH}').read())
+            self.defaultCSS = CSSParser().parse(open(f'{CURR_FILEPATH}/{DEFAULT_CSS_PATH}').read())
         except ValueError:
             logger.error("Could not open default browser css file")
+            self.defaultCSS = []
         #--------------------------------------
 
     #We will consider the load function to be the start of everything. the passed in url
     #is the base url that everything else is relative to. 
     def load(self, url):
-        content = self.urlHandler.request(url)
+        self.active_tab.load(url)
 
-        self.root_node = HTMLParser(content).parse(self.urlHandler.isViewSource(url))
-        rules = self.getCSSRules(self.root_node,url)
-        style(self.root_node, sorted(rules, key=cascade_priority))
-        self.createLayout()
-        # print_tree(self.root_node)
-        # print('############')
-        # print_tree(self.document)
-        #print(self.display_list)
-  
+    def new_tab(self, url):
+        new_tab = Tab(self.defaultCSS, self.urlHandler)
+        new_tab.load(url)
+        self.active_tab = new_tab
+        self.tabs.append(new_tab)
+        self.layout()
         self.draw()
-    
-    #TODO: we should consider having a cache for computed stylesheets if computing them becomes too slow
-    def getCSSRules(self, root_node, base_url):
-        logger.info("Determining CSS rules for page")
-        node_list = tree_to_list(root_node, [])
-        links = [node.attributes["href"]
-            for node in node_list
-            if isinstance(node, Element)
-            and node.tag == "link"
-            and node.attributes.get("rel") == "stylesheet"
-            and "href" in node.attributes]
-    
-        rules = self.defaultCSS.copy()
 
-        for link in links: #TODO: multithreading here to spead up fetching of resources
-            
-            try:
-                style_url = self.urlHandler.resolve(link, base_url)
-                body = self.urlHandler.request(style_url)
-            except ValueError as e:
-                logger.info(e)
-                logger.info("Skipping retrieving CSS for malformed URL")
-                continue
-            rules.extend(self.css_parser.parse(body))
-
-        #Internal css
-        style_nodes = [n for n in node_list 
-                       if isinstance(n, Element) and n.tag == "style"]
-        
-        for node in style_nodes:
-            if len(node.children) == 1: #just a sanity check, it is possible there are no children (empty style tag). Should never be more than one
-                rules.extend(self.css_parser.parse(node.children[0].text))
-        
-        return rules
-
-    def createLayout(self):
-        logger.info("Creating DOM from HTML Tree")
-        self.document = DocumentLayout(self.root_node, self.widthForContent())
-        self.document.layout()
-        self.display_list = self.document.paint()
-        self.document.print()
-        #print(self.display_list)
-        self.doc_height = self.document.height
-
-    def widthForContent(self):
-        return self.window_width - SCROLLBAR_WIDTH
+    def layout(self):
+        self.active_tab.createLayout(self.window_width, self.chrome.getHeight())
 
     def draw(self):
+        self.active_tab.draw(self.window_width, self.window_height, self.chrome.getHeight(), self.canvas)
+        for cmd in self.chrome.paint():
+            cmd.execute(0, self.canvas)
 
-        self.canvas.delete("all")
-
-        for cmd in self.display_list: 
-            if cmd.top > self.scroll + self.window_height: continue
-            if cmd.bottom < self.scroll: continue
-            cmd.execute(self.scroll, self.canvas)
-        
-        #scrollbar
-        if self.doc_height > self.window_height:
-            self.canvas.create_rectangle(self.widthForContent(),  0, self.window_width, self.window_height, fill=SCROLLBAR_COLOR)
-            #start y can go to maximum of self.window_height - INNER_SCROLL_HEIGHT
-            proportionScrolled = (self.scroll )/(self.doc_height- self.window_height)
-            
-            start_y = min( proportionScrolled * (self.window_height-INNER_SCROLLBAR_HEIGHT), self.window_height-INNER_SCROLLBAR_HEIGHT)
-            self.canvas.create_rectangle(self.window_width -  INNER_SCROLLBAR_WIDTH - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH)/2,  start_y, self.window_width - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH), start_y + INNER_SCROLLBAR_HEIGHT, fill=INNER_SCROLLBAR_COLOR)
-
-
-    #TODO: make sure we don't go beyond content
     def scrolldown(self, e):
         logger.debug("Scrolling down")
-        if self.doc_height > self.window_height:
-            self.scroll = min(self.scroll + SCROLL_STEP, self.doc_height - self.window_height)
-        else: self.scroll = 0
-        self.draw()
+        if self.active_tab.scrolldown(self.window_height, self.chrome.getHeight()):
+            self.draw()
     
     def scrollup(self, e):
         logger.debug("Scrolling up")
-        self.scroll = max(self.scroll - SCROLL_STEP, 0)
-        self.draw()
+        if self.active_tab.scrollup():
+            self.draw()
     
     def mouseWheelScroll(self, e):
         #TODO: implement for Windows and Mac since they have differences
@@ -172,27 +104,66 @@ class Browser:
         if e.height == self.window_height and e.width == self.window_width:
             logger.debug("No change in proportions, returning")
             return
+        prev_width = self.window_width
+        prev_height = self.window_height
         self.window_height = e.height
         self.window_width = e.width
-        if self.doc_height > self.window_height:
-            self.scroll = min(self.scroll, self.doc_height - self.window_height)
-        else: self.scroll = 0
-        #Don't re-lex tokens, there is no change in the dom if we resize!!!! (at least, not at this stage, maybe with advanced CSS there would be)
-        self.createLayout()
+        if prev_width != self.window_width or prev_height < self.window_height:
+            self.layout()
+            self.draw()
+
+    def click(self, e):
+
+        if e.y < self.chrome.bottom and self.chrome.click(e.x, e.y):
+            self.layout()
+            self.draw()
+        elif self.active_tab.click(e.x,e.y, self.window_width, self.window_height, self.chrome.getHeight()):
+            self.draw()
+
+    def keyPress(self, e):
+        if len(e.char) == 0: return
+        if not (0x20 <= ord(e.char) < 0x7f): return
+        self.chrome.keypress(e.char)
         self.draw()
 
+    #TODO: maybe have a function to redraw only the chrome (for when performance becomes a factor)
+    def enterPress(self, e):
+        self.chrome.enter()
+        self.layout()
+        self.draw()
 
-from src.layouts.BlockLayout import BlockLayout
-from src.layouts.DocumentLayout import DocumentLayout
-from src.HTMLParser import Element, Text
+    def backSpacePress(self, e):
+        self.chrome.backSpace()
+        self.layout()
+        self.draw()
+
+    def leftArrowPress(self, e):
+        self.chrome.arrowLeft()
+        self.layout()
+        self.draw()
+    
+    def rightArrowPress(self, e):
+        self.chrome.arrowRight()
+        self.layout()
+        self.draw()
+
+    def middleClick(self, e): 
+        if e.y < self.chrome.bottom and self.chrome.middleClick(e.x, e.y):
+            self.layout()
+            self.draw()
+
+# from src.layouts.BlockLayout import BlockLayout
+# from src.layouts.DocumentLayout import DocumentLayout
+# from src.HTMLParser import Element, Text
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     b = Browser()
+    
 
     if(len(sys.argv) != 2):
-        b.load(f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}')
-    else: b.load(sys.argv[1])
+        b.new_tab(f'file://{CURR_FILEPATH}/{DEFAULT_FILE_PATH}')
+    else: b.new_tab(sys.argv[1])
     tkinter.mainloop()
     # style = {
     #     "font-size": "26px",

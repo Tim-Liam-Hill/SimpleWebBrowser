@@ -1,5 +1,5 @@
 import tkinter
-from src.HTMLParser import Element
+from src.HTML.HTMLParser import Element
 from src.CSS.CSSParser import CSSParser
 import logging
 from src.CSS import CSSConstants
