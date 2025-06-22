@@ -56,3 +56,10 @@ I think I might just do bookmarks and maybe forward because eh, don't really fee
 I have a more robust rendering algorithm that doesn't panic so much. 
 
 I think I don't really care too much for the other exercises in this chapter but I do want a way to close tabs so will link right click to closing tabs. 
+That was quick. Let's take a moment to just fix one or two rendering things while we are here before calling that chapter 7. 
+
+First: I want frogfind's homepage to render, so I need my algorithm to be more accepting of closing tags without matching opening tags. 
+
+Just noticed that I am not actually loading title correctly. Seems to be because I am not parsing head tags correctly. That is annoying. It works when HTML is formatted as expected but when there is a <meta> tag before the html I think that is what trips us up.
+
+Lists still display kinda wonky but thats okay. 
