@@ -283,6 +283,8 @@ class HTMLParser:
             open_tags = [node.tag for node in self.unfinished]
             if open_tags == [] and (tag == None or (len(tag) >= 4 and "html" not in tag[:4])): #tag could be None
                 self.add_tag("html")
+            elif open_tags == ["html"] and tag == "html": #handles case where we have a meta tag and implicitly added our own html tag
+                break
             elif open_tags == ["html"] and not any(substring in tag for substring in ["head", "body", "/html"]):
                 if tag in self.HEAD_TAGS:
                     self.add_tag("head")
