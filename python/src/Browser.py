@@ -44,6 +44,8 @@ class Browser:
         self.window.bind("<BackSpace>", self.backSpacePress)
         self.window.bind("<Left>", self.leftArrowPress)
         self.window.bind("<Right>", self.rightArrowPress)
+        self.window.bind("<Button-2>",self.middleClick)
+
         #--------------------------------------
 
         #css
@@ -144,6 +146,11 @@ class Browser:
         self.chrome.arrowRight()
         self.layout()
         self.draw()
+
+    def middleClick(self, e): 
+        if e.y < self.chrome.bottom and self.chrome.middleClick(e.x, e.y):
+            self.layout()
+            self.draw()
 
 # from src.layouts.BlockLayout import BlockLayout
 # from src.layouts.DocumentLayout import DocumentLayout

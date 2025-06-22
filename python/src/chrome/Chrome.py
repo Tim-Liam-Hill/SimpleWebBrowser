@@ -193,3 +193,26 @@ class Chrome:
             if self.address_bar_index > 0 and len(self.address_bar) > 0:
                 self.address_bar = self.address_bar[:self.address_bar_index-1] + self.address_bar[self.address_bar_index:]
                 self.address_bar_index -=1
+
+    def middleClick(self, x, y): 
+        '''Deletes the clicked tab if more than one tab open'''
+
+        if len(self.browser.tabs) == 1: #don't delete the only tab we have
+            return False 
+
+        offset = self.newtab_rect.right
+        for i, tab in enumerate(self.browser.tabs):
+            title = tab.getTitle()
+            bounds = self.tab_rect(i,title, offset)
+            if y > bounds.bottom:
+                return False 
+            if x < bounds.right and x > bounds.left: 
+                newTabs = [t for t in self.browser.tabs if t != tab]
+                if tab == self.browser.active_tab:
+                    self.browser.active_tab = newTabs[0]
+                self.browser.tabs = newTabs
+                return True
+
+            offset += self.calculateTabWidth(title)
+
+        return False

@@ -95,6 +95,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * is there a better system to handle setting re-renders in browser? A 'mark dirty' of some sort? 
 * Targeted redraw: only recreate layout and redraw necessary parts (eg: if changing the search bar text, we don't need to redraw everything)
 * Delete tabs on right click
+* Error handling: show feedback to user and don't stick with the unusable content.
 
 # BUGS
 

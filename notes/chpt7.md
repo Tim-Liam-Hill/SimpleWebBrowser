@@ -49,3 +49,10 @@ Yeah, I think in the next chapter will handle changing focus n such. Will wait t
 Backspace and index done. That's good. 
 
 Now for titles. 
+
+I think I need to go back and look at the search bar entry since sometimes it doesn't 'empty' properly when focused. 
+
+I think I might just do bookmarks and maybe forward because eh, don't really feel like doing the other things. Search I might save for later when 
+I have a more robust rendering algorithm that doesn't panic so much. 
+
+I think I don't really care too much for the other exercises in this chapter but I do want a way to close tabs so will link right click to closing tabs. 
