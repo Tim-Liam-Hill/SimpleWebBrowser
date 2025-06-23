@@ -15,8 +15,6 @@ class Layout(ABC):
         self.parent = parent 
         self.previous = previous
         self.children = []
-
-
         
     @abstractmethod
     def getWidth(self):
@@ -91,15 +89,6 @@ class Layout(ABC):
 
         pass
     
-    # def getXContinue(self):
-    #     '''Determines where on the current ystart line text content should continue
-        
-    #     This method has the default behaviour of starting text at the beginning of the content rectangle
-    #     and is overridden as necessary eg: by inline class.
-    #     '''
-
-    #     return self.getXStart()
-
     @abstractmethod
     def layout(self):
         '''Forces this Layout Object to create all of its layout children'''
@@ -121,7 +110,7 @@ class Layout(ABC):
     def layoutType(node):
         '''Given an html element node, determines its layout type'''
 
-        if "display" in node.style and node.style.get("display") in ["block", "none"]:
+        if "display" in node.style and node.style.get("display") in ["block", "input", "none"]:
             return node.style.get("display")
 
         return "inline"

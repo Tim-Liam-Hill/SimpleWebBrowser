@@ -94,8 +94,9 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * right click on links -> print a preview to that link (bottom of screen over content??). Maybe for right clicking in general we print some shtuff
 * is there a better system to handle setting re-renders in browser? A 'mark dirty' of some sort? 
 * Targeted redraw: only recreate layout and redraw necessary parts (eg: if changing the search bar text, we don't need to redraw everything)
-* Delete tabs on right click
+* Delete tabs on right click (done but on middle click)
 * Error handling: show feedback to user and don't stick with the unusable content.
+* reformat directory layout to make more sense
 
 # BUGS
 
