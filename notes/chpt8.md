@@ -55,6 +55,31 @@ Now that I am removing a bunch of things, i am actually starting to think some o
 
 So let's go a little slower now. Very small rework just to clean things up.
 
-Document Layout:
-* only one child
-* why am I returning self.y in getY() when that is never set?
+* Document Layout child (done)
+* Layout getElements at rename (done)
+* Layout layout type function -> move to LayoutConstants and rework (done)
+* Delete LayoutTypes enum and the Layout layoutType function (done)
+* get rid of 'calculateContentWidth' and 'calculateWidth' (done)
+* move InlineLayout 'getFont' and rework (done)
+
+So there is some good news and some bad news. The good:
+* code is a lot cleaner
+* it actually isn't as bad as I initially thought
+
+The bad
+* part of our layout algorithm is broken (specifically having block elements on the same line as inline elements)
+
+The good again
+* we may as well rework our Inline layout and line layout to be closer to the books, since that should help fix problems down the line.
+
+Okay, so here is the idea:
+* An Inline Layout is a collection of Lines
+* A line holds a number of Layout-descendant objects
+* It also holds a number of rect objects for background displaying (in a separate list)
+* every Layout descendant object 
+* If a Line holds a Block Layout object, then that is the only element in that line
+* Text Fragments will become a new layout object (consider them anon Inline type bois)
+* When we flush a line, we just use the getHeight() method to calculate height and then we can work out baseline etc from there. (half leading back up? and maybe keep track of the max descent?)
+
+Who would have thought an elegant solution was within my grasp? Sure as hell not me, and I am still not entirely convinced but I have a good feeling.
+

@@ -106,7 +106,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * for inline elements, the width we draw the rect is just marginally too long (because of trailing space)
 * bug in HTML parser when extracting inner attributes. If an attribute starts on a new line we don't get rid of the newline and the attribute will start with a "\n"
 * don't just fail if we can't fetch a stylesheet
-
+* Don't do anything when clicking the empty scrollbar place if page isn't scrollable
 
 
 
