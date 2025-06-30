@@ -1,7 +1,7 @@
 from src.HTML.HTMLParser import Element, Text
 import logging
 from dataclasses import dataclass
-from src.CSS.layouts.LayoutConstants import LayoutTypes, get_font
+from src.CSS.layouts.LayoutConstants import LayoutTypes, get_font, layoutType
 from src.CSS.layouts.Layout import Layout
 import re
 from src.CSS.layouts.Line import TextBox, Box, Line
@@ -143,7 +143,7 @@ class InlineLayout(Layout):
 
             cursor_x += curr_w    
 
-        elif Layout.layoutType(node) == "inline":
+        elif layoutType(node) == "inline":
             index = len(self.lines)
             curr_cursor_x = cursor_x #that's a mouthful
             for child in node.children:
@@ -159,7 +159,7 @@ class InlineLayout(Layout):
                 #subtract curr_cursor_x since we may only have one line and we don't start that line
                 box = Box(curr_cursor_x, self.curr_line.getTextWidth() - curr_cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
                 self.curr_line.addBox(box)
-        elif Layout.layoutType(node) == "none":
+        elif layoutType(node) == "none":
             pass
         else: 
             self.flush(lines_index,start_y)

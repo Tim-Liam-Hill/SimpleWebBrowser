@@ -1,5 +1,5 @@
 from src.CSS.layouts.Layout import Layout
-from src.CSS.layouts.LayoutConstants import LayoutTypes, VSTEP
+from src.CSS.layouts.LayoutConstants import VSTEP, LayoutTypes, layoutType
 from src.Draw.Commands import DrawRect
 from src.CSS.layouts.InlineLayout import InlineLayout
 from src.HTML.HTMLParser import Element
@@ -99,10 +99,10 @@ class BlockLayout(Layout):
             if isinstance(child, Element) and child.tag in ["head","script","style","meta"]:
                 continue
             
-            if Layout.layoutType(child) == "none":
+            if layoutType(child) == "none":
                 continue
 
-            if Layout.layoutType(child) == "inline":
+            if layoutType(child) == "inline":
                 inline_children.append(child)
                 continue
 

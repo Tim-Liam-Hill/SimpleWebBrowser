@@ -106,14 +106,6 @@ class Layout(ABC):
     def getLayoutMode(self):
         '''Returns this objects CSS display property'''
         pass 
-
-    def layoutType(node):
-        '''Given an html element node, determines its layout type'''
-
-        if "display" in node.style and node.style.get("display") in ["block", "input", "none"]:
-            return node.style.get("display")
-
-        return "inline"
     
     @abstractmethod
     def getElementsAt(self,x,y):

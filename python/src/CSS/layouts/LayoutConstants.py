@@ -11,6 +11,14 @@ class LayoutTypes(Enum):
     Inline = "inline"
     #TODO: none, hidden
 
+def layoutType(node):
+    '''Given an html element node, determines its layout type'''
+
+    if "display" in node.style and node.style.get("display") in ["block", "input", "none"]:
+        return node.style.get("display")
+
+    return "inline"
+
 """The amount by which to advance horizontally and vertically by default"""
 HSTEP, VSTEP = 13, 18
 

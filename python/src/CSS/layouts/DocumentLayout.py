@@ -21,7 +21,6 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
 
     def layout(self):
 
-
         self.child = BlockLayout(self.node, self, None)
         self.child.layout()
 
