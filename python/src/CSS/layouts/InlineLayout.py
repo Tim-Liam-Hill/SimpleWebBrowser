@@ -81,7 +81,6 @@ class InlineLayout(Layout):
     def layout(self):
         logger.debug("laying our InlineLayout with {} children".format(len(self.children)))
         self.setCoordinates()
-        self.content_width = self.getContentWidth()
 
         #2 pass algorithm: the first pass we make sure all lines have the text that fits on them and the 
         #boxes for backgrounds and such. Second pass we set the height for every Line. 
@@ -230,10 +229,10 @@ class InlineLayout(Layout):
 
     def __repr__(self):
 
-        return "InlineLayout: x={} y={} width={} height={} num_nodes={}".format(self.x, self.y, self.width,self.getHeight(),len(self.nodes))
+        return "InlineLayout: x={} y={} width={} height={} num_nodes={}".format(self.x, self.y, self.getWidth(),self.getHeight(),len(self.nodes))
 
     def print(self, indent):
-        print("-" * indent + "InlineLayout: width {} height {}".format(self.width, self.getHeight()))
+        print("-" * indent + "InlineLayout: width {} height {}".format(self.getWidth(), self.getHeight()))
         for line in self.lines:
             line.print(indent + 1)
 

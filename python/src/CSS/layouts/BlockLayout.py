@@ -71,9 +71,6 @@ class BlockLayout(Layout):
         '''Forces this Layout Object to create all of its layout children'''
 
         self.setCoordinates()
-        self.width = self.getWidth()
-        self.content_width = self.getContentWidth()
-
         self.createChildren()
         
         for child in self.children:
@@ -121,7 +118,7 @@ class BlockLayout(Layout):
         bgcolor = self.node.style.get("background-color",
                                       "transparent")
         if bgcolor != "transparent":
-            x2, y2 = self.x + self.width, self.y + self.getHeight()
+            x2, y2 = self.x + self.getWidth(), self.y + self.getHeight()
             rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
             cmds.append(rect)
 
@@ -134,7 +131,7 @@ class BlockLayout(Layout):
         return "BlockLayout: tag={} x={} y={} width={} height={}".format(self.node.tag, self.x, self.y, self.width,self.getHeight())
 
     def print(self, indent):
-        print("-" * indent + "BlockLayout: width {} height {}".format(self.width, self.getHeight()))
+        print("-" * indent + "BlockLayout: width {} height {}".format(self.getWidth(), self.getHeight()))
 
         for child in self.children:
             child.print(indent + 1)
