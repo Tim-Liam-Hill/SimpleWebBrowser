@@ -13,7 +13,7 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
     def __init__(self, node, max_width, y_start):
         self.node = node
         self.parent = None
-        self.children = []
+        self.child = None
         self.max_width = max_width
         self.width = self.max_width
         self.x = 0
@@ -22,13 +22,12 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
     def layout(self):
 
 
-        child = BlockLayout(self.node, self, None)
-        self.children.append(child)
-        child.layout()
+        self.child = BlockLayout(self.node, self, None)
+        self.child.layout()
 
     #TODO: could speed this up if needed    
     def getHeight(self):
-        return self.children[0].getHeight()
+        return self.child.getHeight()
 
     def getXStart(self):
         return 0
@@ -40,10 +39,9 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
         return self.max_width
 
     def paint(self):
-        display_list = []
-        for child in self.children:
-            display_list.extend(child.paint())
-        return display_list
+
+      return self.child.paint()
+
 
     def __repr__(self):
         return "DocumentLayout: max_width {}".format(self.max_width)
@@ -51,8 +49,8 @@ class DocumentLayout: #edge case that doesn't need to inherit everything from La
     def print(self):
 
         print("Document Layout: width {} and height {}".format(self.width,self.getHeight()))
-        self.children[0].print(1)
+        self.child.print(1)
     
     def getElementsAt(self,x,y):
 
-        return self.children[0].getElementsAt(x,y)
+        return self.child.getElementsAt(x,y)
