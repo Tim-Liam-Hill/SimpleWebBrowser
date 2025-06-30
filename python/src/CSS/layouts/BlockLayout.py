@@ -1,5 +1,5 @@
 from src.CSS.layouts.Layout import Layout
-from src.CSS.layouts.LayoutConstants import VSTEP, LayoutTypes, layoutType
+from src.CSS.layouts.LayoutConstants import VSTEP, layoutType
 from src.Draw.Commands import DrawRect
 from src.CSS.layouts.InlineLayout import InlineLayout
 from src.HTML.HTMLParser import Element
@@ -135,10 +135,6 @@ class BlockLayout(Layout):
         
         return cmds
 
-    def getLayoutMode(self):
-        
-        return LayoutTypes.Block
-
     def __repr__(self):
         return "BlockLayout: tag={} x={} y={} width={} height={}".format(self.node.tag, self.x, self.y, self.width,self.getHeight())
 
@@ -148,7 +144,7 @@ class BlockLayout(Layout):
         for child in self.children:
             child.print(indent + 1)
     
-    def getElementsAt(self,x,y):
+    def click(self,x,y):
         '''Returns a list of one or more elements that bound the given x and y coordinates (document coordinates, NOT canvas coordinates)'''
 
         elems = []
@@ -158,6 +154,6 @@ class BlockLayout(Layout):
         if self.y > y:
             return elems 
         for child in self.children:
-            elems.extend(child.getElementsAt(x,y))
+            elems.extend(child.click(x,y))
 
         return elems

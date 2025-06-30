@@ -91,7 +91,7 @@ class Line:
         for b in self.text_boxes:
             print(" "*(indent) + "-" + b.__repr__())
     
-    def getElementsAt(self,x,y, parent_x):
+    def click(self,x,y, parent_x):
         
         elems = [] 
         if self.y > y or self.y + self.getHeight() < y:

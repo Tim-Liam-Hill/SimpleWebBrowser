@@ -96,19 +96,13 @@ class Layout(ABC):
         pass 
     
     @abstractmethod
-    def paint(self): #TODO:Should this be abstract or can we make this generic? 
+    def paint(self):
         '''Returns the display list of draw commands necessary for this element to render its content on a canvas'''
 
         pass
-
-    #TODO: do we even need this method?? 
-    @abstractmethod
-    def getLayoutMode(self):
-        '''Returns this objects CSS display property'''
-        pass 
     
     @abstractmethod
-    def getElementsAt(self,x,y):
+    def click(self,x,y):
         '''Returns a list of one or more elements that bound the given x and y coordinates (document coordinates, NOT canvas coordinates).
         
         Returned elements are html elements, not Layout elements

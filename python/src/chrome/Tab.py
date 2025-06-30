@@ -149,7 +149,7 @@ class Tab:
         logger.debug("Canvas clicked at x '{}' y '{}'".format(x,y))
         y += self.scroll
         logger.debug("Document coordinates are x '{}' y '{}'".format(x,y))
-        elems = self.document.getElementsAt(x,y)
+        elems = self.document.click(x,y)
         if len(elems) == 0:
             logger.warning("Empty list of clicked elements, if page is scrollable this is an error")
             return False

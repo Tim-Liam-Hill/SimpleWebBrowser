@@ -1,7 +1,7 @@
 from src.HTML.HTMLParser import Element, Text
 import logging
 from dataclasses import dataclass
-from src.CSS.layouts.LayoutConstants import LayoutTypes, get_font, layoutType
+from src.CSS.layouts.LayoutConstants import get_font, layoutType
 from src.CSS.layouts.Layout import Layout
 import re
 from src.CSS.layouts.Line import TextBox, Box, Line
@@ -248,10 +248,6 @@ class InlineLayout(Layout):
         
         return cmds
 
-    def getLayoutMode(self):
-
-        return LayoutTypes.Inline
-
     def __repr__(self):
 
         return "InlineLayout: x={} y={} width={} height={} num_nodes={}".format(self.x, self.y, self.width,self.getHeight(),len(self.nodes))
@@ -261,7 +257,7 @@ class InlineLayout(Layout):
         for line in self.lines:
             line.print(indent + 1)
 
-    def getElementsAt(self,x,y):
+    def click(self,x,y):
         '''Returns a list of one or more elements that bound the given x and y coordinates (document coordinates, NOT canvas coordinates)'''
 
         elems = []
@@ -272,9 +268,9 @@ class InlineLayout(Layout):
             return elems 
         for child in self.lines:
             if isinstance(child, Line):
-                elems.extend(child.getElementsAt(x,y, self.x))
+                elems.extend(child.click(x,y, self.x))
             else: 
-                elems.extend(child.getElementsAt(x,y))
+                elems.extend(child.click(x,y))
 
         return elems
 '''

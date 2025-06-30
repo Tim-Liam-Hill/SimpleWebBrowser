@@ -1,15 +1,8 @@
 """Defines layout types and constants needed for display classes"""
 
-from enum import Enum, unique
 import math
 import tkinter
 import tkinter.font
-
-@unique
-class LayoutTypes(Enum):
-    Block = "block"
-    Inline = "inline"
-    #TODO: none, hidden
 
 def layoutType(node):
     '''Given an html element node, determines its layout type'''
