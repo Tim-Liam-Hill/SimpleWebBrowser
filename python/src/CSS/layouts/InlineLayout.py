@@ -1,7 +1,7 @@
 from src.HTML.HTMLParser import Element, Text
 import logging
 from dataclasses import dataclass
-from src.CSS.layouts.LayoutConstants import get_font, layoutType
+from src.CSS.layouts.LayoutConstants import layoutType, getFont
 from src.CSS.layouts.Layout import Layout
 import re
 from src.CSS.layouts.Line import TextBox, Box, Line
@@ -40,22 +40,17 @@ class InlineLayout(Layout):
         #does layout need its own display_list array? I think it can just get it from its children. 
     
     def getWidth(self):
+        if self.width == None:
+            self.width = self.parent.getContentWidth()
 
         return self.width
     
     def getContentWidth(self):
-        '''If this is resource intensive with calculations mayhaps cache??'''
+        if self.contentWidth == None:
+            self.contentWidth = self.parent.getContentWidth()
 
-        return self.content_width
+        return self.contentWidth
   
-    def calculateContentWidth(self):
-
-        return self.parent.getContentWidth()
-
-    def calculateWidth(self):
-
-        return self.parent.getContentWidth()
-    
     #TODO: implement CSS
     def getHeight(self):
 
@@ -86,7 +81,7 @@ class InlineLayout(Layout):
     def layout(self):
         logger.debug("laying our InlineLayout with {} children".format(len(self.children)))
         self.setCoordinates()
-        self.content_width = self.calculateContentWidth()
+        self.content_width = self.getContentWidth()
 
         #2 pass algorithm: the first pass we make sure all lines have the text that fits on them and the 
         #boxes for backgrounds and such. Second pass we set the height for every Line. 
@@ -122,7 +117,7 @@ class InlineLayout(Layout):
             no_newlines = re.sub(r'\t|\n','',node.text)
             squash_spaces = re.sub(r' +', ' ', no_newlines)
             words = squash_spaces.split(" ")
-            font = self.getFont(node)
+            font = getFont(node)
             curr_sentence = "" #create as few textboxes as possible, put lot's of words into a text box
             curr_w = 0
             for i in range(len(words)):
@@ -180,7 +175,7 @@ class InlineLayout(Layout):
 
     def word(self, word, node):
 
-        font = self.getFont(node)
+        font = getFont(node)
         w = font.measure(word)
         if self.cursor_x + w >= self.getContentWidth(): #TODO: what if overflow set? Also: do we still need HSTEP?
             if not self.line and self.previous: 
@@ -209,22 +204,7 @@ class InlineLayout(Layout):
         self.line.append((self.cursor_x, word, font, css_props))
         self.cursor_x += w + font.measure(" ")
 
-    def getFont(self, node):
-        '''Used to create the font needed to render text, taking into account css properties'''
 
-        weight = node.style["font-weight"]
-        style = node.style["font-style"]
-        family = node.style["font-family"]
-        if style == "normal": style = "roman"
-        try:
-            size = int(float(node.style["font-size"][:-2]) * .75)
-        except:
-            size = 26
-
-        if node.style.get('font-size', " ")[-1] == "%": #TODO: expand and ensure this works. 
-            size *= 1/float(node.style.get('font-size'))
-
-        return get_font(size, weight, style, family)
 
     def flush(self, lines_index, start_y):
         '''Adds current line to lines, then starting with line at line_index, calculates baselines, height and sets y position for each line'''
@@ -261,9 +241,10 @@ class InlineLayout(Layout):
         '''Returns a list of one or more elements that bound the given x and y coordinates (document coordinates, NOT canvas coordinates)'''
 
         elems = []
-        if self.getX() <= x < self.getX() + self.getWidth() and \
-            self.getY() <= y < self.getY() + self.getHeight():
-            elems.append(self.node)
+        #TODO: more testing to verify clicking on InlineLayouts is correct
+        # if self.getX() <= x < self.getX() + self.getWidth() and \
+        #     self.getY() <= y < self.getY() + self.getHeight():
+        #     elems.append(self.node)
         if self.y > y:
             return elems 
         for child in self.lines:

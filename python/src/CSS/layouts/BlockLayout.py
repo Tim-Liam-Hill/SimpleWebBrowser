@@ -13,25 +13,20 @@ class BlockLayout(Layout):
         super().__init__(parent,previous)
 
         self.node = node 
-        self.display_list = []
 
+    #TODO: implement CSS
     def getWidth(self):
+        if self.width == None:
+            self.width = self.parent.getContentWidth()
 
         return self.width
 
+    #TODO: implement CSS
     def getContentWidth(self):
+        if self.contentWidth == None:
+            self.contentWidth = self.parent.getContentWidth()
 
-        return self.content_width
-
-    #TODO: implement CSS
-    def calculateContentWidth(self): 
-
-        return self.parent.getContentWidth()
-
-    #TODO: implement CSS
-    def calculateWidth(self):
-
-        return self.parent.getContentWidth()
+        return self.contentWidth
     
     def getHeight(self):
         '''The height of a block element is dependant on the height of its children'''
@@ -76,8 +71,8 @@ class BlockLayout(Layout):
         '''Forces this Layout Object to create all of its layout children'''
 
         self.setCoordinates()
-        self.width = self.calculateWidth()
-        self.content_width = self.calculateContentWidth()
+        self.width = self.getWidth()
+        self.content_width = self.getContentWidth()
 
         self.createChildren()
         

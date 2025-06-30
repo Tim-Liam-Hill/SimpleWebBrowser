@@ -8,10 +8,10 @@ class Layout(ABC):
         self.y = 0 
         
         '''Width of entire element including margin, padding and borders'''
-        self.width = 0
+        self.width = None
         
         '''Width available for inner text and other elements'''
-        self.content_width = 0
+        self.contentWidth = None
         self.parent = parent 
         self.previous = previous
         self.children = []
@@ -30,18 +30,6 @@ class Layout(ABC):
         '''
 
         pass
-
-    @abstractmethod
-    def calculateContentWidth(self):
-        '''Calculates the width of this element available for inner content'''
-
-        pass 
-
-    @abstractmethod
-    def calculateWidth(self):
-        '''Calculates the entire width of this element, css and content included'''
-
-        pass 
     
     @abstractmethod
     def getHeight(self):

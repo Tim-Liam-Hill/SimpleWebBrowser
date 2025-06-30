@@ -1,9 +1,9 @@
-from src.CSS.layouts.LayoutConstants import get_font
 from src.Draw.Commands import DrawOutline, DrawLine, DrawText, DrawRect, Rect
 import logging
 logger = logging.getLogger(__name__)
 CHROME_DEFAULT_FONT_SIZE = 14
-import math
+import tkinter
+import tkinter.font
 
 class Chrome: 
     '''Responsible for the search bar and tab display for a given window'''
@@ -15,7 +15,7 @@ class Chrome:
         self.address_bar_index = 0 # 0 is before the first char, len()+1 is after the last char
 
         #TODO: clean up this init (may need to cleanup Rect Classes n such first)
-        self.font = get_font(CHROME_DEFAULT_FONT_SIZE, "normal", "roman", "Courier")
+        self.font = tkinter.font.Font(size=CHROME_DEFAULT_FONT_SIZE, weight="normal",slant="roman", family="Courier")
         self.font_height = self.font.metrics("linespace")
         self.padding = 5
         self.tabbar_top = 0
