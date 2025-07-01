@@ -3,6 +3,7 @@ from src.Draw.Commands import DrawText, DrawRect
 from src.CSS.layouts.Layout import Layout
 
 class LineLayout(Layout):
+    '''Holds all of the boxes that make up a single line within an Inline Formatting context'''
 
     def __init__(self, parent, previous):
         super().__init__(parent,previous)
@@ -11,38 +12,96 @@ class LineLayout(Layout):
         self.rects = []
 
     def getWidth(self):
-        pass
+
+        if self.width == None: 
+            self.width = sum([e.getWidth() for e in self.layoutFragments])
+        
+        return self.width
 
     def getContentWidth(self):
-        pass
+        '''Content width and width of a line are synonymous'''
+
+        return self.getWidth()
 
     def getHeight(self):
-        pass
+
+        #TODO: cache height
+        height = max([child.getHeight() + child.getY() for child in self.layoutFragments] + [0])
+
+        return height
 
     def getX(self):
-        pass
+        return self.x
 
     def getY(self):
-        pass
+        return self.y
 
     def getXStart(self):
-        pass
+        return self.x + self.getWidth()
 
     def getYStart(self):
 
-        pass
+        return self.y + self.getHeight()
+    
+    def flush(self):
+        '''Flushes the line such that all text nodes are given the correct y and baseline coordinates
+        
+        The maximum height is first used to determine line height, after which baseline is made to be the midpoint.
+        TextNodes use their own vert-align to determine their layout from their on.
+
+        To determine max height, the max height for text nodes and max height for non-text nodes is determined and compared.
+        The maximum height for text nodes is based on the descent and ascent of all textnodes, after which leading is taken into account.
+        '''
+
+        textFrags = self.layoutFragments.filter(lambda x: isinstance(x,TextLayout), self.layoutFragments)
+        metrics = [child.font.metrics() for child in textFrags]
+        maxAscent = max([metric["ascent"] for metric in metrics] + [0])
+        maxDescent = max([metric["descent"] for metric in metrics] + [0])
+        fontMaxHeight = (DEFAULT_LEADING * (maxAscent+maxDescent))
+
+        layoutFrags = self.layoutFragments.filter(lambda x: not isinstance(x,TextLayout), self.layoutFragments)
+        layoutMaxHeight = max([child.getHeight() for child in layoutFrags] + [0])
+
+        h = max([fontMaxHeight, layoutMaxHeight])
+
+        #Set baseline for every text node
+        #for now we won't worry about anything too elaborate regarding
+        #keeping the baseline for text fragments in line with that for lines
+        #of the potential block layouts. Later on this can be done but it will
+        #require a line keeping track of its own baseline so that parents
+        # can iterate down the tree to determine childs baseline
+        baseline = DEFAULT_LEADING * maxAscent
+        if layoutMaxHeight > fontMaxHeight:
+            baseline = fontMaxHeight - (DEFAULT_LEADING * maxDescent)
+        
+        for child in textFrags:
+            child.baseline = baseline
     
     def layout(self):
 
-        pass
+        for child in self.layoutFragments:
+            child.layout() #ensures any inline block or block elements get laid out correctly
     
     def paint(self):
 
-        pass
+        cmds = []
+        for r in self.rects:
+            cmds.extend(r.paint())
+        
+        for obj in self.layoutFragments:
+            cmds.extend(obj.paint())
+
+        return cmds
 
     def click(self,x,y):
 
-        pass 
+        elems = []
+        if self.y > y:
+            return elems 
+        for child in self.layoutFragments:
+            elems.extend(child.click(x,y))
+
+        return elems
 
 class TextLayout(Layout):
 
@@ -50,43 +109,64 @@ class TextLayout(Layout):
         super().__init__(parent,previous)
         self.text = text 
         self.font = font
+        self.baseline = None
 
     def getWidth(self):
-        pass
+        if self.width == None: 
+            self.width = self.font.measure(self.text)
+
+        return self.width
 
     def getContentWidth(self):
-        pass
+        
+        return self.getWidth()
 
     def getHeight(self):
-        pass
+        '''While we could use self.font.metrics()["linespace"] to determine height, instead we make use of ascent descent and DEFAULT_LEADING'''
+        
+        ascent = self.font.metrics()["ascent"]
+        descent = self.font.metrics()["descent"]
+
+        return DEFAULT_LEADING * (ascent + descent)
 
     def getX(self):
-        pass
+        return self.x
 
     def getY(self):
-        pass
+        return self.y
 
     def getXStart(self):
-        pass
+        return self.x + self.getWidth()
 
     def getYStart(self):
 
-        pass
+        return self.y + self.getHeight()
     
     def layout(self):
 
-        pass
+        return
     
     def paint(self):
 
-        pass
+        cmds = []
+        y1 = self.y + self.baseline - self.font.metrics("ascent")
+        #TODO: use vert align
+        cmds.append(DrawText(self.x,y1,self.text,self.font,self.node.style["color"]))
+        return cmds
 
     def click(self,x,y):
 
-        pass 
+        elems = []
+        if self.y < y and self.y + self.getHeight() < y \
+            and self.x < x and self.x + self.getWidth() > x:
+            elems.append(self.node)
+
+        return elems
+
+## OLD CLASSES BELOW HERE
 
 #TODO: should we inherit from layout?? 
-class Line:
+class Line:#
     '''A line is a collection of TextBoxes and Boxes that make up the content to be shown on a specific line within some inline block'''
 
     def __init__(self):

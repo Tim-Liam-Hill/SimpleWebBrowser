@@ -206,8 +206,6 @@ class InlineLayout(Layout):
         self.line.append((self.cursor_x, word, font, css_props))
         self.cursor_x += w + font.measure(" ")
 
-
-
     def flush(self, lines_index, start_y):
         '''Adds current line to lines, then starting with line at line_index, calculates baselines, height and sets y position for each line'''
 
