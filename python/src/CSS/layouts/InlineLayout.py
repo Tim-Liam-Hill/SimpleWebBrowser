@@ -82,9 +82,6 @@ class InlineLayout(Layout):
         logger.debug("laying our InlineLayout with {} children".format(len(self.children)))
         self.setCoordinates()
 
-        #2 pass algorithm: the first pass we make sure all lines have the text that fits on them and the 
-        #boxes for backgrounds and such. Second pass we set the height for every Line. 
-
         cursor_x = 0
         start_y = self.getYStart()
         lines_index = 0
@@ -93,7 +90,6 @@ class InlineLayout(Layout):
 
         self.flush(lines_index,start_y)
         #flush once we are done!!!
-        #then we go through and populate the starting y and height for each element
         
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
@@ -110,60 +106,67 @@ class InlineLayout(Layout):
         - start_y = the y value which the line ad lines_index starts
         - lines_index = tracks the last line which has not been flushed
         '''
-        #TODO: break these up into individual functions
-        #TODO: test an empty span <span></span> and make sure we don't die if this is what we have. 
         if isinstance(node, Text):
-            no_newlines = re.sub(r'\t|\n','',node.text)
-            squash_spaces = re.sub(r' +', ' ', no_newlines)
-            words = squash_spaces.split(" ")
-            font = getFont(node)
-            curr_sentence = "" #create as few textboxes as possible, put lot's of words into a text box
-            curr_w = 0
-            for i in range(len(words)):
-                word = words[i] if i == len(curr_sentence) == 0 else " {}".format(words[i]) #TODO: last word might be followed by a space
-                w = font.measure(word)
-                if curr_w + w + cursor_x < self.getContentWidth():
-                    curr_sentence += word 
-                    curr_w += w
-                else:
-                    self.curr_line.addText(TextBox(curr_sentence,font,cursor_x,curr_w,node))
-                    self.lines.append(self.curr_line)
-                    curr_sentence = words[i]
-                    curr_w = font.measure(word)
-                    self.curr_line = Line()
-                    cursor_x = 0
-            if curr_sentence != "":
-                self.curr_line.addText(TextBox(curr_sentence,font,cursor_x,curr_w,node))
-
-            cursor_x += curr_w    
-
+            return self.handleText(node,cursor_x), start_y, lines_index  
         elif layoutType(node) == "inline":
-            index = len(self.lines)
-            curr_cursor_x = cursor_x #that's a mouthful
-            for child in node.children:
-                cursor_x, start_y, lines_index = self.recurse(child, cursor_x,start_y,lines_index)
-
-            if self.needsBox(node):
-                for i in range(index, len(self.lines)): 
-                    if not isinstance(self.lines[i], Line): #we could have interleaved BlockLayouts
-                        break
-                    box = Box(curr_cursor_x, self.getContentWidth()-curr_cursor_x,i == index, False ,node) #boxes should go all the way to the end if they go onto multiple lines
-                    self.lines[i].addBox(box)
-                    curr_cursor_x = 0
-                #subtract curr_cursor_x since we may only have one line and we don't start that line
-                box = Box(curr_cursor_x, self.curr_line.getTextWidth() - curr_cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
-                self.curr_line.addBox(box)
-        elif layoutType(node) == "none":
-            pass
+            return self.handleInline(node,cursor_x,start_y,lines_index)
         else: 
-            self.flush(lines_index,start_y)
-            from src.CSS.layouts.BlockLayout import BlockLayout #hopefully this don't cause no circular dependencies but we will see
-            block = BlockLayout(node,self,self.lines[-1])
-            block.layout()
-            self.lines.append(block)
-            start_y += block.getHeight()
-            lines_index = len(self.lines)
-            cursor_x = 0
+            return self.handleBlock(node,cursor_x,start_y,lines_index)
+
+    def handleText(self, node, cursor_x):
+        no_newlines = re.sub(r'\t|\n','',node.text)
+        squash_spaces = re.sub(r' +', ' ', no_newlines)
+        words = squash_spaces.split(" ")
+        font = getFont(node)
+        curr_sentence = "" #create as few textboxes as possible, put lot's of words into a text box
+        curr_w = 0
+        for i in range(len(words)):
+            word = words[i] if i == len(curr_sentence) == 0 else " {}".format(words[i]) #TODO: last word might be followed by a space
+            w = font.measure(word)
+            if curr_w + w + cursor_x < self.getContentWidth():
+                curr_sentence += word 
+                curr_w += w
+            else:
+                self.curr_line.addText(TextBox(curr_sentence,font,cursor_x,curr_w,node))
+                self.lines.append(self.curr_line)
+                curr_sentence = words[i]
+                curr_w = font.measure(word)
+                self.curr_line = Line()
+                cursor_x = 0
+        if curr_sentence != "":
+            self.curr_line.addText(TextBox(curr_sentence,font,cursor_x,curr_w,node))
+
+        cursor_x += curr_w    
+        return cursor_x
+
+    def handleInline(self,node,cursor_x,start_y,lines_index):
+
+        index = len(self.lines)
+        curr_cursor_x = cursor_x #that's a mouthful
+        for child in node.children:
+            cursor_x, start_y, lines_index = self.recurse(child, cursor_x,start_y,lines_index)
+
+        if self.needsBox(node):
+            for i in range(index, len(self.lines)): 
+                if not isinstance(self.lines[i], Line): #we could have interleaved BlockLayouts
+                    break
+                box = Box(curr_cursor_x, self.getContentWidth()-curr_cursor_x,i == index, False ,node) #boxes should go all the way to the end if they go onto multiple lines
+                self.lines[i].addBox(box)
+                curr_cursor_x = 0
+            #subtract curr_cursor_x since we may only have one line and we don't start that line
+            box = Box(curr_cursor_x, self.curr_line.getTextWidth() - curr_cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
+            self.curr_line.addBox(box)
+        return cursor_x, start_y, lines_index
+
+    def handleBlock(self,node,cursor_x, start_y,lines_index):
+        self.flush(lines_index,start_y)
+        from src.CSS.layouts.BlockLayout import BlockLayout #Python let's you do this and I hate it
+        block = BlockLayout(node,self,self.lines[-1])
+        block.layout()
+        self.lines.append(block)
+        start_y += block.getHeight()
+        lines_index = len(self.lines)
+        cursor_x = 0
 
         return cursor_x, start_y, lines_index
 

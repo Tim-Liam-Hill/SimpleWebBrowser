@@ -46,80 +46,43 @@ class LineLayout(Layout):
 
 class TextLayout(Layout):
 
-    def __init__(self, parent, previous):
+    def __init__(self, parent, previous, text, font):
         super().__init__(parent,previous)
-    
+        self.text = text 
+        self.font = font
+
     def getWidth(self):
-        '''Returns the width of the layout object, taking into account CSS properties as necessary'''
-
-        pass 
-
+        pass
 
     def getContentWidth(self):
-        '''Returns the width available inside this element for content
-        
-        This is used as the width for child classes (to be adjusted by CSS as necessary)
-        '''
-
         pass
-    
-    def getHeight(self):
-        '''Returns the height of the layout object, taking into account CSS properties as necessary
-        
-        Note that this height is inclusive of margin. 
-        '''
 
-        pass 
+    def getHeight(self):
+        pass
 
     def getX(self):
-        '''Returns the left hand start co-ordinate layout object, taking into account CSS properties as necessary
-        
-        This value will be for where the bounding rectangle starts and so is 'outside' any padding or border
-        '''
-
-        pass 
+        pass
 
     def getY(self):
-        '''Returns the vertical start co-ordinate layout object, taking into account CSS properties as necessary
-        
-        This value will be for where the bounding rectangle starts and so is 'outside' any padding or border
-        '''
+        pass
 
-        pass
-    
     def getXStart(self):
-        '''Returns the abolute x value for where the next text/element should be displayed.
-        
-        This is used to determine the top left hand corner of the rectangle containing the next element,
-        NOT the relative position of the cursor within the line. 
-        '''
         pass
-    
+
     def getYStart(self):
-        '''Returns absolute y value for where next text/element should be displayed
-        
-        NOTE: it seems like this should only be used for siblings, NOT children. That is to say: if an element has a previous element it should call this, if not it 
-        should just call the getY. TODO: check this. 
-        '''
 
         pass
     
     def layout(self):
-        '''Forces this Layout Object to create all of its layout children'''
-
-        pass 
-    
-    def paint(self):
-        '''Returns the display list of draw commands necessary for this element to render its content on a canvas'''
 
         pass
     
+    def paint(self):
+
+        pass
+
     def click(self,x,y):
-        '''Returns a list of one or more elements that bound the given x and y coordinates (document coordinates, NOT canvas coordinates).
-        
-        Returned elements are html elements, not Layout elements
-        '''
-        
+
         pass 
 
 #TODO: should we inherit from layout?? 
