@@ -53,7 +53,7 @@ class Browser:
         
         try:
             self.defaultCSS = CSSParser().parse(open(f'{CURR_FILEPATH}/{DEFAULT_CSS_PATH}').read())
-        except ValueError:
+        except FileNotFoundError:
             logger.error("Could not open default browser css file")
             self.defaultCSS = []
         #--------------------------------------
