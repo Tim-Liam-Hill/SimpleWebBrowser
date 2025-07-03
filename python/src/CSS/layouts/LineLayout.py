@@ -54,16 +54,14 @@ class LineLayout(Layout):
         The maximum height for text nodes is based on the descent and ascent of all textnodes, after which leading is taken into account.
         '''
 
-        textFrags = self.layoutFragments.filter(lambda x: isinstance(x,TextLayout), self.layoutFragments)
+        textFrags = [t for t in self.layoutFragments if isinstance(t,TextLayout)]
         metrics = [child.font.metrics() for child in textFrags]
         maxAscent = max([metric["ascent"] for metric in metrics] + [0])
         maxDescent = max([metric["descent"] for metric in metrics] + [0])
         fontMaxHeight = (DEFAULT_LEADING * (maxAscent+maxDescent))
 
-        layoutFrags = self.layoutFragments.filter(lambda x: not isinstance(x,TextLayout), self.layoutFragments)
+        layoutFrags = [t for t in self.layoutFragments if not isinstance(t,TextLayout)]
         layoutMaxHeight = max([child.getHeight() for child in layoutFrags] + [0])
-
-        h = max([fontMaxHeight, layoutMaxHeight])
 
         #Set baseline for every text node
         #for now we won't worry about anything too elaborate regarding
@@ -74,7 +72,7 @@ class LineLayout(Layout):
         baseline = DEFAULT_LEADING * maxAscent
         if layoutMaxHeight > fontMaxHeight:
             baseline = fontMaxHeight - (DEFAULT_LEADING * maxDescent)
-        
+
         for child in textFrags:
             child.baseline = baseline
     
@@ -104,11 +102,15 @@ class LineLayout(Layout):
 
         return elems
     
+    def print(self,indent):
+        print("FINISH LINE PRINT")
+    
 
-class Rect: 
+class RectLayout: 
 
-    def __init__(self,x,width,isStart,isEnd,node,height):
+    def __init__(self,x,y, width,isStart,isEnd,node,height):
         self.x = x
+        self.y = y
         self.width = width 
         self.isStart = isStart
         self.isEnd = isEnd

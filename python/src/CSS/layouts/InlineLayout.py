@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from src.CSS.layouts.LayoutConstants import layoutType, getFont
 from src.CSS.layouts.Layout import Layout
 import re
-from src.CSS.layouts.LineLayout import LineLayout
+from src.CSS.layouts.LineLayout import LineLayout, RectLayout
 from src.CSS.layouts.TextLayout import TextLayout
+from src.CSS.CSSConstants import DEFAULT_LEADING
 
 #from src.CSS.layouts.Line import TextBox, Box, Line
 logger = logging.getLogger(__name__)
@@ -72,12 +73,11 @@ class InlineLayout(Layout):
         logger.debug("laying our InlineLayout with {} children".format(len(self.children)))
         self.setCoordinates()
 
-        lines_index = 0
         for node in self.nodes:
-            lines_index = self.recurse(node, lines_index)
+            self.recurse(node)
 
-        self.flush(lines_index)
-        #flush once we are done!!!
+        #Remember to handle the last line!
+        self.getNextLine() 
         
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
@@ -86,7 +86,7 @@ class InlineLayout(Layout):
         else: 
             self.y = self.parent.getY() #TODO: same here
         
-    def recurse(self, node, lines_index): #x start is always 0 since line's always start at leftmost edge in an inline display.
+    def recurse(self, node): #x start is always 0 since line's always start at leftmost edge in an inline display.
         '''Recurses through each child and creates lines of TextBoxes and Boxes 
         
         Each call returns cursor_x, start_y and lines index where:
@@ -95,11 +95,11 @@ class InlineLayout(Layout):
         - lines_index = tracks the last line which has not been flushed
         '''
         if isinstance(node, Text):
-            return self.handleText(node, lines_index)
-        elif layoutType(node) == "inline":
-            return self.handleInline(node,lines_index)
+            return self.handleText(node)
+        elif layoutType(node) == "inline": #TODO: handle inline-block and type input
+            return self.handleInline(node)
         else: 
-            return self.handleBlock(node,lines_index)
+            return self.handleBlock(node)
         
     def getNextLine(self):
         '''Flushes the contents of the current line, appends it to lines and returns a new line to serve as the current line'''
@@ -127,7 +127,7 @@ class InlineLayout(Layout):
                 curr_w += w
             else:
                 prev = self.curr_line.layoutFragments[-1] if len(self.curr_line.layoutFragments) > 0 else None
-                t = TextLayout(self,prev,curr_sentence,font)
+                t = TextLayout(self,prev,curr_sentence,font, node)
                 self.curr_line.layoutFragments.append(t)
                 self.curr_line = self.getNextLine()
                 
@@ -137,46 +137,51 @@ class InlineLayout(Layout):
 
         if curr_sentence != "":
             prev = self.curr_line.layoutFragments[-1] if len(self.curr_line.layoutFragments) > 0 else None
-            t = TextLayout(self,prev,curr_sentence,font)
+            t = TextLayout(self,prev,curr_sentence,font, node)
             self.curr_line.layoutFragments.append(t)
 
             #TODO: check if we need an extra flush here to prevent text going off of screen.
 
         return 
 
-    def handleInline(self,node,cursor_x,start_y,lines_index):
+    def handleInline(self,node):
 
         index = len(self.lines)
-        curr_cursor_x = cursor_x #that's a mouthful
+        curr_cursor_x = self.curr_line.getWidth()
         for child in node.children:
-            cursor_x, start_y, lines_index = self.recurse(child, cursor_x,start_y,lines_index)
+            self.recurse(child)
 
-        if self.needsBox(node):
+        if self.needsRect(node):
+            #rect height is based on the font height for this node
+            font = getFont(node)
+            metrics = font.metrics()
+            h = DEFAULT_LEADING * (metrics["descent"]+metrics["ascent"])
+
+            from src.CSS.layouts.BlockLayout import BlockLayout
             for i in range(index, len(self.lines)): 
-                if not isinstance(self.lines[i], Line): #we could have interleaved BlockLayouts
-                    break
-                box = Box(curr_cursor_x, self.getContentWidth()-curr_cursor_x,i == index, False ,node) #boxes should go all the way to the end if they go onto multiple lines
-                self.lines[i].addBox(box)
-                curr_cursor_x = 0
-            #subtract curr_cursor_x since we may only have one line and we don't start that line
-            box = Box(curr_cursor_x, self.curr_line.getTextWidth() - curr_cursor_x,len(self.lines) == index, True ,node) #last box only goes up until content inside of it
-            self.curr_line.addBox(box)
-        return cursor_x, start_y, lines_index
+                if isinstance(self.lines[i], BlockLayout): #we could have interleaved BlockLayouts
+                    y = self.lines[i].getYStart() if i < len(self.lines) else self.y
+                    rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getContentWidth()-curr_cursor_x,i == index, False ,node, h)
+                    self.lines[i].rects.append(rect)
+                    curr_cursor_x = 0
 
-    def handleBlock(self,node,cursor_x, start_y,lines_index):
-        self.flush(lines_index,start_y)
+            #subtract curr_cursor_x since we may only have one line and we don't start that line
+            y = self.lines[-1].getYStart() if len(self.lines) > 0 else self.y
+            rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getContentWidth()-curr_cursor_x,len(self.lines) == index, True,node, h)
+            self.curr_line.rects.append(rect)
+        return 
+
+    def handleBlock(self,node):
+        self.curr_line = self.getNextLine()
         from src.CSS.layouts.BlockLayout import BlockLayout #Python let's you do this and I hate it
         block = BlockLayout(node,self,self.lines[-1])
         block.layout()
         self.lines.append(block)
-        start_y += block.getHeight()
-        lines_index = len(self.lines)
-        cursor_x = 0
 
-        return cursor_x, start_y, lines_index
+        return 
 
-    def needsBox(self,node):
-        '''Given a node, determines if it needs a surrounding box for background color, border etc'''
+    def needsRect(self,node):
+        '''Given a node, determines if it needs a surrounding rect for background color, border etc'''
         
         return isinstance(node, Element) and "background-color" in node.style and node.style["background-color"] != "transparent"
 
@@ -211,26 +216,12 @@ class InlineLayout(Layout):
         self.line.append((self.cursor_x, word, font, css_props))
         self.cursor_x += w + font.measure(" ")
 
-    def flush(self, lines_index, start_y):
-        '''Adds current line to lines, then starting with line at line_index, calculates baselines, height and sets y position for each line'''
-
-        self.lines.append(self.curr_line)
-        self.curr_line = Line()
-        for i in range(lines_index, len(self.lines)):
-            self.lines[i].flush(start_y)
-            start_y += self.lines[i].getHeight()
-        return start_y
-
     def paint(self): 
         cmds = []
 
         for line in self.lines:
-            if isinstance(line, Line):
-                cmds.extend(line.paint(self.x))
-            else:
                 cmds.extend(line.paint())
             
-        
         return cmds
 
     def __repr__(self):
@@ -253,10 +244,7 @@ class InlineLayout(Layout):
         if self.y > y:
             return elems 
         for child in self.lines:
-            if isinstance(child, Line):
-                elems.extend(child.click(x,y, self.x))
-            else: 
-                elems.extend(child.click(x,y))
+            elems.extend(child.click(x,y))
 
         return elems
 

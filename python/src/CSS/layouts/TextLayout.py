@@ -4,11 +4,12 @@ from src.CSS.layouts.Layout import Layout
 
 class TextLayout(Layout):
 
-    def __init__(self, parent, previous, text, font):
+    def __init__(self, parent, previous, text, font, node):
         super().__init__(parent,previous)
         self.text = text 
         self.font = font
         self.baseline = None
+        self.node = node 
 
     def getWidth(self):
         if self.width == None: 
