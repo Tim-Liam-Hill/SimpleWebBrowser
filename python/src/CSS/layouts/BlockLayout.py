@@ -37,8 +37,8 @@ class BlockLayout(Layout):
         if len(self.children) == 0:
             return 0
 
-        height = max([child.getHeight() + child.getY() for child in self.children] + [0]) #TODO: should this ever be 0??? 
-        height -= self.y
+        height = sum([child.getHeight() for child in self.children] + [0]) #TODO: should this ever be 0??? 
+
         #height = self.y- (self.children[-1].getHeight() + self.children[-1].getY())
         #TODO: add our own borders and padding
 
@@ -73,8 +73,8 @@ class BlockLayout(Layout):
         self.setCoordinates()
         self.createChildren()
         
-        for child in self.children:
-            child.layout()
+        # for child in self.children:
+        #     child.layout()
 
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
@@ -100,17 +100,20 @@ class BlockLayout(Layout):
 
             if len(inline_children) != 0:
                 next = InlineLayout(inline_children,self,prev)
+                next.layout()
                 self.children.append(next)
                 prev = next
                 inline_children = []
             next = BlockLayout(child,self,prev)
             self.children.append(next)
+            next.layout()
             prev = next
 
         if len(inline_children) != 0:
             next = InlineLayout(inline_children,self,prev)
             self.children.append(next)
             prev = next
+            next.layout()
    
     def paint(self):  
         cmds = []
@@ -131,7 +134,7 @@ class BlockLayout(Layout):
         return "BlockLayout: tag={} x={} y={} width={} height={}".format(self.node.tag, self.x, self.y, self.width,self.getHeight())
 
     def print(self, indent):
-        print("-" * indent + "BlockLayout: width {} height {}".format(self.getWidth(), self.getHeight()))
+        print("-" * indent + "BlockLayout at ({},{}) width {} height {}".format(self.x,self.y,self.getWidth(), self.getHeight()))
 
         for child in self.children:
             child.print(indent + 1)

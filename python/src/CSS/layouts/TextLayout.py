@@ -11,6 +11,8 @@ class TextLayout(Layout):
         self.baseline = None
         self.node = node 
 
+        #X and Y coordinates get set by the parent line once it is flushed.
+
     def getWidth(self):
         if self.width == None: 
             self.width = self.font.measure(self.text)
@@ -62,3 +64,7 @@ class TextLayout(Layout):
             elems.append(self.node)
 
         return elems
+    
+    def print(self, indent):
+        t = self.text if len(self.text.split(" ")) < 7 else " ".join(self.text.split(" ")[0:7])
+        print("-" * indent + "TextLayout at ({},{}) with height {} and text '{}'".format(self.x,self.y,self.getHeight(),t))

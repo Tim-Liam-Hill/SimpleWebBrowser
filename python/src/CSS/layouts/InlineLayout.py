@@ -229,7 +229,7 @@ class InlineLayout(Layout):
         return "InlineLayout: x={} y={} width={} height={} num_nodes={}".format(self.x, self.y, self.getWidth(),self.getHeight(),len(self.nodes))
 
     def print(self, indent):
-        print("-" * indent + "InlineLayout: width {} height {}".format(self.getWidth(), self.getHeight()))
+        print("-" * indent + "InlineLayout at ({},{}) with width {} height {}".format(self.x, self.y,self.getWidth(), self.getHeight()))
         for line in self.lines:
             line.print(indent + 1)
 

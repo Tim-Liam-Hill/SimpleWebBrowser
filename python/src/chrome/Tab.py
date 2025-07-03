@@ -39,12 +39,6 @@ class Tab:
         style(self.root_node, sorted(rules, key=cascade_priority))
         self.scroll = 0 #if you navigate from another page we shouldn't preserve scroll
         self.history.append(url)
-        # self.createLayout(window_width) #for now, Browser will call createLayout.
-        #TODO: implement better algorithm/performance for creating layout.
-        # print_tree(self.root_node)
-        # print('############')
-        # print_tree(self.document)
-        #print(self.display_list)
     
     def setTitle(self):
         """Traverses the HTML tree, finds the title tag and sets the title field of the object. If no title tag is present a default name is given"""
@@ -111,6 +105,8 @@ class Tab:
         self.document = DocumentLayout(self.root_node, self.widthForContent(window_width), y_start)
         self.document.layout()
         self.display_list = self.document.paint()
+        # from src.HTML.HTMLParser import print_tree
+        # print_tree(self.root_node)
         self.document.print()
         #print(self.display_list)
 

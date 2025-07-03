@@ -27,7 +27,7 @@ class LineLayout(Layout):
     def getHeight(self):
 
         #TODO: cache height
-        height = max([child.getHeight() + child.getY() for child in self.layoutFragments] + [0])
+        height = max([child.getHeight() for child in self.layoutFragments] + [0])
 
         return height
 
@@ -73,8 +73,12 @@ class LineLayout(Layout):
         if layoutMaxHeight > fontMaxHeight:
             baseline = fontMaxHeight - (DEFAULT_LEADING * maxDescent)
 
+        cursorX = self.x
         for child in textFrags:
             child.baseline = baseline
+            child.y = self.y 
+            child.x = cursorX
+            cursorX += child.getWidth()
     
     def layout(self):
 
@@ -103,8 +107,13 @@ class LineLayout(Layout):
         return elems
     
     def print(self,indent):
-        print("FINISH LINE PRINT")
-    
+        print("-" * indent + "LineLayout at ({},{}) with width {} and height {}".format(self.x,self.y,self.getWidth(),self.getHeight()))
+        for f in self.layoutFragments:
+            f.print(indent+1)
+
+        for r in self.rects:
+            f.print(indent+1)  
+
 
 class RectLayout: 
 
