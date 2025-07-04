@@ -14,10 +14,9 @@ class LineLayout(Layout):
 
     def getWidth(self):
 
-        if self.width == None: 
-            self.width = sum([e.getWidth() for e in self.layoutFragments])
+        return sum([e.getWidth() for e in self.layoutFragments])
         
-        return self.width
+   
 
     def getContentWidth(self):
         '''Content width and width of a line are synonymous'''
@@ -112,7 +111,7 @@ class LineLayout(Layout):
             f.print(indent+1)
 
         for r in self.rects:
-            f.print(indent+1)  
+            r.print(indent+1)  
 
 
 class RectLayout: 
@@ -133,3 +132,6 @@ class RectLayout:
         yEnd = self.y + self.height
         cmds.append(DrawRect(self.x, self.y, xEnd, yEnd, self.node.style["background-color"])) 
         return cmds
+    
+    def print(self, indent):
+        print("-" * indent + "RectLayout at ({},{}) with width {} and height {}".format(self.x,self.y,self.width,self.height))

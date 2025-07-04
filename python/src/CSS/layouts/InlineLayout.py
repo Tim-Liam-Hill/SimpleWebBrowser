@@ -120,7 +120,7 @@ class InlineLayout(Layout):
         curr_w = 0
         cursor_x = self.curr_line.getWidth()
         for i in range(len(words)):
-            word = words[i] if i == len(curr_sentence) == 0 else " {}".format(words[i]) #TODO: last word might be followed by a space
+            word = "{} ".format(words[i]) #TODO: try and ensure we don't add extra spaces.
             w = font.measure(word)
             if curr_w + w + cursor_x < self.getContentWidth():
                 curr_sentence += word 
@@ -161,13 +161,13 @@ class InlineLayout(Layout):
             for i in range(index, len(self.lines)): 
                 if isinstance(self.lines[i], BlockLayout): #we could have interleaved BlockLayouts
                     y = self.lines[i].getYStart() if i < len(self.lines) else self.y
-                    rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getContentWidth()-curr_cursor_x,i == index, False ,node, h)
+                    rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getWidth()-curr_cursor_x,i == index, False ,node, h)
                     self.lines[i].rects.append(rect)
                     curr_cursor_x = 0
 
             #subtract curr_cursor_x since we may only have one line and we don't start that line
             y = self.lines[-1].getYStart() if len(self.lines) > 0 else self.y
-            rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getContentWidth()-curr_cursor_x,len(self.lines) == index, True,node, h)
+            rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getWidth()-curr_cursor_x,len(self.lines) == index, True,node, h)
             self.curr_line.rects.append(rect)
         return 
 
@@ -184,37 +184,6 @@ class InlineLayout(Layout):
         '''Given a node, determines if it needs a surrounding rect for background color, border etc'''
         
         return isinstance(node, Element) and "background-color" in node.style and node.style["background-color"] != "transparent"
-
-    def word(self, word, node):
-
-        font = getFont(node)
-        w = font.measure(word)
-        if self.cursor_x + w >= self.getContentWidth(): #TODO: what if overflow set? Also: do we still need HSTEP?
-            if not self.line and self.previous: 
-                #this will only happen if we are an inline following on another inline
-                #unless browser page is far too small in which case oops
-                self.y = self.previous.getY() + self.previous.getHeight()
-                self.cursor_y = 0
-                self.cursor_x = 0
-            else: 
-                self.flush()
-            
-        vert_align = 1
-        match node.style.get('vertical-align', ""):
-            case "super":
-                vert_align = 1.5
-            case "sub":
-                vert_align = -1.5
-            case _:
-                vert_align = 1
-        
-        css_props = {
-            "vert_align": vert_align,
-            "color": node.style["color"]
-        }
-            
-        self.line.append((self.cursor_x, word, font, css_props))
-        self.cursor_x += w + font.measure(" ")
 
     def paint(self): 
         cmds = []
