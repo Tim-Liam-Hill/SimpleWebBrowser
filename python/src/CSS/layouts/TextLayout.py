@@ -59,7 +59,7 @@ class TextLayout(Layout):
     def click(self,x,y):
 
         elems = []
-        if self.y < y and self.y + self.getHeight() < y \
+        if self.y < y and self.y + self.getHeight() > y \
             and self.x < x and self.x + self.getWidth() > x:
             elems.append(self.node)
 

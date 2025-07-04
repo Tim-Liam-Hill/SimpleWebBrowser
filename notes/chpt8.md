@@ -83,3 +83,17 @@ Okay, so here is the idea:
 
 Who would have thought an elegant solution was within my grasp? Sure as hell not me, and I am still not entirely convinced but I have a good feeling.
 
+The question now is how to finish my rework. I have a new TextLayout and LineLayout but incorporating them into the existing code might get ugly. I feel like I should be testing with some stubs first (which is boring and lame but eh.).
+
+So now I am using the new classes which is great, but I may have found some bugs with my HTML parser. When including head and inline styles, the html root node does not have the body node as its direct child. The body node becomes the child of the head node instead (which is definitely not right).
+
+Actually, the issue was malformed html. May need to have some further checks in place for one the head portion of the html is malformed (or head tag missing entirely and we have some style tags etc).
+
+So we have a better looking layout but still have some issues:
+
+* Scrolling is slow (likely due to the line height calculations) (
+* Link clicking not exactly what I want (some links don't react when clicked) (now working)
+
+I may hold off on fixing the former until SKIA is implemented to ensure correctness of the algorithm and not get ahead of myself. Regardless, things are looking a lot better now. I think I am going to move onto List Layout and Inline-Block layouts and once those are done, input layout. With those done the layout algorithm should be good for the moment until I decide to come back and rewrite it again (which is obviously going to happen, it cannot be helped).
+
+TODO: once I am done, ensure an inline block element in same line with same font as a regular element looks on the same line (because that might not happen).

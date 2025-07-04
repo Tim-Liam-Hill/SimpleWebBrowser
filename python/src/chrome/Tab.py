@@ -138,7 +138,7 @@ class Tab:
     def click(self, x, y, window_width, window_height, start_y):
         '''Handles changes to the page based on a click event. Returns whether a re-render is needed.'''
 
-        if x >= window_width - SCROLLBAR_WIDTH and y > start_y: 
+        if x >= window_width - SCROLLBAR_WIDTH and y > start_y and self.document.getHeight() > window_height - start_y: 
             self.scrollClick(y, window_height,start_y)
             return True
 

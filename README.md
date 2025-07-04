@@ -97,6 +97,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * Delete tabs on right click (done but on middle click)
 * Error handling: show feedback to user and don't stick with the unusable content.
 * reformat directory layout to make more sense
+* visual effect while loading new page (maybe implement once we have animations working)
 
 # BUGS
 
