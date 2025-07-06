@@ -21,13 +21,9 @@ class InlineLayout(Layout):
         super().__init__(parent,previous)
         self.nodes = nodes
         self.lines = [] 
-        self.y = self.parent.getYStart()
-        self.x = self.parent.getXStart()
 
-        self.curr_line = LineLayout(self, None)
-        self.curr_line.y = self.parent.getYStart()
-        self.curr_line.x = self.parent.getXStart()
-        #does layout need its own display_list array? I think it can just get it from its children. 
+        self.curr_line = None
+
     
     def getWidth(self):
         if self.width == None:
@@ -71,6 +67,9 @@ class InlineLayout(Layout):
     def layout(self):
         logger.debug("laying our InlineLayout with {} children".format(len(self.children)))
         self.setCoordinates()
+        self.curr_line = LineLayout(self, None)
+        self.curr_line.y = self.y #DON'T USE PARENT FOR THESE CALLS! parent gives y start using height of child!!!
+        self.curr_line.x = self.x
 
         for node in self.nodes:
             self.recurse(node)
@@ -87,7 +86,7 @@ class InlineLayout(Layout):
         if self.previous:
             self.y = self.previous.getYStart() #TODO: here aswell
         else: 
-            self.y = self.parent.getY() #TODO: same here
+            self.y = self.parent.getYStart() #TODO: same here
         
     def recurse(self, node): #x start is always 0 since line's always start at leftmost edge in an inline display.
         '''Recurses through each child and creates lines of TextBoxes and Boxes 
@@ -164,9 +163,8 @@ class InlineLayout(Layout):
             metrics = font.metrics()
             h = DEFAULT_LEADING * (metrics["descent"]+metrics["ascent"])
 
-            from src.CSS.layouts.BlockLayout import BlockLayout
             for i in range(index, len(self.lines)): 
-                if isinstance(self.lines[i], BlockLayout): #we could have interleaved BlockLayouts
+                if isinstance(self.lines[i], LineLayout): #we could have interleaved BlockLayouts
                     y = self.lines[i].getYStart() if i < len(self.lines) else self.y
                     rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getWidth()-curr_cursor_x,i == index, False ,node, h)
                     self.lines[i].rects.append(rect)
@@ -182,10 +180,10 @@ class InlineLayout(Layout):
     def handleBlock(self,node):
         
         from src.CSS.layouts.BlockLayout import BlockLayout #Python let's you do this and I hate it
-        
-        block = BlockLayout(node,self,self.curr_line)
-        block.layout()
         self.curr_line = self.getNextLine()
+        block = BlockLayout(node,self,self.lines[-1])
+        block.layout()
+        
         self.curr_line = block
         self.curr_line = self.getNextLine()
 

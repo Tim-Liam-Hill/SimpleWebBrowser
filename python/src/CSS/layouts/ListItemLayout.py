@@ -50,6 +50,10 @@ class ListItemLayout(Layout):
     
     def getYStart(self):
 
+        #If we don't have any children yet we want the first child to appear on the same line as the marker, so we don't add height
+        if len(self.children) == 0:
+            return self.y 
+
         return self.y + self.getHeight()
     
     def layout(self):
@@ -63,8 +67,10 @@ class ListItemLayout(Layout):
         self.createMarker()
         #I feel like I could also use a block layout here, not really any difference
         #but we will see.
-        self.children.append(InlineLayout([self.node], self, None))
-        self.children[0].layout()
+        child = InlineLayout([self.node], self, None)
+        child.layout()
+        # ONLY append child once it has been layed out, otherwise the getYStart for the child is incorrect
+        self.children.append(child)
 
         # need to set baseline of the marker once line has been layed out to make sure it looks alright
         #technically still a one liner but yeah, this is gross I know.

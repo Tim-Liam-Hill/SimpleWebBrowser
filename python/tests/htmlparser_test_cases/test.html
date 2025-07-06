@@ -10,8 +10,11 @@
   <title>Web Browser Engineering</title>
     <style>
         .in {
-          /*display: inline-block;*/
+          display: inline-block;
           background-color: red;
+        }
+        .outer {
+          background-color: aqua;
         }
     </style>
 </head>
@@ -19,17 +22,13 @@
 <body>
 
 
-<div>
-  <span>
-    I am the span and I have some children
-    <div class="in">I am an inline block element with a lot of text it should render according the the width that 
-      was left on the line I was craeted on
-    </div>
-    This is after the inline block
-  </span>
+<ul>
+  <li>Element 1</li>
+  <li>Element 1</li>
 
-</div>
+  <li>Element 1</li>
 
+</ul>
 
 </body>
 </html>
