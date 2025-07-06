@@ -172,8 +172,9 @@ class InlineLayout(Layout):
 
             #subtract curr_cursor_x since we may only have one line and we don't start that line
             y = self.lines[-1].getYStart() if len(self.lines) > 0 else self.y
-            rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getWidth()-curr_cursor_x,len(self.lines) == index, True,node, h)
-            self.curr_line.rects.append(rect)
+            if self.curr_line.getWidth()-curr_cursor_x != 0: #stops weird empty rect if no content TODO: test more
+                rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getWidth()-curr_cursor_x,len(self.lines) == index, True,node, h)
+                self.curr_line.rects.append(rect)
         return 
 
     def handleBlock(self,node):

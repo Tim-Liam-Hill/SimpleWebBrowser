@@ -68,11 +68,10 @@ class ListItemLayout(Layout):
 
         # need to set baseline of the marker once line has been layed out to make sure it looks alright
         #technically still a one liner but yeah, this is gross I know.
+        #TODO: revist this if we can mayhaps
         self.marker.baseline = max(self.children[0].lines.layoutFragments[0].baseline if len(self.children[0].lines) > 0 and len(self.children[0].lines[0].layoutFragments) > 0 else 0,\
                 self.marker.baseline)
                                     
-
-
     def createMarker(self):
         text = ""
         if self.node.parent and self.node.parent.style.get("list-style-type"):
@@ -112,7 +111,7 @@ class ListItemLayout(Layout):
                                       "transparent")
         if bgcolor != "transparent":
             x2, y2 = self.x + self.getWidth(), self.y + self.getHeight()
-            rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
+            rect = DrawRect(self.x + self.marker.getWidth(), self.y, x2, y2, bgcolor)
             cmds.append(rect)
 
         cmds.extend(self.marker.paint())
