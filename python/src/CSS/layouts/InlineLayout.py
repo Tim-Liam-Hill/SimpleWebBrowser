@@ -99,11 +99,13 @@ class InlineLayout(Layout):
         - lines_index = tracks the last line which has not been flushed
         '''
         if isinstance(node, Text):
-            return self.handleText(node)
+            self.handleText(node)
+        elif node.tag == "br":
+            self.lineBreak(node)
         elif layoutType(node) == "inline": #TODO: handle inline-block and type input
-            return self.handleInline(node)
+            self.handleInline(node)
         else: 
-            return self.handleBlock(node)
+            self.handleBlock(node)
         
     def getNextLine(self):
         '''Flushes the contents of the current line, appends it to lines and returns a new line to serve as the current line'''
@@ -114,6 +116,19 @@ class InlineLayout(Layout):
         next.y = self.curr_line.getYStart()
         self.curr_line = next #just in case
         return next
+
+    def lineBreak(self, node):
+        '''Inserts a line break
+        
+        This is a slightly unique case. Here we create an empty TextLayout, attach it to the current line and flush.
+        '''
+
+        prev = self.curr_line.layoutFragments[-1] if len(self.curr_line.layoutFragments) > 0 else None
+        font = getFont(node)
+        t = TextLayout(self,prev,'',font, node)
+        self.curr_line.layoutFragments.append(t)
+        self.curr_line = self.getNextLine()
+        
 
     def handleText(self, node):
         no_newlines = re.sub(r'\t|\n','',node.text)
