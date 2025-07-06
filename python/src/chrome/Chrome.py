@@ -85,7 +85,7 @@ class Chrome:
         url = self.getAddressBarContents()
         cmds.append(DrawText(
             address_rect.left + self.padding,
-            address_rect.top,
+            address_rect.top + self.padding,
             url, self.font, "black"))
 
         if self.focus == "address bar":

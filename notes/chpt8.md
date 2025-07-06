@@ -123,5 +123,9 @@ There are still a few small issues, might skip them but for now taking a slightl
 * Clicking on the scrollbar is suddenly very weird.
 * Am I not displaying content in 'nav' tags when showing the browser engineering site?? weird.
 
+why is scrolling the single hardest thing for me to implement correctl??????!??
+
+* self.scroll tells us in document terms how far to scroll down
+* its maximum value is documentHeight - (windowHeight - start_y). In other words, we take the amount that we can show on the screen at one time (windowHeight -start_y) and make sure that we can go past that (otherwise we would showing too little content to fill the screen)
 
 TODO: once I am done, ensure an inline block element in same line with same font as a regular element looks on the same line (because that might not happen).

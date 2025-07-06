@@ -123,17 +123,18 @@ class Tab:
             cmd.execute(self.scroll, canvas)
         
         #scrollbar
-        if self.document.getHeight() > window_height - start_y:
+        docHeight = self.document.getHeight()
+        if docHeight > window_height - start_y:
             canvas.create_rectangle(self.widthForContent(window_width),  start_y, window_width, window_height, fill=SCROLLBAR_COLOR)
             #start y can go to maximum of self.window_height - INNER_SCROLL_HEIGHT
-            proportionScrolled = (self.scroll )/(self.document.getHeight() - window_height - start_y)
-            
-            start = min( proportionScrolled * (window_height-INNER_SCROLLBAR_HEIGHT-start_y), window_height-INNER_SCROLLBAR_HEIGHT) + start_y
+            proportionScrolled = (self.scroll )/(docHeight - (window_height-start_y))
+            start = min( proportionScrolled * (window_height-start_y - INNER_SCROLLBAR_HEIGHT), window_height-start_y) + start_y
             canvas.create_rectangle(window_width -  INNER_SCROLLBAR_WIDTH - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH)/2,  start, window_width - (SCROLLBAR_WIDTH - INNER_SCROLLBAR_WIDTH), start + INNER_SCROLLBAR_HEIGHT, fill=INNER_SCROLLBAR_COLOR)
 
     def scrollClick(self, y, window_height,start_y):
         '''Allows for faster scrolling'''
-        self.scroll = ((y-start_y)/(window_height- start_y)) * self.document.getHeight()
+
+        self.scroll = ((y-start_y)/(window_height- start_y)) * (self.document.getHeight() - (window_height-start_y))
 
     def click(self, x, y, window_width, window_height, start_y):
         '''Handles changes to the page based on a click event. Returns whether a re-render is needed.'''
@@ -170,7 +171,7 @@ class Tab:
 
     def scrolldown(self, window_height, chrome_height):
         prev = self.scroll
-        if self.document.getHeight() > window_height + chrome_height:
+        if self.document.getHeight() > window_height - chrome_height:
             self.scroll = min(self.scroll + SCROLL_STEP, self.document.getHeight() - window_height + chrome_height)
         else: 
             self.scroll = 0
