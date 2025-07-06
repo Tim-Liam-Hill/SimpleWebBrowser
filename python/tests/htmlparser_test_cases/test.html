@@ -1,16 +1,35 @@
+
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <style>div {background-color: blueviolet;}
-            span {background-color: aquamarine;}
-        </style>
-    </head>
-    <body>        
-        <div>This is a div</div>
-        <div style="background-color: orange;">this is div 2</div>
-        <div>This is the div afterwards</div>
-        <span>The first span</span><span style="background-color: brown;">The second span</span>
-    
-    </body>
+<html lang="en-US" xml:lang="en-US">
+<head>
+
+
+  <link rel="alternate" type="application/rss+xml" href="rss.xml" title="Web Browser Engineering">
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <title>Web Browser Engineering</title>
+    <style>
+        .in {
+          /*display: inline-block;*/
+          background-color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+
+<div>
+  <span>
+    I am the span and I have some children
+    <div class="in">I am an inline block element with a lot of text it should render according the the width that 
+      was left on the line I was craeted on
+    </div>
+    This is after the inline block
+  </span>
+
+</div>
+
+
+</body>
 </html>

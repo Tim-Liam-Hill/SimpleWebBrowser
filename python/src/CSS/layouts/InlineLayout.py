@@ -107,8 +107,10 @@ class InlineLayout(Layout):
             self.handleBlock(node)
         
     def getNextLine(self):
-        '''Flushes the contents of the current line, appends it to lines and returns a new line to serve as the current line'''
-        self.curr_line.flush()
+        '''Flushes the contents of the current line if it is LineLayout, appends it to lines and returns a new line to serve as the current line'''
+        
+        if isinstance(self.curr_line, LineLayout):
+            self.curr_line.flush()
         self.lines.append(self.curr_line)
         next = LineLayout(self, self.curr_line)
         next.x = self.x
@@ -180,10 +182,12 @@ class InlineLayout(Layout):
     def handleBlock(self,node):
         
         from src.CSS.layouts.BlockLayout import BlockLayout #Python let's you do this and I hate it
-        block = BlockLayout(node,self,self.lines[-1] if len(self.lines) > 0 else None)
+        
+        block = BlockLayout(node,self,self.curr_line)
         block.layout()
         self.curr_line = self.getNextLine()
-        self.lines.append(block)
+        self.curr_line = block
+        self.curr_line = self.getNextLine()
 
         return 
 
