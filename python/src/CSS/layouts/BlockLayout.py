@@ -27,7 +27,7 @@ class BlockLayout(Layout):
         if self.contentWidth == None:
             self.contentWidth = self.parent.getContentWidth()
 
-        return self.contentWidth
+        return self.contentWidth - (self.getXStart() - self.getX())
     
     def getHeight(self):
         '''The height of a block element is dependant on the height of its children
@@ -58,7 +58,15 @@ class BlockLayout(Layout):
 
     def getXStart(self):
 
-        return self.x
+        padInline = 0
+        if  "padding-inline-start" in self.node.style:
+            #TODO: handle ems and other non-px units
+            val = self.node.style.get("padding-inline-start")
+            if "px" in val:
+                padInline = val.split("px")[0]
+
+
+        return self.x + int(padInline)
 
     #TODO: padding and margin?? 
     def getYStart(self):

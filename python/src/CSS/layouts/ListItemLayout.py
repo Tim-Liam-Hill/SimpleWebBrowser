@@ -23,22 +23,12 @@ class ListItemLayout(Layout):
         w = self.marker.getWidth()
         childW = self.children[0].getWidth()
 
-        return self.getInlinePad() + w + childW
-
-    def getInlinePad(self):
-        padInline = 0
-        if self.node.parent != None and "padding-inline-start" in self.node.parent.style:
-            #TODO: handle ems and other non-px units
-            val = self.node.parent.style.get("padding-inline-start")
-            if "px" in val:
-                padInline = val.split("px")[0]
-
-        return int(padInline)
+        return w + childW
 
     def getContentWidth(self):
         '''returns width for non-marker content'''
 
-        return self.parent.getContentWidth() - self.getInlinePad()
+        return self.parent.getContentWidth()
     
 
     def getHeight(self):
@@ -56,7 +46,7 @@ class ListItemLayout(Layout):
     
     def getXStart(self):
 
-        return self.x + self.marker.getWidth() + self.getInlinePad()
+        return self.x + self.marker.getWidth()
     
     def getYStart(self):
 
@@ -75,6 +65,13 @@ class ListItemLayout(Layout):
         #but we will see.
         self.children.append(InlineLayout([self.node], self, self.previous))
         self.children[0].layout()
+
+        # need to set baseline of the marker once line has been layed out to make sure it looks alright
+        #technically still a one liner but yeah, this is gross I know.
+        self.marker.baseline = max(self.children[0].lines.layoutFragments[0].baseline if len(self.children[0].lines) > 0 and len(self.children[0].lines[0].layoutFragments) > 0 else 0,\
+                self.marker.baseline)
+                                    
+
 
     def createMarker(self):
         text = ""
@@ -97,7 +94,7 @@ class ListItemLayout(Layout):
         else:
             logger.warning("ListItemLayout does not have list-style-type set in style attributes, using a default value")
             text = "●"
-        
+        text = text + " "
         font = getFont(self.node)
         metrics = font.metrics()
         h = DEFAULT_LEADING * (metrics["descent"]+metrics["ascent"])
@@ -105,7 +102,7 @@ class ListItemLayout(Layout):
 
         self.marker = TextLayout(self, None,text, font, self.node)
         self.marker.baseline = baseline
-        self.marker.x = self.x + self.getInlinePad()
+        self.marker.x = self.x
         self.marker.y = self.y
 
     def paint(self):
