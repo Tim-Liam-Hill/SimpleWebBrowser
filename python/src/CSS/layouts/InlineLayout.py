@@ -100,7 +100,7 @@ class InlineLayout(Layout):
         if isinstance(node, Text):
             self.handleText(node)
         elif node.tag == "br":
-            self.lineBreak(node)
+            self.getNextLine()
         elif layoutType(node) == "inline": #TODO: handle inline-block and type input
             self.handleInline(node)
         else: 
@@ -116,17 +116,17 @@ class InlineLayout(Layout):
         self.curr_line = next #just in case
         return next
 
-    def lineBreak(self, node):
-        '''Inserts a line break
+    # def lineBreak(self, node):
+    #     '''Inserts a line break
         
-        This is a slightly unique case. Here we create an empty TextLayout, attach it to the current line and flush.
-        '''
+    #     This is a slightly unique case. Here we create an empty TextLayout, attach it to the current line and flush.
+    #     '''
 
-        prev = self.curr_line.layoutFragments[-1] if len(self.curr_line.layoutFragments) > 0 else None
-        font = getFont(node)
-        t = TextLayout(self,prev,'',font, node)
-        self.curr_line.layoutFragments.append(t)
-        self.curr_line = self.getNextLine()
+    #     prev = self.curr_line.layoutFragments[-1] if len(self.curr_line.layoutFragments) > 0 else None
+    #     font = getFont(node)
+    #     t = TextLayout(self,prev,'',font, node)
+    #     self.curr_line.layoutFragments.append(t)
+    #     self.curr_line = self.getNextLine()
         
 
     def handleText(self, node):

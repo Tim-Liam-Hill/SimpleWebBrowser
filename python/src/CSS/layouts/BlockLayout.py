@@ -105,6 +105,11 @@ class BlockLayout(Layout):
                 inline_children.append(child)
                 continue
 
+            if child.tag == "br" and len(inline_children) != 0:
+                #line breaks look differently when part of an inline context
+                inline_children.append(child)
+                continue
+
             if len(inline_children) != 0:
                 next = InlineLayout(inline_children,self,prev)
                 next.layout()
