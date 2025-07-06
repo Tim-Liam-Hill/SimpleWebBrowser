@@ -26,6 +26,9 @@ class TextLayout(Layout):
     def getHeight(self):
         '''While we could use self.font.metrics()["linespace"] to determine height, instead we make use of ascent descent and DEFAULT_LEADING'''
         
+        if self.text == "":
+            return 0
+
         ascent = self.font.metrics()["ascent"]
         descent = self.font.metrics()["descent"]
 

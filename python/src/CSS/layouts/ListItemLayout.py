@@ -78,17 +78,18 @@ class ListItemLayout(Layout):
 
     def createMarker(self):
         text = ""
-        if self.node.parent and self.node.parent.style.get("list-style-type") == "decimal":
-            text = "{}.".format(self.count)
-        elif "list-style-type" in self.node.style:
+        if self.node.parent and self.node.parent.style.get("list-style-type"):
+            
             #This should always be the case if not the above
-            match self.node.style.get("list-style-type"):
+            match self.node.parent.style.get("list-style-type"):
                 case "circle":
                     text = "●"
                 case "square":
                     text = "■"
-                case "disk":
+                case "disc":
                     text = "○"
+                case "decimal":
+                    text = "{}.".format(self.count)
                 case _:
                     logger.warning("ListItemLayout does not have supported list-style-type,using a default value")
                     text = "●"
