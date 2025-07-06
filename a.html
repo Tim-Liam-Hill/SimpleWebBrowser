@@ -9,44 +9,26 @@
 
   <title>Web Browser Engineering</title>
     <style>
-        ul {background-color: red;}
-        .s {background-color: blue;}
-        .r {background-color: blueviolet;}
-        .lorg{ font-size: xx-large;}
+        .in {
+          /*display: inline-block;*/
+          background-color: red;
+        }
     </style>
 </head>
 
 <body>
 
 
-<ul>
-      Not in a li
-<li class="s"><span class="r lorg">This is beautiful</span></li>
-Not in a li
-<li>Second</li>
-Not in and this is also slightly longer text
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
-<li>Second</li>
-Not in
+<div>
+  <span>
+    I am the span and I have some children
+    <div class="in">I am an inline block element with a lot of text it should render according the the width that 
+      was left on the line I was craeted on
+    </div>
+    This is after the inline block
+  </span>
 
-</ul>
+</div>
 
 
 </body>

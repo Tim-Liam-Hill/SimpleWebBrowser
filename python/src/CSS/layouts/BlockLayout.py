@@ -85,7 +85,7 @@ class BlockLayout(Layout):
     #TODO: content width calcs and width calcs are confusing me rn.
     def layout(self):
         '''Forces this Layout Object to create all of its layout children'''
-
+        
         self.setCoordinates()
         self.createChildren()
 

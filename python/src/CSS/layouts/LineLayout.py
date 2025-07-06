@@ -73,10 +73,11 @@ class LineLayout(Layout):
             baseline = fontMaxHeight - (DEFAULT_LEADING * maxDescent)
 
         cursorX = self.x
-        for child in textFrags:
-            child.baseline = baseline
-            child.y = self.y 
-            child.x = cursorX
+        for child in self.layoutFragments:
+            if isinstance(child, TextLayout):
+                child.baseline = baseline
+                child.y = self.y 
+                child.x = cursorX
             cursorX += child.getWidth()
     
     def layout(self):

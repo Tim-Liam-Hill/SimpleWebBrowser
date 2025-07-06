@@ -4,6 +4,7 @@ from src.CSS.layouts.LayoutConstants import layoutType, getFont
 from src.CSS.layouts.Layout import Layout
 import re
 from src.CSS.layouts.LineLayout import LineLayout, RectLayout
+
 from src.CSS.layouts.TextLayout import TextLayout
 from src.CSS.CSSConstants import DEFAULT_LEADING
 
@@ -26,10 +27,10 @@ class InlineLayout(Layout):
 
     
     def getWidth(self):
-        if self.width == None:
-            self.width = self.parent.getContentWidth()
+        
 
-        return self.width
+
+        return max([line.getWidth() for line in self.lines] + [0])
     
     def getContentWidth(self):
         if self.contentWidth == None:
@@ -102,6 +103,8 @@ class InlineLayout(Layout):
             self.getNextLine()
         elif layoutType(node) == "inline": #TODO: handle inline-block and type input
             self.handleInline(node)
+        elif layoutType(node) == "inline-block":
+            self.handleInlineBlock(node)
         else: 
             self.handleBlock(node)
         
@@ -176,6 +179,26 @@ class InlineLayout(Layout):
                 rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getWidth()-curr_cursor_x,len(self.lines) == index, True,node, h)
                 self.curr_line.rects.insert(0,rect)
         return 
+    
+    def handleInlineBlock(self,node):
+        
+        from src.CSS.layouts.InlineBlockLayout import InlineBlockLayout
+        #TODO: make this more efficient
+        #For now: creating the inline block assuming it can fit on the line. If it can't flush and recreate
+        #More efficient method is more effort than I want to put in right now.
+
+        inlineBlock = InlineBlockLayout(node,self,self.curr_line)
+        inlineBlock.layout()
+        if inlineBlock.getWidth() > self.contentWidth - self.curr_line.getWidth():
+            logger.info("Recreating InlineBlock that does not fit on current line")
+            self.getNextLine()
+            inlineBlock = InlineBlockLayout(node,self,self.curr_line)
+            inlineBlock.layout()
+        
+        self.curr_line.layoutFragments.append(inlineBlock)
+
+        return 
+
 
     def handleBlock(self,node):
         

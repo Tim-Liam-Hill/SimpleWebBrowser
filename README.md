@@ -99,6 +99,7 @@ Currently, I am about done with chapter 3 and thinking ahead to CSS and JS imple
 * reformat directory layout to make more sense
 * visual effect while loading new page (maybe implement once we have animations working)
 * handle 'aria' and 'mozkit' weird css values
+* SEE IF WE CAN REFACTOR LAYOUT so that we don't need getXStart and getYStart? At least, see if we can elegantly handle exceptions/edge cases
 
 # BUGS
 

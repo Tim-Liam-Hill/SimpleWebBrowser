@@ -128,4 +128,14 @@ why is scrolling the single hardest thing for me to implement correctl??????!??
 * self.scroll tells us in document terms how far to scroll down
 * its maximum value is documentHeight - (windowHeight - start_y). In other words, we take the amount that we can show on the screen at one time (windowHeight -start_y) and make sure that we can go past that (otherwise we would showing too little content to fill the screen)
 
+Now that that is sorted (at least for a little while), let's see if inline block works as expected. -> it doesn't. Time to fix that.
+Before even that, is my div inside inline working??? -> now it is
+
+Inline inside inline multi line background is not working. 
+I seem to have also broken my list layout. Reworks are sometimes hard -> fixed
+Also fixed the Inline multi rect boi which is nice. Yay!
+
+I have to add exceptions to my getXStart getYStart functions which is annoying. It seems to me that often I can just give the value the child needs when it is created,
+so I might rework to do that actually. 
+
 TODO: once I am done, ensure an inline block element in same line with same font as a regular element looks on the same line (because that might not happen).
