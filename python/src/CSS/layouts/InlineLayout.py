@@ -118,7 +118,7 @@ class InlineLayout(Layout):
         return next
 
     def handleText(self, node):
-        no_newlines = re.sub(r'\t|\n','',node.text)
+        no_newlines = re.sub(r'\t|\n',' ',node.text) #replace with a single space so that paragraph new lines won't end up with words with no separation
         squash_spaces = re.sub(r' +', ' ', no_newlines)
         words = squash_spaces.split(" ")
         font = getFont(node)
@@ -137,7 +137,7 @@ class InlineLayout(Layout):
                 self.curr_line.layoutFragments.append(t)
                 self.curr_line = self.getNextLine()
                 
-                curr_sentence = words[i]
+                curr_sentence = word
                 curr_w = font.measure(word)
                 cursor_x = 0
 
