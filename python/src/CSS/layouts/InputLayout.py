@@ -59,10 +59,6 @@ class InputLayout(Layout):
 
         pass
 
-    def getLayoutMode(self):
-        '''Returns this objects CSS display property'''
-        pass 
-
 
     def getElementsAt(self,x,y):
 

@@ -69,9 +69,16 @@ hr {display: block;}
 pre {display: block;}
 blockquote {display: block;}
 
-ol, ul { /*Keeping things simple and not supporting decimal list-style-type*/
+ol {
+    display: block;
+    list-style-type: decimal;
+    padding-inline-start: 40px; /*Copied from chrome*/
+}
+
+ul { 
     display: block;
     list-style-type: disc;
+    padding-inline-start: 40px;
 }
 
 ul ul, ol ul {
@@ -81,7 +88,9 @@ ol ol ul, ol ul ul, ul ol ul, ul ul ul {
     list-style-type: square
 }
 
-li {display: list-item;}
+li {
+    display: list-item;
+}
 
 menu {display: block;}
 

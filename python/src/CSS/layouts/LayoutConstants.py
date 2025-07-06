@@ -7,7 +7,7 @@ import tkinter.font
 def layoutType(node):
     '''Given an html element node, determines its layout type'''
 
-    if "display" in node.style and node.style.get("display") in ["block", "input", "none"]:
+    if "display" in node.style and node.style.get("display") in ["block", "input", "none","list-item"]:
         return node.style.get("display")
 
     return "inline"

@@ -71,8 +71,6 @@ class Layout(ABC):
     def getYStart(self):
         '''Returns absolute y value for where next text/element should be displayed
         
-        NOTE: it seems like this should only be used for siblings, NOT children. That is to say: if an element has a previous element it should call this, if not it 
-        should just call the getY. TODO: check this. 
         '''
 
         pass

@@ -2,6 +2,7 @@ from src.CSS.layouts.Layout import Layout
 from src.CSS.layouts.LayoutConstants import VSTEP, layoutType
 from src.Draw.Commands import DrawRect
 from src.CSS.layouts.InlineLayout import InlineLayout
+from src.CSS.layouts.ListItemLayout import ListItemLayout
 from src.HTML.HTMLParser import Element
 import logging
 logger = logging.getLogger(__name__)
@@ -29,7 +30,10 @@ class BlockLayout(Layout):
         return self.contentWidth
     
     def getHeight(self):
-        '''The height of a block element is dependant on the height of its children'''
+        '''The height of a block element is dependant on the height of its children
+        
+        #TODO: implement caching of height calculation.
+        '''
 
         if self.node.tag in ["br", "hr"]:
             return VSTEP
@@ -87,6 +91,9 @@ class BlockLayout(Layout):
     def createChildren(self):
         inline_children = []
         prev = None
+
+        listCount = 1
+
         for child in self.node.children: 
             if isinstance(child, Element) and child.tag in ["head","script","style","meta"]:
                 continue
@@ -104,7 +111,12 @@ class BlockLayout(Layout):
                 self.children.append(next)
                 prev = next
                 inline_children = []
-            next = BlockLayout(child,self,prev)
+            
+            if layoutType(child) == "list-item":
+                next = ListItemLayout(child,self, prev, listCount)
+                listCount += 1
+            else:
+                next = BlockLayout(child,self,prev)
             self.children.append(next)
             next.layout()
             prev = next

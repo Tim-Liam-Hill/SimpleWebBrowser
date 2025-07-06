@@ -1,6 +1,5 @@
 from src.HTML.HTMLParser import Element, Text
 import logging
-from dataclasses import dataclass
 from src.CSS.layouts.LayoutConstants import layoutType, getFont
 from src.CSS.layouts.Layout import Layout
 import re
