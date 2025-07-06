@@ -96,4 +96,16 @@ So we have a better looking layout but still have some issues:
 
 I may hold off on fixing the former until SKIA is implemented to ensure correctness of the algorithm and not get ahead of myself. Regardless, things are looking a lot better now. I think I am going to move onto List Layout and Inline-Block layouts and once those are done, input layout. With those done the layout algorithm should be good for the moment until I decide to come back and rewrite it again (which is obviously going to happen, it cannot be helped).
 
+--- On a nice sunday afternoon after chores are done --- 
+
+Time to implement some new Layout things! yay!
+
+One thing to fix is this  issue with headings. Fixing spaces between words/text would also be a good idea at some point.
+
+![weird h1](<2025-07-06 12-18-47-2nd-Layout-Rework.png>)
+
+(Note: displaying images that have a space in their file name in markdown is harder than anticipated).
+
+Seems like the issue isn't actually specifically because of headings?? Found it: when we had a block element in an inline element, we created a new line BEFORE laying out the block element. As such, the next LineLayout didn't take into account the height of the block element before placing itself and the overlap occurred. 
+
 TODO: once I am done, ensure an inline block element in same line with same font as a regular element looks on the same line (because that might not happen).

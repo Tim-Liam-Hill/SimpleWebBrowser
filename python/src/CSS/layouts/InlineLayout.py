@@ -76,8 +76,12 @@ class InlineLayout(Layout):
         for node in self.nodes:
             self.recurse(node)
 
-        #Remember to handle the last line!
-        self.getNextLine() 
+        #Remember to handle the last line, but ONLY if it isn't empty
+        #If you flush a non-empty line then the child that comes after it will not have the correct
+        #start Y value, leading to overlapping text
+        #I think, haven't actually seen this in practice. Still, best to be safe.
+        if len(self.curr_line.layoutFragments) != 0 or len(self.curr_line.rects) != 0: #I don't think second condition will be true if first isn't
+            self.getNextLine() 
         
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
@@ -172,10 +176,11 @@ class InlineLayout(Layout):
         return 
 
     def handleBlock(self,node):
-        self.curr_line = self.getNextLine()
+        
         from src.CSS.layouts.BlockLayout import BlockLayout #Python let's you do this and I hate it
-        block = BlockLayout(node,self,self.lines[-1])
+        block = BlockLayout(node,self,self.lines[-1] if len(self.lines) > 0 else None)
         block.layout()
+        self.curr_line = self.getNextLine()
         self.lines.append(block)
 
         return 
