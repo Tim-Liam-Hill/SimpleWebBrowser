@@ -7,13 +7,15 @@ from src.HTML.HTMLParser import Element
 import logging
 logger = logging.getLogger(__name__)
 
+
 class BlockLayout(Layout):
-    '''The implementation for "block" css display property'''
+    '''The implementation for "block" css display property. Also implements logic for ul and ol.'''
     
     def __init__(self, node, parent, previous):
         super().__init__(parent,previous)
 
         self.node = node 
+        self.lastLi = None #keeps track of last li element so that children will be in line with its marker
 
     #TODO: implement CSS
     def getWidth(self):
@@ -65,8 +67,10 @@ class BlockLayout(Layout):
             if "px" in val:
                 padInline = val.split("px")[0]
 
-
-        return self.x + int(padInline)
+        #If there was a previous marker then we want to be inline with it even though it isn't displayed
+        #we ensure marker isn't None since that is the case when we are getting x start for the current li
+        markerW = 0 if self.lastLi == None or self.lastLi.marker == None else self.lastLi.marker.getWidth()
+        return self.x + int(padInline)  + markerW
 
     #TODO: padding and margin?? 
     def getYStart(self):
@@ -84,9 +88,6 @@ class BlockLayout(Layout):
 
         self.setCoordinates()
         self.createChildren()
-        
-        # for child in self.children:
-        #     child.layout()
 
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
@@ -127,6 +128,7 @@ class BlockLayout(Layout):
             
             if layoutType(child) == "list-item":
                 next = ListItemLayout(child,self, prev, listCount)
+                self.lastLi = next
                 listCount += 1
             else:
                 next = BlockLayout(child,self,prev)

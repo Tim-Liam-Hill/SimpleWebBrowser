@@ -108,4 +108,20 @@ One thing to fix is this  issue with headings. Fixing spaces between words/text 
 
 Seems like the issue isn't actually specifically because of headings?? Found it: when we had a block element in an inline element, we created a new line BEFORE laying out the block element. As such, the next LineLayout didn't take into account the height of the block element before placing itself and the overlap occurred. 
 
+Now we need a special case for the br tag so that it actually causes line breaks. Implemented for now but may ened to check up on line breaks for block layout.
+
+Time for lists. Yay!!!! FOr our purposes, the 'ol' and 'ul' tags won't be strictly necessary, so we will just handle list items in side the block layout. If we need we can expand on block layout slightly to handle the numbering and such but for now I don't care to do all that (actually, sure why not do it?)
+
+[the chrome css link](https://github.com/chromium/chromium/blob/main/third_party/blink/renderer/core/html/resources/html.css)
+
+I think my scrolling may be a bit stinky.
+
+There are still a few small issues, might skip them but for now taking a slightly deeper look. For now:
+
+* issue 1 is that the baseline of the symbol is not always lining up nicely with that of the content
+* content is not starting to the right of the symbol when not in a li element.
+* Clicking on the scrollbar is suddenly very weird.
+* Am I not displaying content in 'nav' tags when showing the browser engineering site?? weird.
+
+
 TODO: once I am done, ensure an inline block element in same line with same font as a regular element looks on the same line (because that might not happen).

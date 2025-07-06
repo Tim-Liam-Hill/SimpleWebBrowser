@@ -63,7 +63,7 @@ class ListItemLayout(Layout):
         self.createMarker()
         #I feel like I could also use a block layout here, not really any difference
         #but we will see.
-        self.children.append(InlineLayout([self.node], self, self.previous))
+        self.children.append(InlineLayout([self.node], self, None))
         self.children[0].layout()
 
         # need to set baseline of the marker once line has been layed out to make sure it looks alright
