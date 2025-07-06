@@ -68,7 +68,7 @@ class InlineLayout(Layout):
         logger.debug("laying our InlineLayout with {} children".format(len(self.children)))
         self.setCoordinates()
         self.curr_line = LineLayout(self, None)
-        self.curr_line.y = self.y #DON'T USE PARENT FOR THESE CALLS! parent gives y start using height of child!!!
+        self.curr_line.y = self.y #DON'T USE PARENT FOR THESE CALLS! parent gives y start using height of child, so that would be incorrect!!!
         self.curr_line.x = self.x
 
         for node in self.nodes:
@@ -165,16 +165,16 @@ class InlineLayout(Layout):
 
             for i in range(index, len(self.lines)): 
                 if isinstance(self.lines[i], LineLayout): #we could have interleaved BlockLayouts
-                    y = self.lines[i].getYStart() if i < len(self.lines) else self.y
-                    rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getWidth()-curr_cursor_x,i == index, False ,node, h)
-                    self.lines[i].rects.append(rect)
+                    y = self.lines[i].getY() if i < len(self.lines) else self.y
+                    rect = RectLayout(self.x + curr_cursor_x,y,self.lines[i].getWidth()-curr_cursor_x,i == index, False ,node, h)
+                    self.lines[i].rects.insert(0,rect)
                     curr_cursor_x = 0
 
             #subtract curr_cursor_x since we may only have one line and we don't start that line
-            y = self.lines[-1].getYStart() if len(self.lines) > 0 else self.y
             if self.curr_line.getWidth()-curr_cursor_x != 0: #stops weird empty rect if no content TODO: test more
+                y = self.curr_line.getY() if len(self.lines) > 0 else self.y
                 rect = RectLayout(self.x + curr_cursor_x,y,self.curr_line.getWidth()-curr_cursor_x,len(self.lines) == index, True,node, h)
-                self.curr_line.rects.append(rect)
+                self.curr_line.rects.insert(0,rect)
         return 
 
     def handleBlock(self,node):

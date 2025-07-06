@@ -57,7 +57,7 @@ class ListItemLayout(Layout):
         return self.y + self.getHeight()
     
     def layout(self):
-
+        logger.debug("Laying out ListItemLayout")
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
         if self.previous:
             self.y = self.previous.getYStart() #TODO: here aswell
@@ -70,9 +70,10 @@ class ListItemLayout(Layout):
         child = InlineLayout([self.node], self, None)
         child.layout()
         # ONLY append child once it has been layed out, otherwise the getYStart for the child is incorrect
+        #TODO: stop using the word 'layed'
         self.children.append(child)
 
-        # need to set baseline of the marker once line has been layed out to make sure it looks alright
+        # need to set baseline of the marker once line has been laid out to make sure it looks alright
         #technically still a one liner but yeah, this is gross I know.
         #TODO: revist this if we can mayhaps
         self.marker.baseline = max(self.children[0].lines.layoutFragments[0].baseline if len(self.children[0].lines) > 0 and len(self.children[0].lines[0].layoutFragments) > 0 else 0,\
