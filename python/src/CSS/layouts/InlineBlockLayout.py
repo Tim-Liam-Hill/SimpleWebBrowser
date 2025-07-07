@@ -6,6 +6,7 @@ class InlineBlockLayout(BlockLayout):
 
     def __init__(self,node,parent,previous):
         super().__init__(node,parent,previous)
+        self.contentWidth = self.parent.getContentWidth()
    
     def __repr__(self):
 
@@ -19,10 +20,15 @@ class InlineBlockLayout(BlockLayout):
         else: 
             self.y = self.parent.getY() #TODO: same here. also, NOT Y start here. if we are a block element and our parent was a block element and no previous then we start at their start
 
+    def getContentWidth(self):
+        return self.contentWidth
 
     def getWidth(self):
 
         #TODO: css and such
+
+        if len(self.children[0].lines) > 1:
+            return self.getContentWidth()
 
         return max([child.getWidth() for child in self.children])
     
