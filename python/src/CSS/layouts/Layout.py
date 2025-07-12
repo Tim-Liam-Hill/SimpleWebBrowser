@@ -95,3 +95,12 @@ class Layout(ABC):
         '''
         
         pass 
+
+    @abstractmethod
+    def print(self,indent):
+        '''Prints out this node's details using python's standard "print" method.
+        
+        This has been used for convenience during development only and should not be used for any serious logging.
+        '''
+
+        pass 

@@ -54,6 +54,8 @@ class TextLayout(Layout):
     def paint(self):
 
         cmds = []
+        #self.baseline HAS to be set by parent. Is this clear in the code?
+        #Probably not
         y1 = self.y + self.baseline - self.font.metrics("ascent")
         #TODO: use vert align
         cmds.append(DrawText(self.x,y1,self.text,self.font,self.node.style["color"]))

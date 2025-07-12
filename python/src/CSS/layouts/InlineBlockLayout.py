@@ -1,7 +1,5 @@
 from src.CSS.layouts.BlockLayout import BlockLayout
 
-
-
 class InlineBlockLayout(BlockLayout):
 
     def __init__(self,node,parent,previous):

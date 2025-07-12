@@ -1,19 +1,36 @@
+
+#TODO: standardize and cleanup this file: duplicate implementations can be reduced
+
+
 class DrawText:
     '''Represents the command needed to render text onto a Tkinter canvas'''
 
-    def __init__(self, x1, y1, text, font, color):
+    #TODO: is there a more elegant way to handle constant text vs getting text from node?
+    def __init__(self, x1, y1, text, font, color, node = None):
         self.top = y1
         self.left = x1
         self.text = text
         self.font = font
         self.bottom = y1 + font.metrics("linespace")
-        self.color = color
+        self.color = color #TODO: do we need this or should we always take in node?
+        self.node = node
+
+    def getTextToRender(self):
+
+        #TODO: consider handling placeholder text for input tags
+        if self.node:
+            v = self.node.attributes.get("value")
+            return v if not v == None else ""
+        else:
+            return self.text
 
     def execute(self, scroll, canvas):
 
+        t = self.getTextToRender()
+
         canvas.create_text(
             self.left, self.top - scroll,
-            text=self.text,
+            text=t,
             font=self.font,
             anchor='nw',
             fill=self.color)

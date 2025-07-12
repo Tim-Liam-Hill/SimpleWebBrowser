@@ -138,4 +138,34 @@ Also fixed the Inline multi rect boi which is nice. Yay!
 I have to add exceptions to my getXStart getYStart functions which is annoying. It seems to me that often I can just give the value the child needs when it is created,
 so I might rework to do that actually. 
 
+One thing to fix though: when the inline block has multiple lines we should not let any content appear to the right of it
+
+![this](2025-07-07 08-45-35.png)
+
+Now we can actually move onto handling input tags, but this raises an interesting point: how should we handle tags? So far layout objects have corresponded to the display property of a node, but now we have to change how we render based on the tag as well. This will also be important later once we have images (which can also be inline-block etc). 
+
+The first though is to have a separate layout object for the tags that require unique handling but this may raise a problem in that these layout objects can be part of inline-block, block or inline formatting contexts. Ideally we don't want to mix layout logic with node specific logic.
+
+With this in mind the next idea is to have node specific handling when rendering content within a layout context. This seems like a better idea but will need some thought with respect to how to implement in our current layout. 
+
+I suppose what we could do is have a 'getNodeRenderContents' type function: you pass it a node and it returns the content to be displayed based on the node tag. I suppose we need to pass in the layout object parent as well so the node can know its dimensions. That should work (hopefully). Meow.
+
+One thing we can do to ensure we don't need to re-layout after every single key press is to make a new type of command that directly references a nodes value field to determine what to render? So long as the width/height of the layout parent shouldn't change then updating the node's value will result in a direct update to the command in the display list and another layout call won't be needed (which is great because layout is starting to get slower). Layout will be speed up later in any case but I like this approach all the same.
+
+An interesting point will be to change the block layout so that it does actually render its own node's content using the new method. Still, not really that big a change I don't think: it should fit in nicely.
+
+Also taking a quick read ahead, I think this system will work with the later on Image logic. In the event it doesn't another rework will be needed but hey, that's just how coding is sometimes. 
+
+Just noticed something strange: not all of the content for page https://browser.engineering/intro.html renders in my browser. Its strange since the layout tree does include the content to render (below the heading 'Browsers and you') but for some reason you can't scroll down far enough?? If you resize the page though you can see a little more of the content.
+Need to look into this. 
+
+Do I need to implement width css property to handle input tags now?? No, that doesn't seem to be something that chrome does and in any case, it wouldn't make sense for InlineLayout.
+
+I guess what we have to do is have an input sort of special case in both InlineLayout and BlockLayout. I didn't want to do this but eugh, I am not sure how to do things differently. Honestly, it isn't that big of a deal: inputLayout will just always be wrapped by some other parent layout that describes what sort of flow/context it is in. From there input layout handles its own logic. 
+
+The error handling in my browser does need some work, specifically with respect to parsing errors, CSS errors and handling the socket if it unexpectedly closes. Still, that is something I can get to later. 
+
+Here is an interesting question: What does my browser do when it has an inline-block layout element as its first child followed 
+by an inline layout element? I don't think we are handling that correctly. Also to note: we need a custom draw command for inputs to make sure we only show text that can fit in the input box!!!! 
+
 TODO: once I am done, ensure an inline block element in same line with same font as a regular element looks on the same line (because that might not happen).

@@ -3,6 +3,7 @@ from src.CSS.layouts.LayoutConstants import VSTEP, layoutType
 from src.Draw.Commands import DrawRect
 from src.CSS.layouts.InlineLayout import InlineLayout
 from src.CSS.layouts.ListItemLayout import ListItemLayout
+from src.CSS.layouts.InputLayout import createInputLayout
 from src.HTML.HTMLParser import Element
 import logging
 logger = logging.getLogger(__name__)
@@ -87,7 +88,12 @@ class BlockLayout(Layout):
         '''Forces this Layout Object to create all of its layout children'''
         
         self.setCoordinates()
-        self.createChildren()
+        if self.node.tag == "input":
+            c = createInputLayout(self.node,self,self.previous)
+            c.layout()
+            self.children = [c]
+        else: 
+            self.createChildren()
 
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
@@ -110,7 +116,7 @@ class BlockLayout(Layout):
             if layoutType(child) == "none":
                 continue
 
-            if layoutType(child) == "inline":
+            if layoutType(child) in ["inline", "inline-block"]:
                 inline_children.append(child)
                 continue
 
@@ -147,7 +153,7 @@ class BlockLayout(Layout):
 
         bgcolor = self.node.style.get("background-color",
                                       "transparent")
-        if bgcolor != "transparent":
+        if bgcolor != "transparent" and self.node.tag != "input": #don't draw over input!!!!
             x2, y2 = self.x + self.getWidth(), self.y + self.getHeight()
             rect = DrawRect(self.x, self.y, x2, y2, bgcolor)
             cmds.append(rect)

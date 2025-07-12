@@ -1,14 +1,13 @@
 from src.HTML.HTMLParser import Element, Text
-import logging
 from src.CSS.layouts.LayoutConstants import layoutType, getFont
 from src.CSS.layouts.Layout import Layout
 import re
 from src.CSS.layouts.LineLayout import LineLayout, RectLayout
-
 from src.CSS.layouts.TextLayout import TextLayout
 from src.CSS.CSSConstants import DEFAULT_LEADING
+from src.CSS.layouts.InputLayout import createInputLayout
 
-#from src.CSS.layouts.Line import TextBox, Box, Line
+import logging
 logger = logging.getLogger(__name__)
 
 
@@ -21,15 +20,12 @@ class InlineLayout(Layout):
     def __init__(self, nodes,parent,previous):
         super().__init__(parent,previous)
         self.nodes = nodes
-        self.lines = [] 
-
+        self.lines = [] #TODO: refactor to use Layout's "children" member variable instead. Its already there, so it makes more sense to use
         self.curr_line = None
 
     
     def getWidth(self):
         
-
-
         return max([line.getWidth() for line in self.lines] + [0])
     
     def getContentWidth(self):
@@ -69,18 +65,23 @@ class InlineLayout(Layout):
         logger.debug("laying our InlineLayout with {} children".format(len(self.children)))
         self.setCoordinates()
         self.curr_line = LineLayout(self, None)
-        self.curr_line.y = self.y #DON'T USE PARENT FOR THESE CALLS! parent gives y start using height of child, so that would be incorrect!!!
+        self.curr_line.y = self.y #DON'T USE PARENT FOR THESE CALLS! parent gives y start using height of child (which is us), so that would be incorrect!!!
         self.curr_line.x = self.x
 
-        for node in self.nodes:
-            self.recurse(node)
+        if len(self.nodes) == 1 and isinstance(self.nodes[0], Element) and self.nodes[0].tag == "input":
+            c = createInputLayout(self.nodes[0],self,self.previous)
+            c.layout()
+            self.lines = [c]
+        else:
+            for node in self.nodes:
+                self.recurse(node)
 
-        #Remember to handle the last line, but ONLY if it isn't empty
-        #If you flush a non-empty line then the child that comes after it will not have the correct
-        #start Y value, leading to overlapping text
-        #I think, haven't actually seen this in practice. Still, best to be safe.
-        if len(self.curr_line.layoutFragments) != 0 or len(self.curr_line.rects) != 0: #I don't think second condition will be true if first isn't
-            self.getNextLine() 
+            #Remember to handle the last line, but ONLY if it isn't empty
+            #If you flush a non-empty line then the child that comes after it will not have the correct
+            #start Y value, leading to overlapping text
+            #I think, haven't actually seen this in practice. Still, best to be safe.
+            if len(self.curr_line.layoutFragments) != 0 or len(self.curr_line.rects) != 0: #I don't think second condition will be true if first isn't
+                self.getNextLine() 
         
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)

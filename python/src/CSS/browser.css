@@ -120,6 +120,7 @@ input {
     font-weight: normal; 
     font-style: normal;
     background-color: lightblue;
+    display: inline-block;
 }
 button {
     font-size: 16px; 
