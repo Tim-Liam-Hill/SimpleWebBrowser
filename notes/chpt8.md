@@ -168,4 +168,69 @@ The error handling in my browser does need some work, specifically with respect 
 Here is an interesting question: What does my browser do when it has an inline-block layout element as its first child followed 
 by an inline layout element? I don't think we are handling that correctly. Also to note: we need a custom draw command for inputs to make sure we only show text that can fit in the input box!!!! 
 
+Fixed behaviour for inline-block being direct child of a block layout. Problem is: our current approach with TextInputLayout is running into some issues with InlineBlock layout, and this sucks because I spent a long time on the latter, so the former gotta change. The issue is how we create/handle input layouts inside of InlineLayout for starters.
+
+so here is the fun thing: there is no real difference between an inline input tag and inline-block input tag. From what I see, there is no functional difference between the two so maybe that can help us simplyfy things.
+
+Also news: my inline-block is broken! Yay! error occurs when the first child of the inline block is block display.
+
+The biggest issue I am having is keeping track of when a blocklayout should take up the entire content width it has been given and when it shouldn't. One option is to rewrite parts of the blocklayout algorithm to specifically keep track of the available space it has and whether or not it splits/uses all of it. 
+
+maybe blocklayout can have a variable 'use_all_content_width'? this can tell it whether or not the content width it has been given actually can be used as its full width.
+
+Do all divs inside an inline block only use up as much width as the inline block uses??? The real problem here is that blocklayout sets its width once then never updates it. If we always make it refer to the parent, changing the parent is enough for the cascade ... 
+
+So:
+- Layout InlineBlock with content width as big as it needs to be (ie: same as its inline parent)
+- once done laying out, iterate down through children 
+- if single inline-layout child:
+    - if has only one line content width is width of that line
+    - else content width remains unchanged
+- else it must have at least one block/inline block child
+    - for each of its children 
+        - recurse
+        - take max width of inline children 
+        - that is the content width
+
+Not sure how this will turn out but honestly, we shouldn't be encountering layouts like this too often for what I have in mind. 
+
+All this layout nonsense make me wonder how other browsers manage ...
+
+Taking a bit of a step back to look at [weasyprint](https://doc.courtbouillon.org/weasyprint/stable/going_further.html#formatting-structure)
+
+This is just the heuristic I have come up with after experimenting with how brave handles inline blocks with inline and block children\
+
+I think my biggest issue is in how I am trying to accommodate block layouts inside of inline layouts. I need to go back to the CSS spec and see how to split up things so this wouldn't happen. Which probably means another rewrite but thats okay.
+
+In light of the fact that I am still learning, let's explore weasyprint and see what I can learn from it. 
+
+Yeah, I think I have an idea.
+- I started with the textbook's approach of rendering
+- this approach creates boxes and lays them out in one go
+- this doesn't seem to gel all that well with the normal flow
+    - if you end up having block boxes inside inline boxes, then a parent needs to get remade to split up and handle this (???)
+    - actually
+
+hmm... maybe we can still use the book's kind of method.... 
+but honestly, it seems a bit more ituitive to me to first create all of the boxes and afterwards set coordinates once we know
+we don't have to cater for anything else. 
+
+I just need a better understanding of what a LineBox really is since I think my current understanding is not entirely correct. 
+
+"A box that represents a line in an inline formatting context.
+
+    Can only contain inline-level boxes.
+
+    In early stages of building the box tree a single line box contains many
+    consecutive inline boxes. Later, during layout phase, each line boxes will
+    be split into multiple line boxes, one for each actual line." -> per weasyprint documentation 
+
+So my understanding isn't wrong, its just the method I am using makes things harder.
+
+So, it seems somewhat settled then. We will have a 2 pass layout algorithm:
+- In the first pass we create all the boxes 
+- In the second pass we set coordinates and handle the splitting of lines 
+
+I like this idea, but I need to play around with it a little more. 
+
 TODO: once I am done, ensure an inline block element in same line with same font as a regular element looks on the same line (because that might not happen).

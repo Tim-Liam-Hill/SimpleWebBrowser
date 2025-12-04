@@ -4,6 +4,7 @@ class InlineBlockLayout(BlockLayout):
 
     def __init__(self,node,parent,previous):
         super().__init__(node,parent,previous)
+        #TODO: calculate content width based on CSS, and maybe move this initialization somewhere else
         self.contentWidth = self.parent.getContentWidth()
    
     def __repr__(self):
@@ -23,16 +24,23 @@ class InlineBlockLayout(BlockLayout):
 
     def getWidth(self):
 
-        #TODO: css and such
+        #this handles case where child needs to know where to start and calls getXStart
+        if len(self.children) == 0:
+            return 0
 
-        if len(self.children[0].lines) > 1:
-            return self.getContentWidth()
+        #TODO: css and such
+        
+        #if we have a child that is an InlineLayout and it has more than one line,
+        #then we have to take up as much space as our parent had (which is what self.contentWidth does at the
+        #moment, css will affect that eventually)
+        # if len(self.children[0].lines) > 1:
+        #     return self.getContentWidth()
 
         return max([child.getWidth() for child in self.children])
     
     def getXStart(self):
 
-        return self.x + self.getWidth()
+        return self.x
 
     def getHeight(self):
 

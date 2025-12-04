@@ -3,14 +3,27 @@
 <html lang="en-US" xml:lang="en-US">
 <head>
 <style>
+  input {
+    background-color: aqua;
+  }
   .block { 
     display: block;
-    background-color: aqua;
+  }
+
+  .inblock {
+    display: inline-block;
   }
 
   .in {
-    display: inline-block
+    display: inline
   }
+  .red {
+    background-color: red;
+  }
+  .blue {
+    background-color: blue;
+  }
+
 </style>
 </head>
 
@@ -19,7 +32,13 @@
 
 <div>
   Meow
-  <span class="in">MEE</span>
+  <span class="inblock">
+    <div class="red">This div will cause an error asdfasdfsdafasdfsdafasdf</div>
+    <div class="blue">Text In between</div>
+    sadfasdsadfsadfasdfsadfsdafsdafasdfasdfasdfasdfsadfasdfasdfasdfasdfasdfsdafasdfsdf
+    <div class="red">Mr Meow Meow</div>
+    <div class="blue">Text After</div>
+  </span>
   After input
 
 </div>

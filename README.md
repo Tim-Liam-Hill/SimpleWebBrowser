@@ -47,6 +47,7 @@ There is a high chance that I restart this project from scratch at some point si
 
 Some websites to support: 
 * https://motherfuckingwebsite.com/
+* http://bettermotherfuckingwebsite.com/
 * https://dudeism.com/ordination-form/
 * https://serenityos.org/happy/1st/
 * https://endchan.org/ (or rather, some less degenerate imageboard websites)

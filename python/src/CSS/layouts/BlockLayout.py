@@ -20,10 +20,9 @@ class BlockLayout(Layout):
 
     #TODO: implement CSS
     def getWidth(self):
-        if self.width == None:
-            self.width = self.parent.getContentWidth()
 
-        return self.width
+
+        return self.parent.getContentWidth()
 
     #TODO: implement CSS
     def getContentWidth(self):

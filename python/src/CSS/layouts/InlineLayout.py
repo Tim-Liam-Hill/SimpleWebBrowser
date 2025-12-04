@@ -68,20 +68,15 @@ class InlineLayout(Layout):
         self.curr_line.y = self.y #DON'T USE PARENT FOR THESE CALLS! parent gives y start using height of child (which is us), so that would be incorrect!!!
         self.curr_line.x = self.x
 
-        if len(self.nodes) == 1 and isinstance(self.nodes[0], Element) and self.nodes[0].tag == "input":
-            c = createInputLayout(self.nodes[0],self,self.previous)
-            c.layout()
-            self.lines = [c]
-        else:
-            for node in self.nodes:
-                self.recurse(node)
+        for node in self.nodes:
+            self.recurse(node)
 
-            #Remember to handle the last line, but ONLY if it isn't empty
-            #If you flush a non-empty line then the child that comes after it will not have the correct
-            #start Y value, leading to overlapping text
-            #I think, haven't actually seen this in practice. Still, best to be safe.
-            if len(self.curr_line.layoutFragments) != 0 or len(self.curr_line.rects) != 0: #I don't think second condition will be true if first isn't
-                self.getNextLine() 
+        #Remember to handle the last line, but ONLY if it isn't empty
+        #If you flush a non-empty line then the child that comes after it will not have the correct
+        #start Y value, leading to overlapping text
+        #I think, haven't actually seen this in practice. Still, best to be safe.
+        if len(self.curr_line.layoutFragments) != 0 or len(self.curr_line.rects) != 0: #I don't think second condition will be true if first isn't
+            self.getNextLine() 
         
     def setCoordinates(self):
         self.x = self.parent.getXStart() #TODO: calculate x offset based on CSS (generic function will do for this)
@@ -102,6 +97,8 @@ class InlineLayout(Layout):
             self.handleText(node)
         elif node.tag == "br":
             self.getNextLine()
+        elif node.tag == "input":
+            self.handleInput(node)
         elif layoutType(node) == "inline": #TODO: handle inline-block and type input
             self.handleInline(node)
         elif layoutType(node) == "inline-block":
@@ -199,6 +196,21 @@ class InlineLayout(Layout):
         self.curr_line.layoutFragments.append(inlineBlock)
 
         return 
+    
+    def handleInput(self,node):
+
+        #2 cases: either inline-block/inline layout or block layout
+
+        if layoutType(node) == "block":
+            self.handleBlock(node)            
+        else:
+            from src.CSS.layouts.InlineBlockLayout import InlineBlockLayout
+            #same result for inline and inline block display
+            inlineBlock = InlineBlockLayout(node,self,self.curr_line)
+            inlineBlock.layout()
+            self.curr_line.layoutFragments.append(inlineBlock)
+
+        pass
 
 
     def handleBlock(self,node):
