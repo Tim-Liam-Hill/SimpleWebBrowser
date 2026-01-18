@@ -27,7 +27,7 @@ To run an individual module: ```python3 -m src.CSS.CSSParser``` (from the python
 
  * setting up testing before writing any code is a good idea
  * main branch should always have latest working code. Leave experiments and such for other branches
- * setup your dev environment BEFORE you right code. If you want to do a python venv, its a bit easier to do that before you start writing code and downloading dependencies
+ * setup your dev environment BEFORE you start writing code. If you want to use a python venv, its a bit easier to do that before you start writing code and downloading dependencies
  * test test test. Having unit tests makes refactoring later a lot easier (you can make sure you still provide old functionality)
 
 # SimpleWebBrowser

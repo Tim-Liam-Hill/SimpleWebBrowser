@@ -3,9 +3,15 @@
 <html lang="en-US" xml:lang="en-US">
 <head>
 <style>
-  .block { 
-    display: block;
+  div {
     background-color: aqua;
+  }
+  span {
+    background-color: red;
+  }
+  .inl {
+    display: inline-block;
+    background-color: purple;
   }
 </style>
 </head>
@@ -14,9 +20,23 @@
 
 
 <div>
-  <input type="text" class="block" value="initial" />
-  <input type="text" value="initial" />
-
+  In the div
+  <span>  
+    Span
+  </span>
+  <div class="inl">
+    div
+      <div class="inl">
+        div
+          <div class="inl">
+            div
+          </div>
+          <div>
+            Divv
+          </div>
+      </div>
+  
+  </div>
 </div>
 
 

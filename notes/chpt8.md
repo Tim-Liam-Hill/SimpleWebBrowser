@@ -140,7 +140,7 @@ so I might rework to do that actually.
 
 One thing to fix though: when the inline block has multiple lines we should not let any content appear to the right of it
 
-![this](2025-07-07 08-45-35.png)
+![this](<2025-07-07 08-45-35.png>)
 
 Now we can actually move onto handling input tags, but this raises an interesting point: how should we handle tags? So far layout objects have corresponded to the display property of a node, but now we have to change how we render based on the tag as well. This will also be important later once we have images (which can also be inline-block etc). 
 
